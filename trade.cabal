@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f620241cdb8a19d034ba11bafc879508aaf8d7ccdaa9d700a463b7468c89d8ec
+-- hash: c3119247107292915de6bc7e70270cd5252480296b070d0946a465522459331e
 
 name:           trade
 version:        0.1.0.0
@@ -29,6 +29,7 @@ library
   exposed-modules:
       Httpstructure
       Lib
+      Passwd
   other-modules:
       Paths_trade
   hs-source-dirs:

@@ -16,15 +16,17 @@ import Data.Aeson.Types
 import Data.HashMap.Lazy (HashMap)
 import Data.Maybe (fromJust)
 import Data.Monoid ((<>))
-import Data.Text (Text)
+import Data.Text  as T
+import Data.Text.IO as T
 import GHC.Generics
 import Network.HTTP.Req
 import Data.Digest.Pure.SHA
 import Data.ByteString.Lazy.UTF8 as BLU
-import Data.Digest.Pure.SHA
+import Data.ByteString.Lazy.Char8
 import qualified Data.ByteString.Char8 as B
 import qualified Text.URI as URI
 import Httpstructure
+import Passwd
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
@@ -50,12 +52,13 @@ main =
            liftIO $ print ares
            
            let ouri = "https://api.binance.com/api/v3/userDataStream"  
-           let auri=ouri<>(pack "?signature=")<>(pack ares)
+           let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
            liftIO $ print auri
            --增加对astring的hmac的处理 
            uri <- URI.mkURI auri 
            let (url, options) = fromJust (useHttpsURI uri)
-           let areq = req POST url NoReqBody jsonResponse (header "X-MBX-APIKEY" "6AEIzoinSfDYRZx96vQT4HZvkMdMnZ0R497k9hRz02UVZsyYDM2sKnern2Jvz55l")
+           let passwdtxt = B.pack Passwd.passwd
+           let areq = req POST url NoReqBody jsonResponse (header "X-MBX-APIKEY" passwdtxt )
            response <- areq
            let result = responseBody response :: Object
            --liftIO $ print (responseBody response :: Object)
@@ -66,22 +69,23 @@ main =
 
 ws :: ClientApp ()
 ws connection = do
-    putStrLn "Connected!"
+    B.putStrLn "Connected!"
 
     void . forkIO . forever $ do
         message <- receiveData connection
         --print (message :: Text)
-        putStrLn $ "" ++ (show (Data.Aeson.decode message :: Maybe WebsocketRsp))
+        T.putStrLn $ T.pack  $ "" ++ (show (Data.Aeson.decode message :: Maybe WebsocketRsp))
         print ("kkkkkkkkk" )
 
 
     let loop = do
-            line <- getLine
+            line <- T.getLine
             print ("jjjjjj" )
-            unless (null line) $ do
+            unless (T.null line) $ do
                 print (line )
-                sendTextData connection (pack line)
+                let reline = line
+                sendTextData connection (line)
                 loop
     loop
 
-    sendClose connection (pack "Bye!")
+    sendClose connection (B.pack "Bye!")
