@@ -3,7 +3,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveAnyClass #-}
 import Wuss
+import Database.Redis
 import Control.Concurrent (forkIO)
+import Control.Concurrent.Async
 import Control.Monad (forever, unless, void)
 import Control.Exception (catch)
 import Data.Text (Text, pack)
@@ -27,6 +29,10 @@ import qualified Data.ByteString.Char8 as B
 import qualified Text.URI as URI
 import Httpstructure
 import Passwd
+import Redislib
+import Data.Text.Encoding
+import System.IO
+
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
@@ -61,7 +67,7 @@ main =
            let areq = req POST url NoReqBody jsonResponse (header "X-MBX-APIKEY" passwdtxt )
            response <- areq
            let result = responseBody response :: Object
-           --liftIO $ print (responseBody response :: Object)
+           liftIO $ print (responseBody response :: Object)
            let ares = fromJust $  parseMaybe (.: "listenKey") result :: String
            liftIO $ print (ares)
     -----------------------------------------------
@@ -70,12 +76,16 @@ main =
 ws :: ClientApp ()
 ws connection = do
     B.putStrLn "Connected!"
+    ctrl <- newPubSubController [("foo",msgHandler)][]
+    conn <- connect defaultConnectInfo
 
-    void . forkIO . forever $ do
-        message <- receiveData connection
-        --print (message :: Text)
-        T.putStrLn $ T.pack  $ "" ++ (show (Data.Aeson.decode message :: Maybe WebsocketRsp))
-        print ("kkkkkkkkk" )
+
+    withAsync (publishThread conn connection) $ \_pubT -> do
+      withAsync (handlerThread conn ctrl) $ \_handlerT -> do
+        void $ T.hPutStrLn stderr "Press enter to subscribe to bar"
+        void $ addChannels ctrl [("bar",msgHandler)] []
+        void $ addChannels ctrl [] [("baz:*", pmsgHandler)]
+
 
 
     let loop = do

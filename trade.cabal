@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c3119247107292915de6bc7e70270cd5252480296b070d0946a465522459331e
+-- hash: 3d66e943354fab59cc0ebc01163206db58d702b37c6109b246beaa3831a59a6a
 
 name:           trade
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Httpstructure
       Lib
       Passwd
+      Redislib
   other-modules:
       Paths_trade
   hs-source-dirs:
@@ -37,12 +38,18 @@ library
   build-depends:
       SHA
     , aeson
+    , async
     , base >=4.7 && <5
     , bytestring
+    , connection
     , containers
+    , eventful-core
+    , hedis
     , lens
     , lens-aeson
     , modern-uri
+    , mtl
+    , parallel
     , req
     , text
     , unordered-containers
@@ -61,12 +68,18 @@ executable trade-exe
   build-depends:
       SHA
     , aeson
+    , async
     , base >=4.7 && <5
     , bytestring
+    , connection
     , containers
+    , eventful-core
+    , hedis
     , lens
     , lens-aeson
     , modern-uri
+    , mtl
+    , parallel
     , req
     , text
     , trade
@@ -87,12 +100,18 @@ test-suite trade-test
   build-depends:
       SHA
     , aeson
+    , async
     , base >=4.7 && <5
     , bytestring
+    , connection
     , containers
+    , eventful-core
+    , hedis
     , lens
     , lens-aeson
     , modern-uri
+    , mtl
+    , parallel
     , req
     , text
     , trade
