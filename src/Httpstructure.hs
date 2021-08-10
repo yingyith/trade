@@ -2,11 +2,45 @@
 module Httpstructure
     ( WebsocketRsp,
       DataSet,
-      KDataSet
+      KDataSet,
+      getStickToCache,
+      getSticksToCache
     ) where
 import Control.Applicative
+import qualified Text.URI as URI
+import Data.Maybe (fromJust)
+import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Text (Text)
+import Network.HTTP.Req
+import Rediscache 
+import Database.Redis
+
+
+getSticksToCache :: IO ()
+getSticksToCache = do 
+    tt <- mapM getStickToCache ["5m","15m","1h","4h"] 
+    conn <- connect defaultConnectInfo
+    initdict tt conn
+    
+
+getStickToCache :: String -> IO (JsonResponse Value) 
+--getStickToCache :: String -> IO () 
+getStickToCache nstr  = runReq defaultHttpConfig $ do
+    let ouri = https "api.binance.com" /: "api" /: "v3" /: "klines"  
+    let intervals=["5m","15m","1h","4h","12h"]
+    let symbol = "ADAUSDT"
+    let tnstr = nstr 
+    let limit = 3
+    let params = 
+          "symbol" =: ("ADAUSDT" :: Text) <>
+          "interval" =: (tnstr ) <>
+          "limit" =: (3 :: Int)
+    areq <- req GET ouri NoReqBody jsonResponse params
+    --convert areq to sticks
+    --convert sticks to redis cache wl
+    liftIO $ print (responseBody areq :: Value)
+    return areq
 
 data WebsocketRsp = WebsocketRsp
     {
@@ -21,6 +55,8 @@ data DataSet = DataSet
     , s :: Text
     , kdata  :: KDataSet
     } deriving Show
+
+
 
 data KDataSet = KDataSet{
       t :: Int

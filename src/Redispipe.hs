@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 {-# LANGUAGE DeriveAnyClass #-}
-module Redislib
+module Redispipe
     ( publishThread,
       onInitialComplete,
       handlerThread,
@@ -37,15 +37,8 @@ publishThread rc wc =
   forever $ do
       message <- receiveData wc
       print (message )
-      --print (typeOf(message))
-      --print (Data.Aeson.decode message ::Maybe  WebsocketRsp)
-      --traceShowM (Data.Aeson.decode message :: Maybe WebsocketRsp)
-      --()
-     -- let t = Data.Aeson.decode message :: Maybe Value 
-     -- print(t) 
-     -- -- turn msg to event,event use publish-subscribe to command handler
-     -- -- return value
-     -- -- use hredis to pub event to  channel to redis and correct the command
+      -- add pre judge condition strategy process
+      --
       runRedis rc $ do 
               void $ publish "foo" ("foo" <> message)
               void $ publish "bar" ("bar" <> message)
