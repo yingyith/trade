@@ -33,7 +33,6 @@ import Passwd
 import Redispipe
 import Data.Text.Encoding
 import System.IO
-import Rediscache (sticks)
 
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
@@ -67,7 +66,9 @@ main =
         let (url, options) = fromJust (useHttpsURI uri)
         let passwdtxt = B.pack Passwd.passwd
         let areq = req POST url NoReqBody jsonResponse (header "X-MBX-APIKEY" passwdtxt )
+        --how to change bs to json
         response <- areq
+       -- liftIO $ B.putStrLn (responseBody response)
         --init redis cache dict
         --liftIO $ print (ages)
         --liftIO $ print t
@@ -81,8 +82,9 @@ main =
         --ages!"3day"
         --ages!"1week"
         -----------------------
+        --liftIO $ print (response)
         let result = responseBody response :: Object
-        liftIO $ print (responseBody response :: Object)
+        --liftIO $ print (responseBody response :: Object)
         let ares = fromJust $  parseMaybe (.: "listenKey") result :: String
         liftIO $ print (ares)
     -----------------------------------------------

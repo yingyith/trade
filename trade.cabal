@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5fa8ecb3a29c35de7f38a44ff66a640a0528fc4e1bdc91fa7b776108429b9cbf
+-- hash: 0488e634a4e681020270aa82854fd029c7a70ff7ef51198fdc362e0d295784e0
 
 name:           trade
 version:        0.1.0.0
@@ -55,6 +55,7 @@ library
     , text
     , unordered-containers
     , utf8-string
+    , vector
     , websockets
     , wuss
   default-language: Haskell2010
@@ -86,6 +87,7 @@ executable trade-exe
     , trade
     , unordered-containers
     , utf8-string
+    , vector
     , websockets
     , wuss
   default-language: Haskell2010
@@ -118,6 +120,7 @@ test-suite trade-test
     , trade
     , unordered-containers
     , utf8-string
+    , vector
     , websockets
     , wuss
   default-language: Haskell2010
