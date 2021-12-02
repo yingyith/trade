@@ -5,6 +5,7 @@ module Redispipe
     ( publishThread,
       onInitialComplete,
       handlerThread,
+      commandHandler,
       msgHandler,
       pmsgHandler,
       showChannels
@@ -64,6 +65,10 @@ handlerThread conn ctrl = forever $
          `catch` (\(e :: SomeException) -> do
            SI.hPutStrLn stderr $ "Got error: " ++ show e
            threadDelay $ 50*1000)
+--- do command detail operation here
+  -- multi command operation now
+commandHandler :: ByteString -> IO ()
+commandHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
 msgHandler :: ByteString -> IO ()
 msgHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)

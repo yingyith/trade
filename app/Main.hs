@@ -51,7 +51,7 @@ main =
     --query string signature
     --X-MBX-APIKEY :apikey
     --
-    runReq defaultHttpConfig $ do
+    aas<-runReq defaultHttpConfig $ do
 --传递querystr 经过hmac sha256加密增加sinnature为querystr参数，传递
         let astring = BLU.fromString "123"
         let signature = BLU.fromString "234"
@@ -86,11 +86,15 @@ main =
         let result = responseBody response :: Object
         --liftIO $ print (responseBody response :: Object)
         let ares = fromJust $  parseMaybe (.: "listenKey") result :: String
-        liftIO $ print (ares)
-    -----------------------------------------------
+        pure ares
+    liftIO $ print (aas)
+    let aimss = "/stream?streams=ethusdt@kline_1m/" ++ aas -----------------------------------------------
+    --"send ping every 30mins"
     getSticksToCache
-    runSecureClient "stream.binance.com" 9443 "/stream?streams=ethusdt@kline_1m" ws
-
+    --personal account
+    --stream?streams=ethusdt@kline_1m/listenKey
+    runSecureClient "stream.binance.com" 9443 aimss  ws
+--issue streams = <listenKey> -- add user Data Stream
 ws :: ClientApp ()
 ws connection = do
     B.putStrLn "Connected!"

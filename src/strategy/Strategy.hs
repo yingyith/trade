@@ -29,10 +29,24 @@ import Data.Aeson.Lens
 import qualified Data.ByteString.Char8 as B
 import Data.Aeson.Types
 
-class  firststratey  a where
-  condition :: Nprice->position->Oprice>(Bool,position,oprice)
+class  Emptystrategy  where
+  opencondition :: Nprice->position->Oprice>(Bool,position,oprice)
+  closecondition :: Nprice->(Bool,position,cprice)
 
+  --check currenenv situation
+data positionenv = positionenv {
+  positionnum :: Int,
+  positiontype :: String, --(0,open long,1 open short,2,close long ,3 close short)
+  positionoprice :: Float -- position open price 
+ } 
 
+type currentenv = currentenv currentprice  positionenv  
+
+instance Emptystrategy currentenv => Firststrategy currentenv  where
+  opencondition x y =
+
+instance Emptystrategy => Secondstrategy 
+  opencondition x y =
 
 
 
