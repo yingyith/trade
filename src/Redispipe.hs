@@ -8,7 +8,7 @@ module Redispipe
       commandHandler,
       msgHandler,
       pmsgHandler,
-      showChannels
+      showChannels,
     ) where
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
 -- I execute this with `stack runghc ManualPubSub.hs`
@@ -27,18 +27,30 @@ import Data.Text.IO as T
 import Data.ByteString (ByteString)
 import Data.Text.Encoding
 import System.IO as SI
-import Data.Aeson
+import Data.Aeson as A
 import Data.Aeson.Lens
 import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Lazy as BL
 import Data.Aeson.Types
-
+import Httpstructure
 -- | publish messages every 2 seconds to several channels
 publishThread :: R.Connection -> NC.Connection -> IO ()
 publishThread rc wc =  
   forever $ do
-      message <- receiveData wc
-      print (message )
-      -- add pre judge condition strategy process
+      message <- receiveData wc 
+      let msg = BL.fromStrict message
+      print (msg)
+      let test = A.decode msg :: Maybe Klinedata
+      SI.putStrLn (show (test))
+      print ("------------------")
+      let message = "sss"
+      --if type == account  ------sync ===> event sync 
+      --if type == stick  
+         -- add pre judge condition strategy process
+         --if openlong condition ---- open long ==> event1 (openlong)
+         --if openshort condition ---- open long ==> event2 (openlong)
+         --if closelong condition ---- open long ==> event3 (openlong)
+         --if closeshort condition ---- open long ==> event4 (openlong)
       --
       runRedis rc $ do 
               void $ publish "foo" ("foo" <> message)

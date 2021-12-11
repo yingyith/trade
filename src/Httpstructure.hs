@@ -5,7 +5,8 @@ module Httpstructure
       parsekline,
       getSticksToCache,
       Stick,
-      sticks
+      sticks,
+      Klinedata
     ) where
 import Control.Applicative
 import qualified Text.URI as URI
@@ -17,6 +18,7 @@ import Control.Monad.IO.Class as I
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Internal as BLI
 import Data.Aeson as A
+import Data.Aeson.Types as AT
 import Data.Text (Text)
 import Data.Typeable
 import GHC.Generics
@@ -65,6 +67,7 @@ parsekline nstr  = runReq defaultHttpConfig $ do
 --      lprice :: String,
 --      samount :: String
 --} deriving Generic
+
 data Stick = Stick Text deriving Show
 
 sticks :: Map.Map String [a]
@@ -78,5 +81,48 @@ instance FromJSON Stick where
             pure (Stick stxt)
     parseJSON _ = mzero
 
+--"{\"stream\":\"ethusdt@kline_1m\",\"data\":{\"e\":\"kline\",\"E\":1639083854455,\"s\":\"ETHUSDT\",\"k\":{\"t\":1639083840000,\"T\":1639083899999,\"s\":\"ETHUSDT\",\"i\":\"1m\",\"f\":702680151,\"L\":702680405,\"o\":\"4111.56000000\",\"c\":\"4111.41000000\",\"h\":\"4112.71000000\",\"l\":\"4110.00000000\",\"v\":\"117.02120000\",\"n\":255,\"x\":false,\"q\":\"481113.77283200\",\"V\":\"22.34560000\",\"Q\":\"91870.06074800\",\"B\":\"0\"}}}"
 
+data Klinedata = Klinedata {
+         kname :: String, --""
+         kopen :: String,
+         kclose :: String,
+         khigh :: String,
+         klow :: String,
+         ktime :: Integer
+} deriving Show
 
+--data Stickwebsocketdata = Stickwebsocketdata {
+--         sname :: String,  --"kline"
+--         spair :: String, -- "ETHISDT"
+--         sdata :: !AT.Object 
+--} deriving Show
+--
+--data Websocketdata = Websocketdata {
+--         coinpair :: String,
+--         stickwebsocketdata :: !AT.Object
+--} deriving Show
+
+instance FromJSON Klinedata where 
+  parseJSON (Object o) = 
+    Klinedata <$> ((o .: "data") >>= (.: "k") >>= (.: "s"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "o"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "c"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "h"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "l"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "t"))
+  parseJSON _ = mzero
+
+--instance FromJSON Websocketdata where 
+--  parseJSON (Object o) = 
+--    Websocketdata <$> (o .: "e")
+--                  <*> (o .: "s")
+--                  <*> (o .: "k")
+--  parseJSON _ = mzero
+--
+--instance FromJSON Stickwebsocketdata where 
+--  parseJSON (Object o) = 
+--    Stickwebsocketdata <$> (o .: "stream")
+--                       <*> (o .: "data")
+--  parseJSON _ = mzero
+-----------------------------
