@@ -1,6 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE NamedFieldPuns,RecordWildCards #-}
 module Redispipe
     ( publishThread,
       onInitialComplete,
@@ -15,6 +20,8 @@ module Redispipe
 
 import Database.Redis as R
 import Data.Monoid ((<>))
+import GHC.Generics
+--import GHC.Records(getField)
 import Control.Monad
 import Control.Exception
 import Control.Monad.Trans (liftIO)
@@ -33,6 +40,9 @@ import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson.Types
 import Httpstructure
+
+
+--import Klinedata (kname) 
 -- | publish messages every 2 seconds to several channels
 publishThread :: R.Connection -> NC.Connection -> IO ()
 publishThread rc wc =  
@@ -40,10 +50,14 @@ publishThread rc wc =
       message <- receiveData wc 
       let msg = BL.fromStrict message
       print (msg)
-      let test = A.decode msg :: Maybe Klinedata
+      let test = A.decode msg :: Maybe Klinedata --Klinedata
       SI.putStrLn (show (test))
       print ("------------------")
-      let message = "sss"
+      --print (ktype test)
+      case test of
+          Just x -> print(khigh x) 
+          Nothing -> print("sss")
+     -- print (getField @"kname" testn)
       --if type == account  ------sync ===> event sync 
       --if type == stick  
          -- add pre judge condition strategy process

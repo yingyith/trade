@@ -6,7 +6,7 @@ module Httpstructure
       getSticksToCache,
       Stick,
       sticks,
-      Klinedata
+      Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime)
     ) where
 import Control.Applicative
 import qualified Text.URI as URI
@@ -84,6 +84,7 @@ instance FromJSON Stick where
 --"{\"stream\":\"ethusdt@kline_1m\",\"data\":{\"e\":\"kline\",\"E\":1639083854455,\"s\":\"ETHUSDT\",\"k\":{\"t\":1639083840000,\"T\":1639083899999,\"s\":\"ETHUSDT\",\"i\":\"1m\",\"f\":702680151,\"L\":702680405,\"o\":\"4111.56000000\",\"c\":\"4111.41000000\",\"h\":\"4112.71000000\",\"l\":\"4110.00000000\",\"v\":\"117.02120000\",\"n\":255,\"x\":false,\"q\":\"481113.77283200\",\"V\":\"22.34560000\",\"Q\":\"91870.06074800\",\"B\":\"0\"}}}"
 
 data Klinedata = Klinedata {
+         ktype :: String,
          kname :: String, --""
          kopen :: String,
          kclose :: String,
@@ -105,7 +106,8 @@ data Klinedata = Klinedata {
 
 instance FromJSON Klinedata where 
   parseJSON (Object o) = 
-    Klinedata <$> ((o .: "data") >>= (.: "k") >>= (.: "s"))
+    Klinedata <$> (pure "kline")
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "s"))
               <*> ((o .: "data") >>= (.: "k") >>= (.: "o"))
               <*> ((o .: "data") >>= (.: "k") >>= (.: "c"))
               <*> ((o .: "data") >>= (.: "k") >>= (.: "h"))
