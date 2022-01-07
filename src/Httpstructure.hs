@@ -3,8 +3,9 @@
 module Httpstructure
     ( 
       parsekline,
-      getSticksToCache,
+      Mseries,
       Stick,
+      HStick,
       sticks,
       Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime)
     ) where
@@ -17,24 +18,20 @@ import Control.Monad
 import Control.Monad.IO.Class as I 
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Internal as BLI
+import qualified Data.ByteString.Char8 as BC
 import Data.Aeson as A
 import Data.Aeson.Types as AT
 import Data.Text (Text)
 import Data.Typeable
 import GHC.Generics
 import Network.HTTP.Req
-import Rediscache 
 import Database.Redis
+import Data.String.Class as DC
 
 
-getSticksToCache :: IO ()
-getSticksToCache = do 
-    tt <- mapM parsekline ["5m","15m","1h","4h"] 
-    conn <- connect defaultConnectInfo
-    initdict tt conn
     
 
-parsekline :: String -> IO (Maybe Stick) 
+parsekline :: String -> IO (Maybe Mseries) 
 --getStickToCache :: String -> IO () 
 parsekline nstr  = runReq defaultHttpConfig $ do
     let ouri = https "api.binance.com" /: "api" /: "v3" /: "klines"  
@@ -47,15 +44,15 @@ parsekline nstr  = runReq defaultHttpConfig $ do
           "interval" =: (tnstr ) <>
           "limit" =: (3 :: Int)
     areq <- req GET ouri NoReqBody lbsResponse params
+    let breq = responseBody areq
+    liftIO $ print (areq)
+    liftIO $ DC.putStrLn (breq)
     --convert areq to sticks
     --convert sticks to redis cache wl
-    breq <- pure $ A.decode (responseBody areq)
-    I.liftIO $ print breq
-    --litem <- A.decode breq
-    --I.liftIO $ print litem
+    let creq =  (A.decode breq) :: Maybe Mseries
     --decode bytestring to haskell object
     --liftIO $ print (responseBody areq :: Value)
-    return breq
+    return creq
 
 --  "[[1633089300000,\"2.23000000\",\"2.23700000\",\"2.23000000\",\"2.23700000\",\"723388.10000000\",1633089599999,\"1616255.57940000\",1772,\"365047.10000000\",\"815571.73890000\",\"0\"],[1633089600000,\"2.23600000\",\"2.24600000\",\"2.23400000\",\"2.24100000\",\"1273906.90000000\",1633089899999,\"2853730.42640000\",4737,\"821288.20000000\",\"1840100.60630000\",\"0\"],[1633089900000,\"2.24100000\",\"2.24200000\",\"2.24000000\",\"2.24100000\",\"10992.10000000\",1633090199999,\"24635.62260000\",66,\"10407.60000000\",\"23325.88350000\",\"0\"]]"
 
@@ -67,6 +64,35 @@ parsekline nstr  = runReq defaultHttpConfig $ do
 --      lprice :: String,
 --      samount :: String
 --} deriving Generic
+
+
+data HStick = HStick {
+      st :: Integer,
+      op :: String,
+      cp :: String,
+      hp :: String,
+      lp :: String
+} deriving (Show,Generic)
+
+data Mseries = Mseries [HStick] deriving (Show,Generic) 
+
+--instance  Show Mseries 
+
+instance FromJSON HStick where
+   parseJSON (Array v) = do
+          st <- parseJSON $ v V.! 0
+          op <- parseJSON $ v V.! 1
+          hp <- parseJSON $ v V.! 2
+          lp <- parseJSON $ v V.! 3
+          cp <- parseJSON $ v V.! 4
+          return $ HStick st op hp lp cp
+   parseJSON _ = mzero
+
+instance FromJSON Mseries where
+   parseJSON (Array v) = do
+     ptsList <- mapM parseJSON $ V.toList v
+     return $ Mseries ptsList
+   parseJSON _ = mzero
 
 data Stick = Stick Text deriving Show
 

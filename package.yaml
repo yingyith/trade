@@ -41,6 +41,7 @@ dependencies:
 - async
 - connection
 - vector
+- string-class
 library:
   source-dirs: src
 

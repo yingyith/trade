@@ -31,6 +31,7 @@ import qualified Text.URI as URI
 import Httpstructure
 import Passwd
 import Redispipe
+import Rediscache
 import Data.Text.Encoding
 import System.IO
 

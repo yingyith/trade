@@ -4,6 +4,7 @@
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
 -- I execute this with `stack runghc ManualPubSub.hs`
 module Rediscache (
+   getSticksToCache,
    initdict
 ) where
 
@@ -20,6 +21,7 @@ import Data.Monoid ((<>))
 import Control.Monad
 import Control.Exception
 import Control.Monad.Trans (liftIO)
+import Httpstructure
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -27,14 +29,27 @@ import Control.Monad.Trans (liftIO)
 --init kline dict
 -- 1min line update in memory every stick,other update in memory 
 
+getSticksToCache :: IO ()
+getSticksToCache = do 
+    tt <- mapM parsekline ["5m","15m","1h","4h"] 
+    --liftIO $ print (tt)
+    conn <- R.connect R.defaultConnectInfo
+    initdict tt conn
 
 
-initdict :: [a] -> R.Connection -> IO ()
+initdict :: [ Maybe Mseries ] -> R.Connection -> IO ()
 initdict rsp conn = do 
   --parse rsp json
   -- for i in response ,every elem add to key rlist 
-  runRedis conn $ do
-     void $ set "world" "world"
+  forM_ rsp $ \s -> do 
+     --case s of 
+     --    Nothing -> Nothing
+     --    Just a -> liftIO $ print (a)
+     let tdata = case s of 
+                      Just b -> b
+     liftIO $ print (s)
+     runRedis conn $ do
+        void $ set "world" "world"
    --get from web api and update
    
 --initrdcit :: rdict->rdict
