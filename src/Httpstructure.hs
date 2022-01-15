@@ -5,9 +5,13 @@ module Httpstructure
       parsekline,
       Mseries,
       Stick,
-      HStick,
+      HStick (op,cp,lp,hp,st),
+      DpairMserie,
       sticks,
-      Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime)
+      getmsilist,
+      getintervalfrpair,
+      getmsfrpair,
+      Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime),
     ) where
 import Control.Applicative
 import qualified Text.URI as URI
@@ -31,7 +35,7 @@ import Data.String.Class as DC
 
     
 
-parsekline :: String -> IO (Maybe Mseries) 
+parsekline :: String -> IO (DpairMserie) 
 --getStickToCache :: String -> IO () 
 parsekline nstr  = runReq defaultHttpConfig $ do
     let ouri = https "api.binance.com" /: "api" /: "v3" /: "klines"  
@@ -52,7 +56,8 @@ parsekline nstr  = runReq defaultHttpConfig $ do
     let creq =  (A.decode breq) :: Maybe Mseries
     --decode bytestring to haskell object
     --liftIO $ print (responseBody areq :: Value)
-    return creq
+    let dreq = DpairMserie nstr creq 
+    return dreq
 
 --  "[[1633089300000,\"2.23000000\",\"2.23700000\",\"2.23000000\",\"2.23700000\",\"723388.10000000\",1633089599999,\"1616255.57940000\",1772,\"365047.10000000\",\"815571.73890000\",\"0\"],[1633089600000,\"2.23600000\",\"2.24600000\",\"2.23400000\",\"2.24100000\",\"1273906.90000000\",1633089899999,\"2853730.42640000\",4737,\"821288.20000000\",\"1840100.60630000\",\"0\"],[1633089900000,\"2.24100000\",\"2.24200000\",\"2.24000000\",\"2.24100000\",\"10992.10000000\",1633090199999,\"24635.62260000\",66,\"10407.60000000\",\"23325.88350000\",\"0\"]]"
 
@@ -74,9 +79,23 @@ data HStick = HStick {
       lp :: String
 } deriving (Show,Generic)
 
-data Mseries = Mseries [HStick] deriving (Show,Generic) 
 
+data Mseries = Mseries  [HStick] deriving (Show,Generic) 
+
+type MInterval = String
+data DpairMserie = DpairMserie MInterval (Maybe Mseries) deriving (Show,Generic) 
+
+getmsfrpair :: DpairMserie -> Maybe Mseries
+getmsfrpair (DpairMserie a b) = b 
+
+getintervalfrpair :: DpairMserie -> String
+getintervalfrpair (DpairMserie a b) = a
+
+getmsilist :: Mseries -> [HStick]
+getmsilist (Mseries t ) = t
+getmsilist (Mseries _ ) = []
 --instance  Show Mseries 
+
 
 instance FromJSON HStick where
    parseJSON (Array v) = do
@@ -87,6 +106,9 @@ instance FromJSON HStick where
           cp <- parseJSON $ v V.! 4
           return $ HStick st op hp lp cp
    parseJSON _ = mzero
+
+--mapOdds :: (a -> a) -> [a] -> [a]
+--   mapOdds f al = case al! 
 
 instance FromJSON Mseries where
    parseJSON (Array v) = do

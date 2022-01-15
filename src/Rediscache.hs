@@ -11,7 +11,8 @@ module Rediscache (
 import Database.Redis as R
 import Data.Map (Map)
 import Data.String
-import Data.ByteString
+import qualified Data.ByteString as B
+import qualified Data.ByteString.UTF8 as BL
 import Data.Text (Text)
 import Network.HTTP.Req
 import qualified Data.Map as Map
@@ -28,16 +29,40 @@ import Httpstructure
 -- update redis cache kline dict
 --init kline dict
 -- 1min line update in memory every stick,other update in memory 
+defintervallist :: [String]
+defintervallist = ["5m","15m","1h","4h"] 
 
 getSticksToCache :: IO ()
 getSticksToCache = do 
-    tt <- mapM parsekline ["5m","15m","1h","4h"] 
+    tt <- mapM parsekline defintervallist
     --liftIO $ print (tt)
     conn <- R.connect R.defaultConnectInfo
     initdict tt conn
 
+hsticklistToredis :: [HStick] -> R.Connection -> IO [()]
+hsticklistToredis a conn =
+    runRedis conn $ do
+        mapM hstickToredis a 
 
-initdict :: [ Maybe Mseries ] -> R.Connection -> IO ()
+hstickToredis :: HStick -> Redis ()
+hstickToredis a  = do
+    let dst = st a
+    let dop = op a
+    let dcp = cp a
+    let dhp = hp a
+    let dlp = lp a
+    let ddst = fromInteger dst :: Double
+    let sst = BL.fromString $ show dst
+    let sop = BL.fromString dop
+    let scp = BL.fromString dcp
+    let shp = BL.fromString dhp
+    let slp = BL.fromString dlp
+    let abykeystr = BL.fromString  ("5min"++(show dst))
+    void $ zadd abykeystr [(ddst,abykeystr)]
+    
+
+
+initdict :: [DpairMserie] -> R.Connection -> IO ()
 initdict rsp conn = do 
   --parse rsp json
   -- for i in response ,every elem add to key rlist 
@@ -45,11 +70,15 @@ initdict rsp conn = do
      --case s of 
      --    Nothing -> Nothing
      --    Just a -> liftIO $ print (a)
-     let tdata = case s of 
+     let currms = getmsfrpair s
+     let currinterval = getintervalfrpair s
+     let tdata = case currms of 
                       Just b -> b
-     liftIO $ print (s)
-     runRedis conn $ do
-        void $ set "world" "world"
+     liftIO $ print (tdata)
+     let ttdata = getmsilist tdata
+     liftIO $ print (ttdata)
+     hsticklistToredis ttdata conn 
+     
    --get from web api and update
    
 --initrdcit :: rdict->rdict
