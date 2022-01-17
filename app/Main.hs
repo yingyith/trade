@@ -91,6 +91,8 @@ main =
     liftIO $ print (aas)
     let aimss = "/stream?streams=ethusdt@kline_1m/" ++ aas -----------------------------------------------
     --"send ping every 30mins"
+    -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
+    -- loop every 30mins
     getSticksToCache
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
@@ -99,14 +101,16 @@ main =
 ws :: ClientApp ()
 ws connection = do
     B.putStrLn "Connected!"
-    ctrl <- newPubSubController [("foo",msgHandler)][]
+    ctrl <- newPubSubController [("foo",opclHandler)][]
     conn <- connect defaultConnectInfo
 
     withAsync (publishThread conn connection) $ \_pubT -> do
       withAsync (handlerThread conn ctrl) $ \_handlerT -> do
         void $ T.hPutStrLn stderr "Press enter to subscribe to bar"
-        void $ addChannels ctrl [("bar",msgHandler)] []
-        void $ addChannels ctrl [] [("baz:*", pmsgHandler)]
+        --void $ addChannels ctrl [("cacheupdate",cacheHandler)] []
+        void $ addChannels ctrl [("opcl:*", opclHandler)] []
+        void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+        void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
 
     let loop = do
             line <- T.getLine

@@ -10,9 +10,9 @@ module Redispipe
     ( publishThread,
       onInitialComplete,
       handlerThread,
-      commandHandler,
-      msgHandler,
-      pmsgHandler,
+      opclHandler,
+      listenkeyHandler,
+      cacheHandler,
       showChannels,
     ) where
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
@@ -57,20 +57,15 @@ publishThread rc wc =
       case test of
           Just x -> print(khigh x) 
           Nothing -> print("sss")
-     -- print (getField @"kname" testn)
-      --if type == account  ------sync ===> event sync 
-      --if type == stick  
-         -- add pre judge condition strategy process
-         --if openlong condition ---- open long ==> event1 (openlong)
-         --if openshort condition ---- open long ==> event2 (openlong)
-         --if closelong condition ---- open long ==> event3 (openlong)
-         --if closeshort condition ---- open long ==> event4 (openlong)
-      --
+      --decide which event now is
+      --1.check redis cache ,if cache valid time pass ,then send update command,detail two,one for stick update,one for put listenkey every 30min
+      --2.check all open and close condition ,if match ,send open/close command
+      --dispatch event to detail command
       runRedis rc $ do 
               void $ publish "foo" ("foo" <> message)
               void $ publish "bar" ("bar" <> message)
-              void $ publish "baz:1" ("baz1" <> message)
-              void $ publish "baz:2" ("baz2" <> message)
+              void $ publish "cacheupdate:1" ("baz1" <> message)
+              void $ publish "cacheupdate:2" ("baz2" <> message)
               liftIO $ threadDelay $ 2*1000*1000 -- 2 seconds
  -- let loop = do
  --         line <- T.getline
@@ -93,14 +88,17 @@ handlerThread conn ctrl = forever $
            threadDelay $ 50*1000)
 --- do command detail operation here
   -- multi command operation now
-commandHandler :: ByteString -> IO ()
-commandHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
+--listenkeyHandler :: ByteString -> IO ()
+--listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
-msgHandler :: ByteString -> IO ()
-msgHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
+opclHandler :: ByteString -> IO ()
+opclHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
-pmsgHandler :: RedisChannel -> ByteString -> IO ()
-pmsgHandler channel msg = SI.hPutStrLn stderr $ "Saw pmsg: " ++ unpack (decodeUtf8 channel) ++ unpack (decodeUtf8 msg)
+cacheHandler :: RedisChannel -> ByteString -> IO ()
+cacheHandler channel msg = SI.hPutStrLn stderr $ "Saw pmsg: " ++ unpack (decodeUtf8 channel) ++ unpack (decodeUtf8 msg)
+
+listenkeyHandler :: RedisChannel-> ByteString -> IO ()
+listenkeyHandler channel msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
 showChannels :: R.Connection -> IO ()
 showChannels c = do
