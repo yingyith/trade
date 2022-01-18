@@ -46,11 +46,11 @@ parsekline nstr  = runReq defaultHttpConfig $ do
     let params = 
           "symbol" =: ("ADAUSDT" :: Text) <>
           "interval" =: (tnstr ) <>
-          "limit" =: (3 :: Int)
+          "limit" =: (15 :: Int)
     areq <- req GET ouri NoReqBody lbsResponse params
     let breq = responseBody areq
-    liftIO $ print (areq)
-    liftIO $ DC.putStrLn (breq)
+    --liftIO $ print (areq)
+    --liftIO $ DC.putStrLn (breq)
     --convert areq to sticks
     --convert sticks to redis cache wl
     let creq =  (A.decode breq) :: Maybe Mseries

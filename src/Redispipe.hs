@@ -36,11 +36,13 @@ import Data.Text.Encoding
 import System.IO as SI
 import Data.Aeson as A
 import Data.Aeson.Lens
+import Data.Time.Clock.POSIX (getPOSIXTime)
 import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.UTF8 as BLU
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson.Types
 import Httpstructure
-
+import Rediscache
 
 --import Klinedata (kname) 
 -- | publish messages every 2 seconds to several channels
@@ -53,10 +55,20 @@ publishThread rc wc =
       let test = A.decode msg :: Maybe Klinedata --Klinedata
       SI.putStrLn (show (test))
       print ("------------------")
+      let curtimestamp = (round (* 1000)) <$> getPOSIXTime
+
+      runRedis rc $ do 
+         forM_ defintervallist $  \s -> do  
+              let akey = BLU.fromString s
+              item <- zrange akey 14 15
+              --let aitemlist = BLU.toString item
+              liftIO $ print (akey)
+              liftIO $ print (item)
+
+
+      --get the data of kline cache ,check the invalid key number and update these
+              
       --print (ktype test)
-      case test of
-          Just x -> print(khigh x) 
-          Nothing -> print("sss")
       --decide which event now is
       --1.check redis cache ,if cache valid time pass ,then send update command,detail two,one for stick update,one for put listenkey every 30min
       --2.check all open and close condition ,if match ,send open/close command

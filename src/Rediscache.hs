@@ -5,12 +5,14 @@
 -- I execute this with `stack runghc ManualPubSub.hs`
 module Rediscache (
    getSticksToCache,
+   defintervallist,
    initdict
 ) where
 
 import Database.Redis as R
 import Data.Map (Map)
 import Data.String
+import Data.List
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as BL
 import Data.Text (Text)
@@ -30,54 +32,63 @@ import Httpstructure
 --init kline dict
 -- 1min line update in memory every stick,other update in memory 
 defintervallist :: [String]
-defintervallist = ["5m","15m","1h","4h"] 
+defintervallist = ["5m","15m","1h","4h","12h","3d"] 
 
-getSticksToCache :: IO ()
+getSticksToCache :: IO [()]
 getSticksToCache = do 
     tt <- mapM parsekline defintervallist
     --liftIO $ print (tt)
     conn <- R.connect R.defaultConnectInfo
     initdict tt conn
 
-hsticklistToredis :: [HStick] -> R.Connection -> IO [()]
-hsticklistToredis a conn =
+mseriesToredis :: [DpairMserie] -> R.Connection -> IO [()]
+mseriesToredis a conn = do
     runRedis conn $ do
-        mapM hstickToredis a 
+        --mapM hstickToredis a 
+        zipWithM hsticklistToredis  a  defintervallist 
 
-hstickToredis :: HStick -> Redis ()
-hstickToredis a  = do
-    let dst = st a
-    let dop = op a
-    let dcp = cp a
-    let dhp = hp a
-    let dlp = lp a
+hsticklistToredis :: DpairMserie -> String -> Redis ()
+hsticklistToredis hst  akey   = do
+  let currms = getmsfrpair hst
+  let currinterval = getintervalfrpair hst
+  let tdata = case currms of 
+                   Just b -> b
+  --liftIO $ print (tdata)
+  let ttdata = getmsilist tdata
+  forM_ ttdata $ \s -> do 
+    let dst = st s 
+    let dop = op s 
+    let dcp = cp s 
+    let dhp = hp s 
+    let dlp = lp s 
     let ddst = fromInteger dst :: Double
     let sst = BL.fromString $ show dst
     let sop = BL.fromString dop
     let scp = BL.fromString dcp
     let shp = BL.fromString dhp
     let slp = BL.fromString dlp
-    let abykeystr = BL.fromString  ("5min"++(show dst))
-    void $ zadd abykeystr [(ddst,abykeystr)]
+    let abykeystr = BL.fromString akey
+    let abyvaluestr = BL.fromString  $ intercalate "|" [show dst,dop,dcp,dhp,dlp]
+    void $ zadd abykeystr [(ddst,abyvaluestr)]
     
 
 
-initdict :: [DpairMserie] -> R.Connection -> IO ()
+initdict :: [DpairMserie] -> R.Connection -> IO [()]
 initdict rsp conn = do 
   --parse rsp json
   -- for i in response ,every elem add to key rlist 
-  forM_ rsp $ \s -> do 
-     --case s of 
-     --    Nothing -> Nothing
-     --    Just a -> liftIO $ print (a)
-     let currms = getmsfrpair s
-     let currinterval = getintervalfrpair s
-     let tdata = case currms of 
-                      Just b -> b
-     liftIO $ print (tdata)
-     let ttdata = getmsilist tdata
-     liftIO $ print (ttdata)
-     hsticklistToredis ttdata conn 
+  --forM_ rsp $ \s -> do 
+  --   --case s of 
+  --   --    Nothing -> Nothing
+  --   --    Just a -> liftIO $ print (a)
+  --   let currms = getmsfrpair s
+  --   let currinterval = getintervalfrpair s
+  --   let tdata = case currms of 
+  --                    Just b -> b
+  --   --liftIO $ print (tdata)
+  --   let ttdata = getmsilist tdata
+  --   liftIO $ print (ttdata)
+     mseriesToredis rsp conn 
      
    --get from web api and update
    
