@@ -37,6 +37,7 @@ import System.IO as SI
 import Data.Aeson as A
 import Data.Aeson.Lens
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.List.Split as DLT
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.UTF8 as BLU
 import qualified Data.ByteString.Lazy as BL
@@ -46,6 +47,19 @@ import Rediscache
 
 --import Klinedata (kname) 
 -- | publish messages every 2 seconds to several channels
+replydo :: Redis (Either Reply  [ByteString])
+replydo = do
+        let s = "5m"
+        let akey = BLU.fromString s
+        item <- zrange akey 14 15 
+        return item
+       -- let res = case compare (curtimestamp - replydores) 6000 of 
+       --             LT -> "True"
+       --             EQ -> "True"
+       --             GT -> "False"
+       -- return res
+            --Right v -> return  (fromMaybe "try" v)
+
 publishThread :: R.Connection -> NC.Connection -> IO ()
 publishThread rc wc =  
   forever $ do
@@ -54,16 +68,18 @@ publishThread rc wc =
       print (msg)
       let test = A.decode msg :: Maybe Klinedata --Klinedata
       SI.putStrLn (show (test))
-      print ("------------------")
-      let curtimestamp = (round (* 1000)) <$> getPOSIXTime
+      curtimestamp <- round . (* 1000) <$> getPOSIXTime
+      res <- runRedis rc (replydo ) 
+      let cachetime = case res of
+            Left _ ->  "some error"
+            Right v ->   (v!!0)
+      let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
+      liftIO $ print (replydomarray!!0)
+      let replydores = (read (replydomarray !! 0)) :: Integer
+      liftIO $ print (replydores)
+  -----------------------------
+  --check curtime need to update
 
-      runRedis rc $ do 
-         forM_ defintervallist $  \s -> do  
-              let akey = BLU.fromString s
-              item <- zrange akey 14 15
-              --let aitemlist = BLU.toString item
-              liftIO $ print (akey)
-              liftIO $ print (item)
 
 
       --get the data of kline cache ,check the invalid key number and update these
