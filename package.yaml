@@ -42,6 +42,8 @@ dependencies:
 - connection
 - vector
 - string-class
+- time
+- split
 library:
   source-dirs: src
 

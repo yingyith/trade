@@ -89,7 +89,9 @@ main =
         let ares = fromJust $  parseMaybe (.: "listenKey") result :: String
         pure ares
     liftIO $ print (aas)
-    let aimss = "/stream?streams=ethusdt@kline_1m/" ++ aas -----------------------------------------------
+    conn <- connect defaultConnectInfo
+    runRedis conn (liskeytoredis aas)
+    let aimss = "/stream?streams=adausdt@kline_1m/" ++ aas -----------------------------------------------
     --"send ping every 30mins"
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins

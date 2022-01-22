@@ -9,6 +9,7 @@ module Httpstructure
       DpairMserie,
       sticks,
       getmsilist,
+      pinghandledo,
       getintervalfrpair,
       getmsfrpair,
       Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime),
@@ -23,6 +24,7 @@ import Control.Monad.IO.Class as I
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Internal as BLI
 import qualified Data.ByteString.Char8 as BC
+import qualified Data.ByteString.UTF8 as BL
 import Data.Aeson as A
 import Data.Aeson.Types as AT
 import Data.Text (Text)
@@ -70,6 +72,15 @@ parsekline nstr  = runReq defaultHttpConfig $ do
 --      samount :: String
 --} deriving Generic
 
+pinghandledo :: Maybe BL.ByteString -> IO ()
+pinghandledo a  =  runReq defaultHttpConfig $ do
+    let ae = case a of
+               Just a -> a
+    let aa = BL.toString ae 
+    let ouri = https "api.binance.com" /: "api" /: "v3" /: "userDataStream"  
+    let params = "listenkey" =: (aa :: String) 
+    areq <- req PUT ouri NoReqBody lbsResponse params
+    liftIO $ print (areq)
 
 data HStick = HStick {
       st :: Integer,

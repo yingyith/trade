@@ -59,6 +59,44 @@ replydo = do
        --             GT -> "False"
        -- return res
             --Right v -> return  (fromMaybe "try" v)
+            
+iscacheinvalid    ::         Bool  
+iscacheinvalid = True
+ispinginvalid     ::         Bool  
+ispinginvalid = True
+isstrategyinvalid ::         Bool  
+isstrategyinvalid = True
+--the predications of rule system 
+
+
+msgcachetempdo :: Integer -> ByteString -> Redis ()
+msgcachetempdo a msg = do
+        case compare a 10000 of -- 300000= 5min
+        --case compare a 300000 of -- 300000= 5min
+            GT -> 
+              void $ publish "cache:1" ("cache" <> msg)
+            EQ ->
+              return ()
+            LT ->
+              return ()
+          
+
+msgpingtempdo :: Integer -> ByteString -> Redis ()
+msgpingtempdo a msg = do
+        case compare a 600000 of -- 600000= 10min
+            GT -> 
+              void $ publish "listenkey:1" ("listenkey" <> msg)
+            EQ ->
+              return ()
+            LT ->
+              return ()
+
+msgordertempdo :: Redis ()
+msgordertempdo =  return ()
+
+
+getliskeyfromredis :: Redis ()
+getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO ()
 publishThread rc wc =  
@@ -77,6 +115,7 @@ publishThread rc wc =
       liftIO $ print (replydomarray!!0)
       let replydores = (read (replydomarray !! 0)) :: Integer
       liftIO $ print (replydores)
+      let timediff = curtimestamp-replydores
   -----------------------------
   --check curtime need to update
 
@@ -90,11 +129,10 @@ publishThread rc wc =
       --2.check all open and close condition ,if match ,send open/close command
       --dispatch event to detail command
       runRedis rc $ do 
-              void $ publish "foo" ("foo" <> message)
-              void $ publish "bar" ("bar" <> message)
-              void $ publish "cacheupdate:1" ("baz1" <> message)
-              void $ publish "cacheupdate:2" ("baz2" <> message)
-              liftIO $ threadDelay $ 2*1000*1000 -- 2 seconds
+         msgcachetempdo timediff message 
+         msgpingtempdo timediff message
+         void $ publish "cache" ("cache" <> "aaaaaaa")
+         msgordertempdo
  -- let loop = do
  --         line <- T.getline
  --         unless (T.null line) $ do 
@@ -123,10 +161,23 @@ opclHandler :: ByteString -> IO ()
 opclHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
 cacheHandler :: RedisChannel -> ByteString -> IO ()
-cacheHandler channel msg = SI.hPutStrLn stderr $ "Saw pmsg: " ++ unpack (decodeUtf8 channel) ++ unpack (decodeUtf8 msg)
+cacheHandler channel msg = do 
+      getSticksToCache
+      --SI.hPutStrLn stderr $ "Saw pmsg: " ++ unpack (decodeUtf8 channel) ++ unpack (decodeUtf8 msg)
 
-listenkeyHandler :: RedisChannel-> ByteString -> IO ()
-listenkeyHandler channel msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
+getkeyfromredis :: Redis (Maybe ByteString)
+getkeyfromredis  = do 
+      let key = BLU.fromString "liskey"
+      value <- get key
+      case value of 
+        Right v -> return  v
+
+listenkeyHandler :: RedisChannel -> ByteString -> IO ()
+listenkeyHandler channel msg = do
+      conn <- connect defaultConnectInfo
+      aaim <- runRedis conn (getkeyfromredis)
+      pinghandledo aaim
+      SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
 showChannels :: R.Connection -> IO ()
 showChannels c = do

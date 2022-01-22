@@ -6,6 +6,8 @@
 module Rediscache (
    getSticksToCache,
    defintervallist,
+   liskeytoredis,
+--   liskeygetredis,
    initdict
 ) where
 
@@ -34,18 +36,33 @@ import Httpstructure
 defintervallist :: [String]
 defintervallist = ["5m","15m","1h","4h","12h","3d"] 
 
-getSticksToCache :: IO [()]
+liskeytoredis :: String -> Redis ()
+liskeytoredis a = do 
+    --string to bytestring
+   let value = BL.fromString a
+   let key = BL.fromString "liskey"
+   
+   void $ set key value
+
+---liskeygetredis  ::  Redis ([Maybe BL.ByteString])
+---liskeygetredis  = do 
+---    --string to bytestring
+---   let key = BL.fromString "liskey"
+---   value <- get key
+---   return value
+
+getSticksToCache :: IO ()
 getSticksToCache = do 
     tt <- mapM parsekline defintervallist
     --liftIO $ print (tt)
     conn <- R.connect R.defaultConnectInfo
     initdict tt conn
 
-mseriesToredis :: [DpairMserie] -> R.Connection -> IO [()]
+mseriesToredis :: [DpairMserie] -> R.Connection -> IO ()
 mseriesToredis a conn = do
-    runRedis conn $ do
+    void $ runRedis conn $ do
         --mapM hstickToredis a 
-        zipWithM hsticklistToredis  a  defintervallist 
+                 zipWithM hsticklistToredis  a  defintervallist 
 
 hsticklistToredis :: DpairMserie -> String -> Redis ()
 hsticklistToredis hst  akey   = do
@@ -55,6 +72,8 @@ hsticklistToredis hst  akey   = do
                    Just b -> b
   --liftIO $ print (tdata)
   let ttdata = getmsilist tdata
+  let abykeystr = BL.fromString akey
+  void $ zremrangebyrank abykeystr 0 100
   forM_ ttdata $ \s -> do 
     let dst = st s 
     let dop = op s 
@@ -67,13 +86,12 @@ hsticklistToredis hst  akey   = do
     let scp = BL.fromString dcp
     let shp = BL.fromString dhp
     let slp = BL.fromString dlp
-    let abykeystr = BL.fromString akey
     let abyvaluestr = BL.fromString  $ intercalate "|" [show dst,dop,dcp,dhp,dlp]
     void $ zadd abykeystr [(ddst,abyvaluestr)]
     
 
 
-initdict :: [DpairMserie] -> R.Connection -> IO [()]
+initdict :: [DpairMserie] -> R.Connection -> IO ()
 initdict rsp conn = do 
   --parse rsp json
   -- for i in response ,every elem add to key rlist 

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6ec111221ad4ba9e85a699cf993fa86d14b34198b7939e3700ba91ca2a2963fa
+-- hash: e4bf2aa4202a99187814a07a693101f5caa152407ce0a359c23aa9c62b683b85
 
 name:           trade
 version:        0.1.0.0
@@ -52,8 +52,10 @@ library
     , mtl
     , parallel
     , req
+    , split
     , string-class
     , text
+    , time
     , unordered-containers
     , utf8-string
     , vector
@@ -84,8 +86,10 @@ executable trade-exe
     , mtl
     , parallel
     , req
+    , split
     , string-class
     , text
+    , time
     , trade
     , unordered-containers
     , utf8-string
@@ -118,8 +122,10 @@ test-suite trade-test
     , mtl
     , parallel
     , req
+    , split
     , string-class
     , text
+    , time
     , trade
     , unordered-containers
     , utf8-string
