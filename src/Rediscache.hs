@@ -6,6 +6,7 @@
 module Rediscache (
    getSticksToCache,
    defintervallist,
+   mseriesFromredis,
    liskeytoredis,
 --   liskeygetredis,
    initdict
@@ -41,7 +42,7 @@ liskeytoredis a = do
     --string to bytestring
    let value = BL.fromString a
    let key = BL.fromString "liskey"
-   
+   void $ del [key] 
    void $ set key value
 
 ---liskeygetredis  ::  Redis ([Maybe BL.ByteString])
@@ -64,6 +65,23 @@ mseriesToredis a conn = do
         --mapM hstickToredis a 
                  zipWithM hsticklistToredis  a  defintervallist 
 
+
+--pinghandledo :: Maybe BL.ByteString -> IO ()
+--pinghandledo a  =  runReq defaultHttpConfig $ do
+
+mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
+mserieFromredis klinename = do  
+          let bklinename = BL.fromString klinename
+          res <- zrange bklinename 0 15
+          pure res
+              
+
+mseriesFromredis :: R.Connection -> IO ()
+mseriesFromredis conn = do
+     res <- runRedis conn $ do
+                  mapM mserieFromredis defintervallist 
+     liftIO $ print ("sss") 
+
 hsticklistToredis :: DpairMserie -> String -> Redis ()
 hsticklistToredis hst  akey   = do
   let currms = getmsfrpair hst
@@ -73,7 +91,7 @@ hsticklistToredis hst  akey   = do
   --liftIO $ print (tdata)
   let ttdata = getmsilist tdata
   let abykeystr = BL.fromString akey
-  void $ zremrangebyrank abykeystr 0 100
+  void $ zremrangebyrank abykeystr 0 1000
   forM_ ttdata $ \s -> do 
     let dst = st s 
     let dop = op s 
@@ -87,7 +105,7 @@ hsticklistToredis hst  akey   = do
     let shp = BL.fromString dhp
     let slp = BL.fromString dlp
     let abyvaluestr = BL.fromString  $ intercalate "|" [show dst,dop,dcp,dhp,dlp]
-    void $ zadd abykeystr [(ddst,abyvaluestr)]
+    void $ zadd abykeystr [(-ddst,abyvaluestr)]
     
 
 

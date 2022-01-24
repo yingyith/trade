@@ -78,7 +78,7 @@ pinghandledo a  =  runReq defaultHttpConfig $ do
                Just a -> a
     let aa = BL.toString ae 
     let ouri = https "api.binance.com" /: "api" /: "v3" /: "userDataStream"  
-    let params = "listenkey" =: (aa :: String) 
+    let params = "listenKey" =: (aa :: String) 
     areq <- req PUT ouri NoReqBody lbsResponse params
     liftIO $ print (areq)
 

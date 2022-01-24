@@ -14,12 +14,15 @@ module Redispipe
       listenkeyHandler,
       cacheHandler,
       showChannels,
+      sklineHandler,
+      analysisHandler
     ) where
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
 -- I execute this with `stack runghc ManualPubSub.hs`
 
 import Database.Redis as R
 import Data.Monoid ((<>))
+import Data.Time
 import GHC.Generics
 --import GHC.Records(getField)
 import Control.Monad
@@ -42,6 +45,7 @@ import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.UTF8 as BLU
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson.Types
+import Data.List as DL
 import Httpstructure
 import Rediscache
 
@@ -51,7 +55,7 @@ replydo :: Redis (Either Reply  [ByteString])
 replydo = do
         let s = "5m"
         let akey = BLU.fromString s
-        item <- zrange akey 14 15 
+        item <- zrange akey 0 1 
         return item
        -- let res = case compare (curtimestamp - replydores) 6000 of 
        --             LT -> "True"
@@ -71,7 +75,7 @@ isstrategyinvalid = True
 
 msgcachetempdo :: Integer -> ByteString -> Redis ()
 msgcachetempdo a msg = do
-        case compare a 10000 of -- 300000= 5min
+        case compare a 300000 of -- 300000= 5min
         --case compare a 300000 of -- 300000= 5min
             GT -> 
               void $ publish "cache:1" ("cache" <> msg)
@@ -94,6 +98,26 @@ msgpingtempdo a msg = do
 msgordertempdo :: Redis ()
 msgordertempdo =  return ()
 
+doanalysis :: IO ()
+doanalysis = do 
+         conn <- connect defaultConnectInfo
+         liftIO $ print ("do analysis!")
+         let res = mseriesFromredis conn--get all mseries from redis 
+         liftIO $ print ("sss")
+         ---generate high low point spreet
+         ---quant analysis under high low (risk spreed) 
+         ---return open/close event to redis 
+
+msgsklinetoredis :: ByteString -> Redis ()
+msgsklinetoredis msg = do
+      void $ publish "skline:1" ( msg)
+      --let test = A.decode msg :: Maybe Klinedata --Klinedata
+      --liftIO $ print (test)
+      -- store to kline seconds in  redis key as  1m 
+msganalysistoredis :: ByteString -> Redis ()
+msganalysistoredis msg = do
+      liftIO $ print ("analysis to redis")
+      void $ publish "analysis:1" ( msg)
 
 getliskeyfromredis :: Redis ()
 getliskeyfromredis =  return ()
@@ -101,20 +125,23 @@ getliskeyfromredis =  return ()
 publishThread :: R.Connection -> NC.Connection -> IO ()
 publishThread rc wc =  
   forever $ do
+      liftIO $ print ("-------------")
       message <- receiveData wc 
-      let msg = BL.fromStrict message
-      print (msg)
-      let test = A.decode msg :: Maybe Klinedata --Klinedata
-      SI.putStrLn (show (test))
+      --let msg = BL.fromStrict message
+      --print (msg)
+      --let test = A.decode msg :: Maybe Klinedata --Klinedata
+      --stop <-getCurrentTime
+      --liftIO $ print $ diffUTCTime stop start
+      --SI.putStrLn (show (test))
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
       let cachetime = case res of
             Left _ ->  "some error"
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-      liftIO $ print (replydomarray!!0)
+      --liftIO $ print (replydomarray!!0)
       let replydores = (read (replydomarray !! 0)) :: Integer
-      liftIO $ print (replydores)
+      --liftIO $ print (replydores)
       let timediff = curtimestamp-replydores
   -----------------------------
   --check curtime need to update
@@ -131,8 +158,10 @@ publishThread rc wc =
       runRedis rc $ do 
          msgcachetempdo timediff message 
          msgpingtempdo timediff message
-         void $ publish "cache" ("cache" <> "aaaaaaa")
+         --void $ publish "cache" ("cache" <> "aaaaaaa")
          msgordertempdo
+         msgsklinetoredis message
+         msganalysistoredis message
  -- let loop = do
  --         line <- T.getline
  --         unless (T.null line) $ do 
@@ -159,6 +188,37 @@ handlerThread conn ctrl = forever $
 
 opclHandler :: ByteString -> IO ()
 opclHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
+
+addklinetoredis :: ByteString -> Redis ()
+addklinetoredis msg  = do 
+    let mmsg = BL.fromStrict msg
+    let test = A.decode mmsg :: Maybe Klinedata --Klinedata
+    let abykeystr = BLU.fromString "1m" 
+    let kline = case test of 
+                    Just l -> l
+    let ktf = ktime kline 
+    let kt = fromInteger ktf :: Double
+    let dst = show ktf
+    let dop = kopen kline 
+    let dcp = kclose kline
+    let dhp = khigh kline 
+    let dlp = klow kline 
+    let abyvaluestr =  BLU.fromString $ DL.intercalate "|" [dst,dop,dcp,dhp,dlp]
+                    
+    void $ zadd abykeystr [(-kt,abyvaluestr)]
+    void $ zremrangebyrank abykeystr 50 1000
+      --let msg = BL.fromStrict message
+      --let test = A.decode msg :: Maybe Klinedata --Klinedata
+      
+sklineHandler :: RedisChannel -> ByteString -> IO ()
+sklineHandler channel msg = do 
+      conn <- connect defaultConnectInfo
+      runRedis conn (addklinetoredis msg)
+      
+analysisHandler :: RedisChannel -> ByteString -> IO ()
+analysisHandler channel msg = do 
+      --conn <- connect defaultConnectInfo
+      doanalysis
 
 cacheHandler :: RedisChannel -> ByteString -> IO ()
 cacheHandler channel msg = do 
