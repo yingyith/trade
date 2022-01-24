@@ -113,6 +113,8 @@ ws connection = do
         void $ addChannels ctrl [("opcl:*", opclHandler)] []
         void $ addChannels ctrl [] [("cache:*", cacheHandler)]
         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+        void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
     let loop = do
             line <- T.getLine
