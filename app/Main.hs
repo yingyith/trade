@@ -91,7 +91,7 @@ main =
     liftIO $ print (aas)
     conn <- connect defaultConnectInfo
     runRedis conn (liskeytoredis aas)
-    let aimss = "/stream?streams=adausdt@kline_1m/" ++ aas -----------------------------------------------
+    let aimss = "/stream?streams=adausdt@kline_1m/"  ++ aas -----------------------------------------------
     --"send ping every 30mins"
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins

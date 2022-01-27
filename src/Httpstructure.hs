@@ -42,7 +42,7 @@ parsekline :: String -> IO (DpairMserie)
 parsekline nstr  = runReq defaultHttpConfig $ do
     let ouri = https "api.binance.com" /: "api" /: "v3" /: "klines"  
     let intervals=["5m","15m","1h","4h","12h"]
-    let symbol = "ADAUSDT"
+    let symbol = "ADAUSD"
     let tnstr = nstr 
     let limit = 3
     let params = 

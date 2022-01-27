@@ -28,6 +28,8 @@ import Control.Monad
 import Control.Exception
 import Control.Monad.Trans (liftIO)
 import Httpstructure
+import Data.List.Split as DLT
+import Analysistructure as AS
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -68,18 +70,70 @@ mseriesToredis a conn = do
 
 --pinghandledo :: Maybe BL.ByteString -> IO ()
 --pinghandledo a  =  runReq defaultHttpConfig $ do
+genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
+genehighlowsheet index hl key = do 
+             let curitemstr = BL.toString $ hl !! index
+             let nextitemstr= BL.toString $ hl !! (index+1)
+             let curitem = DLT.splitOn "|" curitemstr
+             let nextitem = DLT.splitOn "|" nextitemstr
+             let curitemop = read $ curitem !! 1  :: Double
+             let curitemhp = read $ curitem !! 2  :: Double
+             let curitemlp = read $ curitem !! 3  :: Double
+             let curitemcp = read $ curitem !! 4  :: Double
+             let nextitemop = read $ nextitem !! 1  :: Double
+             let nextitemhp = read $ nextitem !! 2  :: Double
+             let nextitemlp = read $ nextitem !! 3  :: Double
+             let nextitemcp = read $ nextitem !! 4  :: Double
+             let hpointpredication = (curitemhp - nextitemhp) <= 0
+             let lpointpredication = (curitemlp - nextitemlp) <= 0
+             let predication = (hpointpredication,lpointpredication)
+             let res = case predication of 
+                           (True,True)   ->  (AS.Hlnode 0 curitemlp 0 "low" key)
+                           (False,False) ->  (AS.Hlnode curitemhp 0 0 "high" key)
+                           (False,True)  ->  (AS.Hlnode curitemhp curitemlp 0 "wbig" key)
+                           (True,False)  ->  (AS.Hlnode 0 0 0 "wsmall" key)
+             --liftIO $ print (res)
+             return res
+
+--gengridsheet
+
+
+analysistrdo :: Either Reply [BL.ByteString] -> String -> IO [AS.Hlnode]
+analysistrdo aa bb = do 
+         let tdata = case aa of 
+                         Right c -> c
+         let hllist = [] :: [AS.Hlnode]
+         let befitem = "undefined" -- traceback default trace first is unknow not high or low
+         rehllist <- mapM ((\s ->  genehighlowsheet s tdata bb) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
+         liftIO $ print ("yyyyyyyyyyyyyy")
+         --liftIO $ print (rehllist)
+         let reslist = [(xlist!!x)|x<-[0..(length xlist)-2],(stype $ xlist!!x) /= (stype $ xlist!!(x+1)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
+         --gengridsheet
+         liftIO $ print (reslist)
+         liftIO $ print ("yyyyyyyyyyyyyy")
+         return rehllist
+
+analysisdo :: [Either Reply [BL.ByteString]] -> IO [[AS.Hlnode]]
+analysisdo aim = do 
+     zipWithM analysistrdo aim defintervallist
+     
 
 mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
 mserieFromredis klinename = do  
           let bklinename = BL.fromString klinename
           res <- zrange bklinename 0 15
-          pure res
+          return res
               
 
 mseriesFromredis :: R.Connection -> IO ()
 mseriesFromredis conn = do
      res <- runRedis conn $ do
                   mapM mserieFromredis defintervallist 
+     analysisdo res
+     --let tdata = case res of 
+     --              Just b -> b
+     
+     liftIO $ print ("sss!!!!!!!!!!!!") 
      liftIO $ print ("sss") 
 
 hsticklistToredis :: DpairMserie -> String -> Redis ()

@@ -102,8 +102,7 @@ doanalysis :: IO ()
 doanalysis = do 
          conn <- connect defaultConnectInfo
          liftIO $ print ("do analysis!")
-         let res = mseriesFromredis conn--get all mseries from redis 
-         liftIO $ print ("sss")
+         mseriesFromredis conn--get all mseries from redis 
          ---generate high low point spreet
          ---quant analysis under high low (risk spreed) 
          ---return open/close event to redis 
@@ -127,8 +126,9 @@ publishThread rc wc =
   forever $ do
       liftIO $ print ("-------------")
       message <- receiveData wc 
+      liftIO $ print ("-------------")
       --let msg = BL.fromStrict message
-      --print (msg)
+      liftIO $ print (message)
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       --stop <-getCurrentTime
       --liftIO $ print $ diffUTCTime stop start
