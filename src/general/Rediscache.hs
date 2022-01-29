@@ -7,6 +7,7 @@ module Rediscache (
    getSticksToCache,
    defintervallist,
    mseriesFromredis,
+   parsetokline,
    liskeytoredis,
 --   liskeygetredis,
    initdict
@@ -15,12 +16,14 @@ module Rediscache (
 import Database.Redis as R
 import Data.Map (Map)
 import Data.String
-import Data.List
+import Data.List as DL
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as BL
+import qualified Data.ByteString.Lazy as BLL
 import Data.Text (Text)
 import Network.HTTP.Req
 import qualified Data.Map as Map
+import Data.Aeson as A
 import Data.Aeson.Types
 import Database.Redis
 import Data.Monoid ((<>))
@@ -37,7 +40,7 @@ import Analysistructure as AS
 --init kline dict
 -- 1min line update in memory every stick,other update in memory 
 defintervallist :: [String]
-defintervallist = ["5m","15m","1h","4h","12h","3d"] 
+defintervallist = ["1m","5m","15m","1h","4h","12h","3d"] 
 
 liskeytoredis :: String -> Redis ()
 liskeytoredis a = do 
@@ -57,7 +60,7 @@ liskeytoredis a = do
 getSticksToCache :: IO ()
 getSticksToCache = do 
     tt <- mapM parsekline defintervallist
-    --liftIO $ print (tt)
+    liftIO $ print ("stick to cahce")
     conn <- R.connect R.defaultConnectInfo
     initdict tt conn
 
@@ -76,6 +79,7 @@ genehighlowsheet index hl key = do
              let nextitemstr= BL.toString $ hl !! (index+1)
              let curitem = DLT.splitOn "|" curitemstr
              let nextitem = DLT.splitOn "|" nextitemstr
+             let curitemt = read $ curitem !! 0  :: Integer
              let curitemop = read $ curitem !! 1  :: Double
              let curitemhp = read $ curitem !! 2  :: Double
              let curitemlp = read $ curitem !! 3  :: Double
@@ -88,17 +92,17 @@ genehighlowsheet index hl key = do
              let lpointpredication = (curitemlp - nextitemlp) <= 0
              let predication = (hpointpredication,lpointpredication)
              let res = case predication of 
-                           (True,True)   ->  (AS.Hlnode 0 curitemlp 0 "low" key)
-                           (False,False) ->  (AS.Hlnode curitemhp 0 0 "high" key)
-                           (False,True)  ->  (AS.Hlnode curitemhp curitemlp 0 "wbig" key)
-                           (True,False)  ->  (AS.Hlnode 0 0 0 "wsmall" key)
+                           (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key)
+                           (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key)
+                           (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key)
+                           (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key)
              --liftIO $ print (res)
              return res
 
 --gengridsheet
 
 
-analysistrdo :: Either Reply [BL.ByteString] -> String -> IO [AS.Hlnode]
+analysistrdo :: Either Reply [BL.ByteString] -> String -> IO [Double]
 analysistrdo aa bb = do 
          let tdata = case aa of 
                          Right c -> c
@@ -107,15 +111,39 @@ analysistrdo aa bb = do
          rehllist <- mapM ((\s ->  genehighlowsheet s tdata bb) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
          liftIO $ print ("yyyyyyyyyyyyyy")
          --liftIO $ print (rehllist)
-         let reslist = [(xlist!!x)|x<-[0..(length xlist)-2],(stype $ xlist!!x) /= (stype $ xlist!!(x+1)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
+         let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
+         let highsheet = [(hprice $ xlist!!x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
+         let lowsheet = [(lprice $ xlist!!x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
+         let highgrid = maximum highsheet
+         let lowgrid = minimum lowsheet
+         let diff = (highgrid-lowgrid)/3 
+         -- 1day earn : 0.02*2*24/6 
+         --if current price in range (lowgrid+diff,highgrid-diff),can open,other forbiden
+         --
+         
+
+         liftIO $ print (highgrid)
+         liftIO $ print (lowgrid)
          --gengridsheet
+  --     put position and price grid to the sheet
+  --     store to redis 
          liftIO $ print (reslist)
          liftIO $ print ("yyyyyyyyyyyyyy")
-         return rehllist
+         return [lowgrid,highgrid]
 
-analysisdo :: [Either Reply [BL.ByteString]] -> IO [[AS.Hlnode]]
-analysisdo aim = do 
-     zipWithM analysistrdo aim defintervallist
+parsetokline :: BL.ByteString -> IO Klinedata
+parsetokline msg = do 
+     let mmsg = BLL.fromStrict msg
+     let test = A.decode mmsg :: Maybe Klinedata --Klinedata
+     let abykeystr = BL.fromString "1m" 
+     let kline = case test of 
+                     Just l -> l
+     return kline
+
+analysisdo :: [Either Reply [BL.ByteString]] -> IO [[Double]]
+analysisdo aim  = do 
+     hlsheet <-  zipWithM analysistrdo aim defintervallist
+     return hlsheet
      
 
 mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
@@ -124,17 +152,33 @@ mserieFromredis klinename = do
           res <- zrange bklinename 0 15
           return res
               
-
-mseriesFromredis :: R.Connection -> IO ()
-mseriesFromredis conn = do
+mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
+mseriesFromredis conn msg = do
      res <- runRedis conn $ do
                   mapM mserieFromredis defintervallist 
-     analysisdo res
+     hlsheet <- analysisdo res 
+     kline <- parsetokline msg
+     liftIO $ print (hlsheet)
+     let mconlist = (DL.sort $ concat hlsheet) ++ [1000]
+     liftIO $ print (mconlist)
+     let lenmcon = length mconlist
+     let mconlistl = [mconlist!!i |i<-[0..(lenmcon-2)],(mconlist!!(i+1)-mconlist!!i)>=0.006]
+     --let aimlist = [i|i <- x,x <- hlsheet]
+     liftIO $ print (mconlistl)
+     let dcp = read $ kclose kline :: Double
+     respos <- AS.retposfromgrid mconlistl dcp
+     --genposgrid hlsheet dcp
+     liftIO $ print (respos)
+     liftIO $ print ("ssss")
+     --write to redis with diff weave grid /amplitude .
+     --in the range of 1/3 to 1/2(center) of diff ,position can be large ,other half,benefit is 1/4
+     --when short everytime 4time 
+     --when close to 4hour low point 1/3,then stop buy,when close to 4hour high point 1/3,then stop buy.
+     --
+     --
      --let tdata = case res of 
      --              Just b -> b
      
-     liftIO $ print ("sss!!!!!!!!!!!!") 
-     liftIO $ print ("sss") 
 
 hsticklistToredis :: DpairMserie -> String -> Redis ()
 hsticklistToredis hst  akey   = do

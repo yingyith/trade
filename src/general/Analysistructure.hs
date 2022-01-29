@@ -3,6 +3,7 @@
 module Analysistructure
     ( 
       Hlnode (..),
+      retposfromgrid
     ) where
 import Control.Applicative
 import qualified Text.URI as URI
@@ -16,6 +17,7 @@ import qualified Data.ByteString.Lazy.Internal as BLI
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.UTF8 as BL
 import Data.Aeson as A
+import Data.List as DL
 import Data.Aeson.Types as AT
 import Data.Text (Text)
 import Data.Typeable
@@ -32,6 +34,7 @@ import Data.String.Class as DC
 --               | Branch HLtree HLtree deriving Show 
 
 data Hlnode = Hlnode {
+              time :: Integer,       
               hprice :: Double,
               lprice :: Double,
               rank :: Integer,
@@ -39,4 +42,20 @@ data Hlnode = Hlnode {
               rtype :: String  -- '5min' or '1h'
               } deriving (Show,Generic)
 
-               
+retposfromgrid :: [Double]-> Double -> IO (Integer)
+retposfromgrid dll curprice = do 
+            --get current position from redis
+            let posindex = 0
+            let base = 10
+            let dl = [0]++dll
+            let indexitem = [i| i<-[1..((DL.length dl)-1)],(dl!!(i-1))<curprice && (dl!!i)>=curprice]
+            let lowp = dl!!(indexitem!!0)
+            let highp = dl!!((indexitem!!0)+1)
+            let diff = (highp-lowp)/3
+            let lefcond = (curprice >= (lowp+diff))
+            let rigcond = (curprice <= (highp-diff))
+            let res = case (lefcond,rigcond) of 
+                          (True,True) ->   (base * ( 2 ^ posindex) :: Integer)
+                          (_,_) ->  0
+            return res 
+

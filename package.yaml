@@ -45,7 +45,7 @@ dependencies:
 - time
 - split
 library:
-  source-dirs: src
+  source-dirs: [src,src/general]
 
 executables:
   trade-exe:

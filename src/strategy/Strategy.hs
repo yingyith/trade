@@ -28,6 +28,7 @@ import Data.Aeson
 import Data.Aeson.Lens
 import qualified Data.ByteString.Char8 as B
 import Data.Aeson.Types
+import Analysistucture 
 
 class  Emptystrategy  where
   opencondition :: Nprice->position->Oprice>(Bool,position,oprice)
@@ -42,11 +43,8 @@ data positionenv = positionenv {
 
 type currentenv = currentenv currentprice  positionenv  
 
-instance Emptystrategy currentenv => Firststrategy currentenv  where
-  opencondition x y =
-
-instance Emptystrategy => Secondstrategy 
-  opencondition x y =
+  
+---define a  function ,that is if price down is too much like from 1.67 fall down to 0.7 ,so if price fall,then risk para is smaller.Accroding to risk para,make the position weight.
 
 
 

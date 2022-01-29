@@ -98,11 +98,11 @@ msgpingtempdo a msg = do
 msgordertempdo :: Redis ()
 msgordertempdo =  return ()
 
-doanalysis :: IO ()
-doanalysis = do 
+generatehlsheet :: ByteString -> IO ()
+generatehlsheet msg = do 
          conn <- connect defaultConnectInfo
          liftIO $ print ("do analysis!")
-         mseriesFromredis conn--get all mseries from redis 
+         mseriesFromredis conn msg--get all mseries from redis 
          ---generate high low point spreet
          ---quant analysis under high low (risk spreed) 
          ---return open/close event to redis 
@@ -124,10 +124,10 @@ getliskeyfromredis =  return ()
 publishThread :: R.Connection -> NC.Connection -> IO ()
 publishThread rc wc =  
   forever $ do
-      liftIO $ print ("-------------")
+      liftIO $ print ("++++++++++++")
       message <- receiveData wc 
-      liftIO $ print ("-------------")
       --let msg = BL.fromStrict message
+      liftIO $ print ("++++++++++++")
       liftIO $ print (message)
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       --stop <-getCurrentTime
@@ -189,6 +189,7 @@ handlerThread conn ctrl = forever $
 opclHandler :: ByteString -> IO ()
 opclHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
+
 addklinetoredis :: ByteString -> Redis ()
 addklinetoredis msg  = do 
     let mmsg = BL.fromStrict msg
@@ -218,7 +219,7 @@ sklineHandler channel msg = do
 analysisHandler :: RedisChannel -> ByteString -> IO ()
 analysisHandler channel msg = do 
       --conn <- connect defaultConnectInfo
-      doanalysis
+      generatehlsheet msg
 
 cacheHandler :: RedisChannel -> ByteString -> IO ()
 cacheHandler channel msg = do 

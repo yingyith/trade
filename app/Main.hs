@@ -59,6 +59,7 @@ main =
         let ares = showDigest(hmacSha256 signature astring)
         liftIO $ print ares
         
+        --let ouri = "https://fapi.binance.com/fapi/v1/listenKey"  
         let ouri = "https://api.binance.com/api/v3/userDataStream"  
         let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
         liftIO $ print auri
@@ -91,7 +92,10 @@ main =
     liftIO $ print (aas)
     conn <- connect defaultConnectInfo
     runRedis conn (liskeytoredis aas)
+    --let aimss = "/stream?streams=btcusdt@markPrice?listenkey=" ++ aas -----------------------------------------------
+    --liftIO $ print (aimss)
     let aimss = "/stream?streams=adausdt@kline_1m/"  ++ aas -----------------------------------------------
+    --let aimss = "/ws/streams=bnbbtc@bookTicker/" ++aas++"&listenkey="  ++ aas -----------------------------------------------
     --"send ping every 30mins"
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins
@@ -99,6 +103,8 @@ main =
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
     runSecureClient "stream.binance.com" 9443 aimss  ws
+    liftIO $ print ("connect to websocket------")
+    --runSecureClient "fstream3.binance.com" 443 aimss  ws
 --issue streams = <listenKey> -- add user Data Stream
 ws :: ClientApp ()
 ws connection = do
