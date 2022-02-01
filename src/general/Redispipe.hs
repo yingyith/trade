@@ -49,20 +49,16 @@ import Data.List as DL
 import Httpstructure
 import Rediscache
 
---import Klinedata (kname) 
--- | publish messages every 2 seconds to several channels
-replydo :: Redis (Either Reply  [ByteString])
+
+replydo :: Redis (Either Reply [ByteString], Either Reply (Maybe ByteString))
 replydo = do
         let s = "5m"
         let akey = BLU.fromString s
-        item <- zrange akey 0 1 
-        return item
-       -- let res = case compare (curtimestamp - replydores) 6000 of 
-       --             LT -> "True"
-       --             EQ -> "True"
-       --             GT -> "False"
-       -- return res
-            --Right v -> return  (fromMaybe "try" v)
+        item <- zrange akey 0 1
+        orderitem <- getorderfromredis
+        let reitem = (item,orderitem)
+        return  reitem 
+        
             
 iscacheinvalid    ::         Bool  
 iscacheinvalid = True
@@ -124,18 +120,18 @@ getliskeyfromredis =  return ()
 publishThread :: R.Connection -> NC.Connection -> IO ()
 publishThread rc wc =  
   forever $ do
-      liftIO $ print ("++++++++++++")
       message <- receiveData wc 
       --let msg = BL.fromStrict message
-      liftIO $ print ("++++++++++++")
-      liftIO $ print (message)
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       --stop <-getCurrentTime
       --liftIO $ print $ diffUTCTime stop start
       --SI.putStrLn (show (test))
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
-      let cachetime = case res of
+   -- add
+      let orderitem = snd res
+      let klineitem = fst res
+      let cachetime = case klineitem of
             Left _ ->  "some error"
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
@@ -159,7 +155,6 @@ publishThread rc wc =
          msgcachetempdo timediff message 
          msgpingtempdo timediff message
          --void $ publish "cache" ("cache" <> "aaaaaaa")
-         msgordertempdo
          msgsklinetoredis message
          msganalysistoredis message
  -- let loop = do
@@ -187,7 +182,8 @@ handlerThread conn ctrl = forever $
 --listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
 opclHandler :: ByteString -> IO ()
-opclHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
+opclHandler msg = do
+    liftIO $ print ("ssss")
 
 
 addklinetoredis :: ByteString -> Redis ()

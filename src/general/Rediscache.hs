@@ -9,6 +9,7 @@ module Rediscache (
    mseriesFromredis,
    parsetokline,
    liskeytoredis,
+   getorderfromredis, 
 --   liskeygetredis,
    initdict
 ) where
@@ -41,6 +42,11 @@ import Analysistructure as AS
 -- 1min line update in memory every stick,other update in memory 
 defintervallist :: [String]
 defintervallist = ["1m","5m","15m","1h","4h","12h","3d"] 
+
+getorderfromredis :: Redis (Either Reply (Maybe BL.ByteString))
+getorderfromredis = do 
+   res <- get "order"
+   return res
 
 liskeytoredis :: String -> Redis ()
 liskeytoredis a = do 

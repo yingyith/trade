@@ -11,6 +11,7 @@ module Httpstructure
       getmsilist,
       pinghandledo,
       getintervalfrpair,
+      getspotbalance,
       getmsfrpair,
       Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime),
     ) where
@@ -25,18 +26,76 @@ import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Internal as BLI
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.UTF8 as BL
+import Data.ByteString.Lazy.UTF8 as BLU
 import Data.Aeson as A
 import Data.Aeson.Types as AT
-import Data.Text (Text)
+import Data.Text.IO as T
+import Data.Text as T
 import Data.Typeable
 import GHC.Generics
 import Network.HTTP.Req
 import Database.Redis
 import Data.String.Class as DC
+import Data.Digest.Pure.SHA
+import Passwd
+import System.IO
+import Data.Time.Clock.POSIX (getPOSIXTime)
 
-
+getorderitem :: IO ()
+getorderitem = runReq defaultHttpConfig $ do
+    let ouri = https "api.binance.com" /: "api" /: "v3" /: "order"  
+    let limit = 3
+    let params = 
+          "symbol" =: ("ADAUSDT" :: Text)
+    areq <- req GET ouri NoReqBody lbsResponse params
+   -- let breq = responseBody areq
+    liftIO $ print ("ss")
     
+getspotbalance :: IO ()
+getspotbalance = do 
+   curtimestamp <- round . (* 1000) <$> getPOSIXTime
+   --curtimestamp <- round <$> getPOSIXTime
+   runReq defaultHttpConfig $ do 
+      let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
+      let signature = BLU.fromString sk
+      let ares = showDigest(hmacSha256 signature astring)
+      --let ares = showDigest(hmacSha256 signature params)
+      let ouri = "https://api.binance.com/api/v3/account"  
+      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      uri <- URI.mkURI auri 
+      let passwdtxt = BC.pack Passwd.passwd
+      let params = 
+            (header "X-MBX-APIKEY" passwdtxt ) <>
+            ("timestamp" =: (curtimestamp :: Integer ))<>
+            ("signature" =: (T.pack ares :: Text ))
 
+      let (url, options) = fromJust (useHttpsURI uri)
+      --let areq = req GET url NoReqBody jsonResponse (header "X-MBX-APIKEY" passwdtxt )
+      let areq = req GET url NoReqBody jsonResponse  params
+      response <- areq
+      let result = responseBody response :: Object
+      --let ares = fromJust $  parseMaybe (.: "signature") result :: String
+      liftIO $ print (ares)
+      liftIO $ print (response)
+    
+takeorder :: IO ()
+takeorder = do 
+      let astring = BLU.fromString "123"
+      let signature = BLU.fromString "234"
+      let ares = showDigest(hmacSha256 signature astring)
+      liftIO $ print ares
+      
+      --let ouri = "https://fapi.binance.com/fapi/v1/listenKey"  
+      let ouri = "https://api.binance.com/api/v3/userDataStream"  
+      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      --增加对astring的hmac的处理 
+      uri <- URI.mkURI auri 
+      let (url, options) = fromJust (useHttpsURI uri)
+      let passwdtxt = BC.pack Passwd.passwd
+      --let areq = req GET url NoReqBody jsonResponse (header "X-MBX-APIKEY" passwdtxt )
+      liftIO $ print ares
+      --how to change bs to json
+   
 parsekline :: String -> IO (DpairMserie) 
 --getStickToCache :: String -> IO () 
 parsekline nstr  = runReq defaultHttpConfig $ do
@@ -152,16 +211,6 @@ data Klinedata = Klinedata {
          ktime :: Integer
 } deriving Show
 
---data Stickwebsocketdata = Stickwebsocketdata {
---         sname :: String,  --"kline"
---         spair :: String, -- "ETHISDT"
---         sdata :: !AT.Object 
---} deriving Show
---
---data Websocketdata = Websocketdata {
---         coinpair :: String,
---         stickwebsocketdata :: !AT.Object
---} deriving Show
 
 instance FromJSON Klinedata where 
   parseJSON (Object o) = 

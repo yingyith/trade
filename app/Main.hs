@@ -100,6 +100,7 @@ main =
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins
     getSticksToCache
+    getspotbalance
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
     runSecureClient "stream.binance.com" 9443 aimss  ws
