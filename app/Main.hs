@@ -101,6 +101,7 @@ main =
     -- loop every 30mins
     getSticksToCache
     getspotbalance
+    takeorder
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
     runSecureClient "stream.binance.com" 9443 aimss  ws

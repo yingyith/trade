@@ -5,6 +5,7 @@ module Httpstructure
       parsekline,
       Mseries,
       Stick,
+      takeorder,
       HStick (op,cp,lp,hp,st),
       DpairMserie,
       sticks,
@@ -26,6 +27,7 @@ import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Internal as BLI
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.UTF8 as BL
+import qualified Network.HTTP.Base as NTB
 import Data.ByteString.Lazy.UTF8 as BLU
 import Data.Aeson as A
 import Data.Aeson.Types as AT
@@ -80,20 +82,44 @@ getspotbalance = do
     
 takeorder :: IO ()
 takeorder = do 
-      let astring = BLU.fromString "123"
-      let signature = BLU.fromString "234"
-      let ares = showDigest(hmacSha256 signature astring)
-      liftIO $ print ares
+   let symbol = "ADAUSTD"
+   let symboll = "ADAUSTD"
+   let side = "BUY"
+   let stype = "LIMIT"
+   let quantity = 1 :: Integer
+   let price = 1.07 :: Double
+
+   curtimestamp <- round . (* 1000) <$> getPOSIXTime
+   runReq defaultHttpConfig $ do 
+      let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
+      let signature = BLU.fromString sk
+      let params = 
+             "symbol" =: (symboll :: Text) <>
+             "side" =: (side) <>
+             "type" =: (stype) <>
+             "quantity" =: (quantity) <>
+             "price" =: (price) <>
+             "timestamp" =: (curtimestamp)
+
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",show price),("timestamp",show curtimestamp)] 
+      let ares = showDigest(hmacSha256 signature abody)
+      let passwdtxt = BC.pack Passwd.passwd
+      let httpparams = 
+            (header "X-MBX-APIKEY" passwdtxt ) <>
+            ("timestamp" =: (curtimestamp :: Integer )) <>
+            ("signature" =: (T.pack ares :: Text ))
       
-      --let ouri = "https://fapi.binance.com/fapi/v1/listenKey"  
-      let ouri = "https://api.binance.com/api/v3/userDataStream"  
+      let ouri = "https://api.binance.com/api/v3/order"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       --增加对astring的hmac的处理 
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
-      let passwdtxt = BC.pack Passwd.passwd
-      --let areq = req GET url NoReqBody jsonResponse (header "X-MBX-APIKEY" passwdtxt )
-      liftIO $ print ares
+      let areq = req POST url (ReqBodyUrlEnc params) jsonResponse httpparams
+      response <- areq
+      let result = responseBody response :: Object
+      --let ares = fromJust $  parseMaybe (.: "signature") result :: String
+      liftIO $ print (ares)
+      liftIO $ print (response)
       --how to change bs to json
    
 parsekline :: String -> IO (DpairMserie) 

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 40df93cbc2140cc79308ddc5593ce692297f32578e2c684f6ff28a9c0ee624cd
+-- hash: 908e485bebf881500373d4ed036e3bb5c14e8b3bda21f00722e92d55cc5d1435
 
 name:           trade
 version:        0.1.0.0
@@ -39,7 +39,8 @@ library
       src
       src/general
   build-depends:
-      SHA
+      HTTP
+    , SHA
     , aeson
     , async
     , base >=4.7 && <5
@@ -73,7 +74,8 @@ executable trade-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      SHA
+      HTTP
+    , SHA
     , aeson
     , async
     , base >=4.7 && <5
@@ -109,7 +111,8 @@ test-suite trade-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      SHA
+      HTTP
+    , SHA
     , aeson
     , async
     , base >=4.7 && <5

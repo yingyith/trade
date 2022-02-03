@@ -44,6 +44,7 @@ dependencies:
 - string-class
 - time
 - split
+- HTTP
 library:
   source-dirs: [src,src/general]
 
