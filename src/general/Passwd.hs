@@ -3,5 +3,5 @@ module Passwd
       sk
     ) where
 import qualified Data.ByteString.Char8 as B
-passwd = "mdyctHS66b212WpRmtNKKDJgPBHRKuBLVXqy82wHVvlR8ZwdGarBu47JCP6HDx7d" 
-sk = "E4k5BSIF7B1iyJ10ub7HX4g8mbdbRQ1bXMdtBUFEQfrseFwpoaH3HrssVZ6QxKKC"
+passwd = "c8xLvRz7vQOutIEvPhOwAlyVzp7IsZqAeQS60j7LhH6cGVmNFOL6zLq2KnLYscnx" 
+sk = "Zn3KzZ0jYciJOsnrld1nly9b1ocmrnRocdvBTrPrHZ5JULyV3qfGP6ltn5GPBcRW"

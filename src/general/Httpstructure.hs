@@ -82,16 +82,19 @@ getspotbalance = do
     
 takeorder :: IO ()
 takeorder = do 
-   let symbol = "ADAUSTD"
-   let symboll = "ADAUSTD"
+   let symbol = "ADAUSDT"
+   let symboll = "ADAUSDT"
    let side = "BUY"
    let stype = "LIMIT"
-   let quantity = 1 :: Integer
+   let timeinforce = "GTC"
+   let timeinforcee = "GTC"
+   let quantity = 10 :: Integer
    let price = 1.07 :: Double
 
-   curtimestamp <- round . (* 1000) <$> getPOSIXTime
+   curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
+   let curtimestamp = curtimestampl :: Integer
+   liftIO $ print (curtimestamp)
    runReq defaultHttpConfig $ do 
-      let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
       let signature = BLU.fromString sk
       let params = 
              "symbol" =: (symboll :: Text) <>
@@ -99,14 +102,14 @@ takeorder = do
              "type" =: (stype) <>
              "quantity" =: (quantity) <>
              "price" =: (price) <>
+             "timeInForce" =: (timeinforcee :: Text) <>
              "timestamp" =: (curtimestamp)
 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",show price),("timestamp",show curtimestamp)] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",show price),("timeInForce",timeinforce),("timestamp",show curtimestamp)] 
       let ares = showDigest(hmacSha256 signature abody)
       let passwdtxt = BC.pack Passwd.passwd
       let httpparams = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
-            ("timestamp" =: (curtimestamp :: Integer )) <>
             ("signature" =: (T.pack ares :: Text ))
       
       let ouri = "https://api.binance.com/api/v3/order"  
