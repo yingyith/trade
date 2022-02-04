@@ -1,4 +1,5 @@
 .stack-work/
+src/general/Passwd.hs
 *~
 src/Passwd.hs
 src/general/Passwd.hs
