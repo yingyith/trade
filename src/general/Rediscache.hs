@@ -10,6 +10,7 @@ module Rediscache (
    parsetokline,
    liskeytoredis,
    getorderfromredis, 
+   Ordervar (..),
 --   liskeygetredis,
    initdict
 ) where
@@ -21,12 +22,14 @@ import Data.List as DL
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as BL
 import qualified Data.ByteString.Lazy as BLL
+import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Text (Text)
 import Network.HTTP.Req
 import qualified Data.Map as Map
 import Data.Aeson as A
 import Data.Aeson.Types
 import Database.Redis
+import GHC.Generics
 import Data.Monoid ((<>))
 import Control.Monad
 import Control.Exception
@@ -34,6 +37,7 @@ import Control.Monad.Trans (liftIO)
 import Httpstructure
 import Data.List.Split as DLT
 import Analysistructure as AS
+import Order
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -42,6 +46,14 @@ import Analysistructure as AS
 -- 1min line update in memory every stick,other update in memory 
 defintervallist :: [String]
 defintervallist = ["1m","5m","15m","1h","4h","12h","3d"] 
+
+data Ordervar = Ordervar {
+  --orside :: String ,-- only "buy"  --if use coin or other future,then have two sides.now for spot only one side .for sell is definitely benefit .        
+  osign :: Bool , --can open or not (for still have  order to complete or just start to take order,anti conconcurrent repeatly take order)
+  orquant :: Integer ,--quantity          
+  orbprice :: Double , --buyprice          
+  orgrid :: Integer --grid level number          
+} deriving (Show,Generic)
 
 getorderfromredis :: Redis (Either Reply (Maybe BL.ByteString))
 getorderfromredis = do 
@@ -154,9 +166,10 @@ analysisdo aim  = do
 
 mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
 mserieFromredis klinename = do  
-          let bklinename = BL.fromString klinename
-          res <- zrange bklinename 0 15
-          return res
+     --get kline and ada position,usdt position
+     let bklinename = BL.fromString klinename
+     res <- zrange bklinename 0 15
+     return res
               
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
 mseriesFromredis conn msg = do
@@ -172,18 +185,15 @@ mseriesFromredis conn msg = do
      --let aimlist = [i|i <- x,x <- hlsheet]
      liftIO $ print (mconlistl)
      let dcp = read $ kclose kline :: Double
-     respos <- AS.retposfromgrid mconlistl dcp
+     respos <- AS.retposfromgrid mconlistl dcp hlsheet --return order detail and risk sheet,detail need excute,risk use to store redis and and check close time
+     curtimestampi <- getcurtimestamp
+     let curtimestamp = fromInteger curtimestampi :: Double
+     runRedis conn $ do
+        preordertorediszset 0 0 curtimestamp
      --genposgrid hlsheet dcp
+  --write order command to zset
      liftIO $ print (respos)
      liftIO $ print ("ssss")
-     --write to redis with diff weave grid /amplitude .
-     --in the range of 1/3 to 1/2(center) of diff ,position can be large ,other half,benefit is 1/4
-     --when short everytime 4time 
-     --when close to 4hour low point 1/3,then stop buy,when close to 4hour high point 1/3,then stop buy.
-     --
-     --
-     --let tdata = case res of 
-     --              Just b -> b
      
 
 hsticklistToredis :: DpairMserie -> String -> Redis ()

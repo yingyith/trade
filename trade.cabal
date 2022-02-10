@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 908e485bebf881500373d4ed036e3bb5c14e8b3bda21f00722e92d55cc5d1435
+-- hash: 1fbac8a2ae47263c7c538c809d0e1890f92112df386a74a34ea6fd75ab39a78e
 
 name:           trade
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Analysistructure
       Httpstructure
       Lib
+      Order
       Passwd
       Rediscache
       Redispipe
@@ -56,6 +57,7 @@ library
     , parallel
     , req
     , split
+    , stm
     , string-class
     , text
     , time
@@ -91,6 +93,7 @@ executable trade-exe
     , parallel
     , req
     , split
+    , stm
     , string-class
     , text
     , time
@@ -128,6 +131,7 @@ test-suite trade-test
     , parallel
     , req
     , split
+    , stm
     , string-class
     , text
     , time

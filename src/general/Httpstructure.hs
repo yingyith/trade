@@ -15,6 +15,7 @@ module Httpstructure
       getspotbalance,
       getmsfrpair,
       Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime),
+      getcurtimestamp
     ) where
 import Control.Applicative
 import qualified Text.URI as URI
@@ -53,9 +54,14 @@ getorderitem = runReq defaultHttpConfig $ do
    -- let breq = responseBody areq
     liftIO $ print ("ss")
     
+getcurtimestamp :: IO Integer
+getcurtimestamp = do
+   curtimestamp <- round . (* 1000) <$> getPOSIXTime
+   return curtimestamp
+
 getspotbalance :: IO ()
 getspotbalance = do 
-   curtimestamp <- round . (* 1000) <$> getPOSIXTime
+   curtimestamp <- getcurtimestamp
    --curtimestamp <- round <$> getPOSIXTime
    runReq defaultHttpConfig $ do 
       let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
@@ -80,16 +86,16 @@ getspotbalance = do
       liftIO $ print (ares)
       liftIO $ print (response)
     
-takeorder :: IO ()
-takeorder = do 
+takeorder :: String -> Integer -> Double -> IO ()
+takeorder a b c = do 
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
-   let side = "BUY"
+   let side = a -- "BUY" "SELL"
    let stype = "LIMIT"
    let timeinforce = "GTC"
    let timeinforcee = "GTC"
-   let quantity = 10 :: Integer
-   let price = 1.07 :: Double
+   let quantity = b :: Integer
+   let price = c :: Double
 
    curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
    let curtimestamp = curtimestampl :: Integer

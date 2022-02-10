@@ -6,6 +6,7 @@ import Wuss
 import Database.Redis
 import Control.Concurrent (forkIO)
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
 import Control.Exception (catch)
 import Data.Text (Text, pack)
@@ -101,7 +102,7 @@ main =
     -- loop every 30mins
     getSticksToCache
     getspotbalance
-    takeorder
+   -- takeorder
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
     runSecureClient "stream.binance.com" 9443 aimss  ws
@@ -111,14 +112,18 @@ main =
 ws :: ClientApp ()
 ws connection = do
     B.putStrLn "Connected!"
-    ctrl <- newPubSubController [("foo",opclHandler)][]
+    --ctrl <- newPubSubController [("order:*",opclHandler)][]
+    ctrl <- newPubSubController [][]
     conn <- connect defaultConnectInfo
+    --
+    let ordervari = Ordervar True 0 0 0
+    let orderVar = newTVarIO ordervari-- newTVarIO Int
 
-    withAsync (publishThread conn connection) $ \_pubT -> do
-      withAsync (handlerThread conn ctrl) $ \_handlerT -> do
+    withAsync (publishThread conn connection orderVar) $ \_pubT -> do
+      withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
         void $ T.hPutStrLn stderr "Press enter to subscribe to bar"
         --void $ addChannels ctrl [("cacheupdate",cacheHandler)] []
-        void $ addChannels ctrl [("opcl:*", opclHandler)] []
+        void $ addChannels ctrl [] [("order:*", opclHandler)]
         void $ addChannels ctrl [] [("cache:*", cacheHandler)]
         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
         void $ addChannels ctrl [] [("skline:*", sklineHandler)]

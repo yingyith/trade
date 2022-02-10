@@ -16,6 +16,7 @@ module Redispipe
       showChannels,
       sklineHandler,
       analysisHandler
+
     ) where
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
 -- I execute this with `stack runghc ManualPubSub.hs`
@@ -32,6 +33,8 @@ import Control.Concurrent
 import Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
 import Network.WebSockets.Connection as NC
 import Control.Concurrent.Async
+import Control.Concurrent.STM
+import Control.Concurrent 
 import Data.Text as T
 import Data.Text.IO as T
 import Data.ByteString (ByteString)
@@ -91,8 +94,10 @@ msgpingtempdo a msg = do
             LT ->
               return ()
 
-msgordertempdo :: Redis ()
-msgordertempdo =  return ()
+msgordertempdo :: ByteString -> Redis ()
+msgordertempdo msg  =  do
+              void $ publish "order:1" ("order" <> msg)
+              liftIO $ print ("orrrrrrrrrrrr!")
 
 generatehlsheet :: ByteString -> IO ()
 generatehlsheet msg = do 
@@ -117,8 +122,8 @@ msganalysistoredis msg = do
 getliskeyfromredis :: Redis ()
 getliskeyfromredis =  return ()
 
-publishThread :: R.Connection -> NC.Connection -> IO ()
-publishThread rc wc =  
+publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
+publishThread rc wc tvar =  
   forever $ do
       message <- receiveData wc 
       --let msg = BL.fromStrict message
@@ -157,6 +162,7 @@ publishThread rc wc =
          --void $ publish "cache" ("cache" <> "aaaaaaa")
          msgsklinetoredis message
          msganalysistoredis message
+         msgordertempdo message
  -- let loop = do
  --         line <- T.getline
  --         unless (T.null line) $ do 
@@ -170,8 +176,8 @@ publishThread rc wc =
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
 
-handlerThread :: R.Connection -> PubSubController -> IO ()
-handlerThread conn ctrl = forever $
+handlerThread :: R.Connection -> PubSubController -> IO (TVar a) -> IO ()
+handlerThread conn ctrl tvar = forever $
        pubSubForever conn ctrl onInitialComplete
          `catch` (\(e :: SomeException) -> do
            SI.hPutStrLn stderr $ "Got error: " ++ show e
@@ -181,9 +187,19 @@ handlerThread conn ctrl = forever $
 --listenkeyHandler :: ByteString -> IO ()
 --listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
-opclHandler :: ByteString -> IO ()
-opclHandler msg = do
-    liftIO $ print ("ssss")
+opclHandler :: RedisChannel -> ByteString -> IO ()
+opclHandler channel  msg = do
+    -- open close order accroding to redis ada position and grid  and setnx and expire time and proccess uuid
+    -- if msg send grid not match to redis grid ,cancel operation
+    -- ==> command set from analysishandler ==> redis ==> publish ==> opclHandler
+    liftIO $ print ("sssssssssyyyyyy")
+    mtthread <- myThreadId
+    liftIO $ print (msg)
+    liftIO $ print ("start take order")
+   -- takeorder
+    
+    --if type just = msg  and predication is qualified,then try get lock 
+    --if type      = websocket account change/order token, release lock
 
 
 addklinetoredis :: ByteString -> Redis ()

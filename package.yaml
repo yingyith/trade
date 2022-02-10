@@ -45,6 +45,7 @@ dependencies:
 - time
 - split
 - HTTP
+- stm
 library:
   source-dirs: [src,src/general]
 
