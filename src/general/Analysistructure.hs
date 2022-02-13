@@ -25,6 +25,7 @@ import GHC.Generics
 import Network.HTTP.Req
 import Database.Redis
 import Data.String.Class as DC
+import Globalvar
 
 --data HLtree  = Leaf {
 --               index :: Integer,
@@ -42,10 +43,17 @@ data Hlnode = Hlnode {
               rtype :: String  -- '5min' or '1h'
               } deriving (Show,Generic)
 
+--mix 1m and 5m kline analysis
+--mix 5m and 15m kline analysis
+--mix 5m and 15m kline analysis
+  --plan a :   predicationA : 1m kline  $$ 5m kline ==> result
+  --           predicationB : 1m kline $$ 3h kline  $$ 5m kline ==> result
+  --           apply predicationA ruleB   
 retposfromgrid :: [Double]-> Double -> [[Double]] -> IO (Integer,[Double])
 retposfromgrid dll curprice dlsheet = do 
             --get current position from redis
             --if grid exists which mean have quantity,then compare the open gridsheet with now gridsheet ,check if or not have change to profit,or admit loss ,close order
+            liftIO $ print (dlsheet)
             let posindex = 0
             let base = 10
             let dl = [0]++dll

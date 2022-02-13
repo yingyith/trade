@@ -38,14 +38,11 @@ import Httpstructure
 import Data.List.Split as DLT
 import Analysistructure as AS
 import Order
+import Globalvar
+import Strategy
 --import Control.Concurrent
 --import System.IO as SI
 
--- update redis cache kline dict
---init kline dict
--- 1min line update in memory every stick,other update in memory 
-defintervallist :: [String]
-defintervallist = ["1m","5m","15m","1h","4h","12h","3d"] 
 
 data Ordervar = Ordervar {
   --orside :: String ,-- only "buy"  --if use coin or other future,then have two sides.now for spot only one side .for sell is definitely benefit .        
@@ -93,61 +90,61 @@ mseriesToredis a conn = do
 --pinghandledo a  =  runReq defaultHttpConfig $ do
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
 genehighlowsheet index hl key = do 
-             let curitemstr = BL.toString $ hl !! index
-             let nextitemstr= BL.toString $ hl !! (index+1)
-             let curitem = DLT.splitOn "|" curitemstr
-             let nextitem = DLT.splitOn "|" nextitemstr
-             let curitemt = read $ curitem !! 0  :: Integer
-             let curitemop = read $ curitem !! 1  :: Double
-             let curitemhp = read $ curitem !! 2  :: Double
-             let curitemlp = read $ curitem !! 3  :: Double
-             let curitemcp = read $ curitem !! 4  :: Double
-             let nextitemop = read $ nextitem !! 1  :: Double
-             let nextitemhp = read $ nextitem !! 2  :: Double
-             let nextitemlp = read $ nextitem !! 3  :: Double
-             let nextitemcp = read $ nextitem !! 4  :: Double
-             let hpointpredication = (curitemhp - nextitemhp) <= 0
-             let lpointpredication = (curitemlp - nextitemlp) <= 0
-             let predication = (hpointpredication,lpointpredication)
-             let res = case predication of 
-                           (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key)
-                           (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key)
-                           (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key)
-                           (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key)
-             --liftIO $ print (res)
-             return res
+     let curitemstr = BL.toString $ hl !! index
+     let nextitemstr= BL.toString $ hl !! (index+1)
+     let curitem = DLT.splitOn "|" curitemstr
+     let nextitem = DLT.splitOn "|" nextitemstr
+     let curitemt = read $ curitem !! 0  :: Integer
+     let curitemop = read $ curitem !! 1  :: Double
+     let curitemhp = read $ curitem !! 2  :: Double
+     let curitemlp = read $ curitem !! 3  :: Double
+     let curitemcp = read $ curitem !! 4  :: Double
+     let nextitemop = read $ nextitem !! 1  :: Double
+     let nextitemhp = read $ nextitem !! 2  :: Double
+     let nextitemlp = read $ nextitem !! 3  :: Double
+     let nextitemcp = read $ nextitem !! 4  :: Double
+     let hpointpredication = (curitemhp - nextitemhp) <= 0
+     let lpointpredication = (curitemlp - nextitemlp) <= 0
+     let predication = (hpointpredication,lpointpredication)
+     let res = case predication of 
+                   (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key)
+                   (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key)
+                   (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key)
+                   (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key)
+     --liftIO $ print (res)
+     return res
 
 --gengridsheet
 
 
 analysistrdo :: Either Reply [BL.ByteString] -> String -> IO [Double]
 analysistrdo aa bb = do 
-         let tdata = case aa of 
-                         Right c -> c
-         let hllist = [] :: [AS.Hlnode]
-         let befitem = "undefined" -- traceback default trace first is unknow not high or low
-         rehllist <- mapM ((\s ->  genehighlowsheet s tdata bb) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
-         liftIO $ print ("yyyyyyyyyyyyyy")
-         --liftIO $ print (rehllist)
-         let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
-         let highsheet = [(hprice $ xlist!!x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
-         let lowsheet = [(lprice $ xlist!!x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
-         let highgrid = maximum highsheet
-         let lowgrid = minimum lowsheet
-         let diff = (highgrid-lowgrid)/3 
-         -- 1day earn : 0.02*2*24/6 
-         --if current price in range (lowgrid+diff,highgrid-diff),can open,other forbiden
-         --
-         
+     let tdata = case aa of 
+                     Right c -> c
+     let hllist = [] :: [AS.Hlnode]
+     let befitem = "undefined" -- traceback default trace first is unknow not high or low
+     rehllist <- mapM ((\s ->  genehighlowsheet s tdata bb) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
+     liftIO $ print ("yyyyyyyyyyyyyy")
+     --liftIO $ print (rehllist)
+     let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
+     let highsheet = [(hprice $ xlist!!x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
+     let lowsheet = [(lprice $ xlist!!x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
+     let highgrid = maximum highsheet
+     let lowgrid = minimum lowsheet
+     let diff = (highgrid-lowgrid)/3 
+     -- 1day earn : 0.02*2*24/6 
+     --if current price in range (lowgrid+diff,highgrid-diff),can open,other forbiden
+     --
+     
 
-         liftIO $ print (highgrid)
-         liftIO $ print (lowgrid)
-         --gengridsheet
-  --     put position and price grid to the sheet
-  --     store to redis 
-         liftIO $ print (reslist)
-         liftIO $ print ("yyyyyyyyyyyyyy")
-         return [lowgrid,highgrid]
+     liftIO $ print (highgrid)
+     liftIO $ print (lowgrid)
+     --gengridsheet
+  -- put position and price grid to the sheet
+  -- store to redis 
+     liftIO $ print (reslist)
+     liftIO $ print ("yyyyyyyyyyyyyy")
+     return [lowgrid,highgrid]
 
 parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
@@ -177,22 +174,24 @@ mseriesFromredis conn msg = do
                   mapM mserieFromredis defintervallist 
      hlsheet <- analysisdo res 
      kline <- parsetokline msg
-     liftIO $ print (hlsheet)
+     --liftIO $ print (hlsheet)
      let mconlist = (DL.sort $ concat hlsheet) ++ [1000]
-     liftIO $ print (mconlist)
+     --liftIO $ print (mconlist)
      let lenmcon = length mconlist
      let mconlistl = [mconlist!!i |i<-[0..(lenmcon-2)],(mconlist!!(i+1)-mconlist!!i)>=0.006]
      --let aimlist = [i|i <- x,x <- hlsheet]
-     liftIO $ print (mconlistl)
+     --liftIO $ print (mconlistl)
      let dcp = read $ kclose kline :: Double
-     respos <- AS.retposfromgrid mconlistl dcp hlsheet --return order detail and risk sheet,detail need excute,risk use to store redis and and check close time
-     curtimestampi <- getcurtimestamp
-     let curtimestamp = fromInteger curtimestampi :: Double
-     runRedis conn $ do
-        preordertorediszset 0 0 curtimestamp
+     let interprl = [(x,y)|x<-defintervallist,let y= dcp]
+     res <- zipWithM saferegionrule interprl hlsheet
+     let sumres = sum res
+     when (sumres > 0) $ do
+          curtimestampi <- getcurtimestamp
+          let curtimestamp = fromInteger curtimestampi :: Double
+          runRedis conn $ do
+             preordertorediszset sumres dcp  curtimestamp
      --genposgrid hlsheet dcp
   --write order command to zset
-     liftIO $ print (respos)
      liftIO $ print ("ssss")
      
 

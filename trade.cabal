@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1fbac8a2ae47263c7c538c809d0e1890f92112df386a74a34ea6fd75ab39a78e
+-- hash: f5b59d5b8b72f3a9c70b2a0ec30a09c087e2f3e2725b5e96241de9e456108aa3
 
 name:           trade
 version:        0.1.0.0
@@ -28,17 +28,20 @@ source-repository head
 library
   exposed-modules:
       Analysistructure
+      Globalvar
       Httpstructure
       Lib
       Order
       Passwd
       Rediscache
       Redispipe
+      Strategy
   other-modules:
       Paths_trade
   hs-source-dirs:
       src
       src/general
+      src/strategy
   build-depends:
       HTTP
     , SHA

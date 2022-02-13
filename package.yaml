@@ -47,7 +47,7 @@ dependencies:
 - HTTP
 - stm
 library:
-  source-dirs: [src,src/general]
+  source-dirs: [src,src/general,src/strategy]
 
 executables:
   trade-exe:

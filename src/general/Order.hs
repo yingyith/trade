@@ -46,19 +46,20 @@ instance Enum Ostate where
 preordertorediszset :: Integer -> Double -> Double -> Redis ()
 preordertorediszset quan pr stamp  = do 
 -- quantity ,side ,price ,ostate
-   let quantity = 10 :: Integer
-   let price  = 1.1 :: Double
+   let quantity = quan :: Integer
+   let price  = pr :: Double
    let side = "Buy" :: String
    let coin = "ADA" :: String
    let ostate = Prepare 
    let abykeystr = BL.fromString "Order"
-   --curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
-   --let curtimestamp = curtimestampl :: Integer
-   --if last record state is not end ,pass the all process
    res <- zrange abykeystr 0 1
-   liftIO $ print (res)
-   --
-   when (1==1) $ do
+   let tdata = case res of 
+                    Right c -> c
+   let lastrecord = BL.toString $ tdata !!0
+   let recorditem = DLT.splitOn "|" lastrecord
+   let recordstate = last recorditem
+   --liftIO $ print (recordstate)
+   when (recordstate == "1") $ do
        let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,show quantity,show price,show $ fromEnum Prepare]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
