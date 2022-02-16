@@ -53,7 +53,7 @@ retposfromgrid :: [Double]-> Double -> [[Double]] -> IO (Integer,[Double])
 retposfromgrid dll curprice dlsheet = do 
             --get current position from redis
             --if grid exists which mean have quantity,then compare the open gridsheet with now gridsheet ,check if or not have change to profit,or admit loss ,close order
-            liftIO $ print (dlsheet)
+--            liftIO $ print (dlsheet)
             let posindex = 0
             let base = 10
             let dl = [0]++dll

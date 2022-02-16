@@ -36,13 +36,13 @@ import Data.Aeson.Types
 --                                  only sum of all predication > = 0 ,then can open
 risksheet :: Map String [Integer]
 risksheet = fromList [
-             ("1m", [15,5,-15,-25]),
-             ("5m", [20,5,-10,-20]),
-             ("15m",[15,5,-10,-20]),
-             ("1h", [15,5,-15,-10]),
-             ("4h", [30,-10,-40,-60]),
-             ("12h", [5,-5,-5,-10]),
-             ("3d", [5,-5,-5,-10])
+             ("1m", [20,-25,-10,-25]),
+             ("5m", [20,-10,-10,-25]),
+             ("15m",[25,-10,-10,-15]),
+             ("1h", [20,10,-10,-25]),
+             ("4h", [25,10,-15,-25]),
+             ("12h", [5,5,0,0]),
+             ("3d", [0,5,0,0])
             ]
 
 
@@ -57,7 +57,7 @@ saferegionrule minpr sheet  = do
               | (pr < (hp-lhdiff/4) && pr >= (hp-lhdiff/3)) = (return $ (fromJust $  risksheet!?interval)!!0)
               | (pr > (lp+lhdiff/4) && pr <= (lp+lhdiff/3)) = (return $ (fromJust $ risksheet!?interval)!!2)
               | (pr <= (lp+lhdiff/4))  = (return $ (fromJust $  risksheet!?interval)!!3)
-              | (pr > (lp+lhdiff/3) && pr < (hp-lhdiff/3)) = return 0
+              | (pr > (lp+lhdiff/3) && pr < (hp-lhdiff/3)) = return 20
    action
    --check  ,if >  highpoint - 1/4 diff , oppsite (risk)
    --check  ,if >  highpoint - 1/3 diff , oppsite (risk)

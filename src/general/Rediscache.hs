@@ -10,6 +10,7 @@ module Rediscache (
    parsetokline,
    liskeytoredis,
    getorderfromredis, 
+   getspotbaltoredis,
    Ordervar (..),
 --   liskeygetredis,
    initdict
@@ -52,9 +53,10 @@ data Ordervar = Ordervar {
   orgrid :: Integer --grid level number          
 } deriving (Show,Generic)
 
-getorderfromredis :: Redis (Either Reply (Maybe BL.ByteString))
+getorderfromredis :: Redis (Either Reply [BL.ByteString])
 getorderfromredis = do 
-   res <- get "order"
+   let bklinename = BL.fromString orderkey
+   res <- zrange bklinename 0 0
    return res
 
 liskeytoredis :: String -> Redis ()
@@ -64,6 +66,11 @@ liskeytoredis a = do
    let key = BL.fromString "liskey"
    void $ del [key] 
    void $ set key value
+   void $ zremrangebyrank (BL.fromString orderkey) 0 2000
+   let abyvaluestr = BL.fromString  $ intercalate "|" ["start","Buy","0","0","2"]
+   void $ zadd (BL.fromString orderkey) [(0,abyvaluestr)]
+   ---delete other key
+
 
 ---liskeygetredis  ::  Redis ([Maybe BL.ByteString])
 ---liskeygetredis  = do 
@@ -71,18 +78,27 @@ liskeytoredis a = do
 ---   let key = BL.fromString "liskey"
 ---   value <- get key
 ---   return value
+getspotbaltoredis :: R.Connection ->  IO ()
+getspotbaltoredis conn = do 
+    bal <- getspotbalance 
+    let adabal = fst bal
+    let usdtbal = snd bal
+    void $ runRedis conn $ do
+              let adavalue = BL.fromString $ show adabal
+              let usdtvalue = BL.fromString $  show usdtbal
+              let akey = BL.fromString adakey
+              let ukey = BL.fromString usdtkey
+              void $ set akey adavalue
+              void $ set ukey usdtvalue
 
-getSticksToCache :: IO ()
-getSticksToCache = do 
+getSticksToCache :: R.Connection -> IO ()
+getSticksToCache conn = do 
     tt <- mapM parsekline defintervallist
-    liftIO $ print ("stick to cahce")
-    conn <- R.connect R.defaultConnectInfo
     initdict tt conn
 
 mseriesToredis :: [DpairMserie] -> R.Connection -> IO ()
 mseriesToredis a conn = do
     void $ runRedis conn $ do
-        --mapM hstickToredis a 
                  zipWithM hsticklistToredis  a  defintervallist 
 
 
@@ -124,8 +140,6 @@ analysistrdo aa bb = do
      let hllist = [] :: [AS.Hlnode]
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata bb) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
-     liftIO $ print ("yyyyyyyyyyyyyy")
-     --liftIO $ print (rehllist)
      let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
      let highsheet = [(hprice $ xlist!!x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
      let lowsheet = [(lprice $ xlist!!x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
@@ -137,13 +151,6 @@ analysistrdo aa bb = do
      --
      
 
-     liftIO $ print (highgrid)
-     liftIO $ print (lowgrid)
-     --gengridsheet
-  -- put position and price grid to the sheet
-  -- store to redis 
-     liftIO $ print (reslist)
-     liftIO $ print ("yyyyyyyyyyyyyy")
      return [lowgrid,highgrid]
 
 parsetokline :: BL.ByteString -> IO Klinedata
@@ -184,15 +191,16 @@ mseriesFromredis conn msg = do
      let dcp = read $ kclose kline :: Double
      let interprl = [(x,y)|x<-defintervallist,let y= dcp]
      res <- zipWithM saferegionrule interprl hlsheet
+     timecur <- getcurtimestamp
+     liftIO $ print (timecur,dcp)
+     liftIO $ print (res)
      let sumres = sum res
      when (sumres > 0) $ do
           curtimestampi <- getcurtimestamp
-          let curtimestamp = fromInteger curtimestampi :: Double
           runRedis conn $ do
-             preordertorediszset sumres dcp  curtimestamp
+             preordertorediszset sumres dcp  curtimestampi
      --genposgrid hlsheet dcp
   --write order command to zset
-     liftIO $ print ("ssss")
      
 
 hsticklistToredis :: DpairMserie -> String -> Redis ()

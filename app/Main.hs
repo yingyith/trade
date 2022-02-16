@@ -77,13 +77,6 @@ main =
         --liftIO $ print t
         let ages = sticks!"5min"
         --liftIO $ print ages
-        --ages!"5min"
-        --ages!"15min"
-        --ages!"1hour"
-        --ages!"4hours"
-        --ages!"12hours"
-        --ages!"3day"
-        --ages!"1week"
         -----------------------
         --liftIO $ print (response)
         let result = responseBody response :: Object
@@ -100,8 +93,8 @@ main =
     --"send ping every 30mins"
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins
-    getSticksToCache
-    getspotbalance
+    getSticksToCache conn
+    getspotbaltoredis conn
    -- takeorder
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
@@ -115,14 +108,14 @@ ws connection = do
     --ctrl <- newPubSubController [("order:*",opclHandler)][]
     ctrl <- newPubSubController [][]
     conn <- connect defaultConnectInfo
+    liftIO $ print ("/////////////////////")
     --
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
 
     withAsync (publishThread conn connection orderVar) $ \_pubT -> do
       withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-        void $ T.hPutStrLn stderr "Press enter to subscribe to bar"
-        --void $ addChannels ctrl [("cacheupdate",cacheHandler)] []
+        liftIO $ print ("ssss----------")
         void $ addChannels ctrl [] [("order:*", opclHandler)]
         void $ addChannels ctrl [] [("cache:*", cacheHandler)]
         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]

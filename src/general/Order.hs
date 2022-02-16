@@ -33,6 +33,7 @@ import Control.Monad.Trans (liftIO)
 import Httpstructure
 import Data.List.Split as DLT
 import Analysistructure as AS
+import Globalvar
 
 data Ostate = Prepare | Process | End 
 instance Enum Ostate where 
@@ -43,35 +44,66 @@ instance Enum Ostate where
      fromEnum Process = 1
      fromEnum End = 2
 
-preordertorediszset :: Integer -> Double -> Double -> Redis ()
+preordertorediszset :: Integer -> Double -> Integer -> Redis ()
 preordertorediszset quan pr stamp  = do 
 -- quantity ,side ,price ,ostate
    let quantity = quan :: Integer
    let price  = pr :: Double
    let side = "Buy" :: String
    let coin = "ADA" :: String
+   let otype = "Open" :: String
    let ostate = Prepare 
-   let abykeystr = BL.fromString "Order"
-   res <- zrange abykeystr 0 1
+   let abykeystr = BL.fromString orderkey
+   let stampi = fromIntegral stamp :: Double
+   res <- zrange abykeystr 0 0
+   liftIO $ print ("order history!")
+   liftIO $ print (res)
    let tdata = case res of 
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let recordstate = last recorditem
+   let orderid = stamp
    --liftIO $ print (recordstate)
-   when (recordstate == "1") $ do
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,show quantity,show price,show $ fromEnum Prepare]
-       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+   when (recordstate == "2" && quan > 0) $ do
+       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,show otype,show orderid,show quantity,show price,show $ fromEnum Prepare]
+       void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
-proordertorediszset :: Integer -> Double -> Redis ()
-proordertorediszset quan pr  = do 
+proordertorediszset :: Integer -> Double -> Double -> Redis ()
+proordertorediszset quan pr stamp = do 
    -- alter the state 
    --res <- zrange abykeystr 0 1
    --let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
+   let abykeystr = BL.fromString orderkey
+   let side = "Buy" :: String
+   let coin = "ADA" :: String
+   let otype = "Open" :: String
+   res <- zrange abykeystr 0 0
+   let tdata = case res of 
+                    Right c -> c
+   let lastrecord = BL.toString $ tdata !!0
+   let recorditem = DLT.splitOn "|" lastrecord
+   let lastorderid = recorditem !! 3
+   let recordstate = last recorditem
+   let quan = recorditem !! 4
+   let pr = recorditem !! 5
    liftIO $ print ("good time to http ack")
-   return ()
+   --only add but not alter ,if state change ,add a new record,but need to trace the orderid
+   when (recordstate == "0" ) $ do
+       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,show otype,show lastorderid,show quan,show pr,show $ fromEnum Process]
+       void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 endordertorediszset :: Integer -> Double -> Redis ()
 endordertorediszset quan pr   = do 
---get state of 
+   let abykeystr = BL.fromString orderkey
+   let side = "Buy" :: String
+   let coin = "ADA" :: String
+   let otype = "Open" :: String
+   res <- zrange abykeystr 0 0
+   let tdata = case res of 
+                    Right c -> c
+   let lastrecord = BL.toString $ tdata !!0
+   let recorditem = DLT.splitOn "|" lastrecord
+   let lastorderid = recorditem !! 3
+   let recordstate = last recorditem
    return ()

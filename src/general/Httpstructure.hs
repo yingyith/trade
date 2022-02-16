@@ -15,9 +15,11 @@ module Httpstructure
       getspotbalance,
       getmsfrpair,
       Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime),
-      getcurtimestamp
+      getcurtimestamp,
+      WSevent (wsdata,wstream)
     ) where
 import Control.Applicative
+import Control.Lens
 import qualified Text.URI as URI
 import qualified Data.ByteString  as B
 import Data.Maybe (fromJust)
@@ -31,7 +33,8 @@ import qualified Data.ByteString.UTF8 as BL
 import qualified Network.HTTP.Base as NTB
 import Data.ByteString.Lazy.UTF8 as BLU
 import Data.Aeson as A
-import Data.Aeson.Types as AT
+import Data.Aeson.Types as DAT
+import Data.Aeson.Lens 
 import Data.Text.IO as T
 import Data.Text as T
 import Data.Typeable
@@ -43,6 +46,7 @@ import Data.Digest.Pure.SHA
 import Passwd
 import System.IO
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import Globalvar
 
 getorderitem :: IO ()
 getorderitem = runReq defaultHttpConfig $ do
@@ -59,10 +63,9 @@ getcurtimestamp = do
    curtimestamp <- round . (* 1000) <$> getPOSIXTime
    return curtimestamp
 
-getspotbalance :: IO ()
+getspotbalance :: IO (Double,Double)
 getspotbalance = do 
    curtimestamp <- getcurtimestamp
-   --curtimestamp <- round <$> getPOSIXTime
    runReq defaultHttpConfig $ do 
       let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
       let signature = BLU.fromString sk
@@ -78,14 +81,27 @@ getspotbalance = do
             ("signature" =: (T.pack ares :: Text ))
 
       let (url, options) = fromJust (useHttpsURI uri)
-      --let areq = req GET url NoReqBody jsonResponse (header "X-MBX-APIKEY" passwdtxt )
       let areq = req GET url NoReqBody jsonResponse  params
       response <- areq
-      let result = responseBody response :: Object
+      let result = responseBody response :: Value
+      let adabal = (result ^.. key "balances" .values.filtered (has (key "asset"._String.only "ADA"))) !!0
+      let adaadabal = fromJust $ adabal ^? key "free"
+      let aadabal = case adaadabal of 
+                          DAT.String l -> l
+      let adaball = read $ T.unpack aadabal :: Double
+      let usdtbal = (result ^.. key "balances" .values.filtered (has (key "asset"._String.only "USDT"))) !!0
+      let usdtusdtbal = fromJust $ usdtbal ^? key "free"
+      let uusdtbal = case usdtusdtbal of 
+                          DAT.String l -> l
+      let usdtball = read $ T.unpack uusdtbal :: Double
+      --let usdtbal = usdtbal ^? key "free"
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
-      liftIO $ print (ares)
-      liftIO $ print (response)
-    
+  --
+      liftIO $ print ("[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]")
+      return (adaball,usdtball)
+      --liftIO $ print (response)
+      --liftIO $ print (result)
+
 takeorder :: String -> Integer -> Double -> IO ()
 takeorder a b c = do 
    let symbol = "ADAUSDT"
@@ -94,12 +110,13 @@ takeorder a b c = do
    let stype = "LIMIT"
    let timeinforce = "GTC"
    let timeinforcee = "GTC"
-   let quantity = b :: Integer
+   let quantity = if b > 10 then b else 10 :: Integer
+   
    let price = c :: Double
 
    curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
    let curtimestamp = curtimestampl :: Integer
-   liftIO $ print (curtimestamp)
+   --liftIO $ print (curtimestamp)
    runReq defaultHttpConfig $ do 
       let signature = BLU.fromString sk
       let params = 
@@ -127,8 +144,8 @@ takeorder a b c = do
       response <- areq
       let result = responseBody response :: Object
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
-      liftIO $ print (ares)
-      liftIO $ print (response)
+      liftIO $ print ("ss")
+      --liftIO $ print (response)
       --how to change bs to json
    
 parsekline :: String -> IO (DpairMserie) 
@@ -168,22 +185,38 @@ parsekline nstr  = runReq defaultHttpConfig $ do
 
 pinghandledo :: Maybe BL.ByteString -> IO ()
 pinghandledo a  =  runReq defaultHttpConfig $ do
-    let ae = case a of
-               Just a -> a
+    let signature = BLU.fromString Passwd.sk
+    let ae = fromJust a 
     let aa = BL.toString ae 
     let ouri = https "api.binance.com" /: "api" /: "v3" /: "userDataStream"  
-    let params = "listenKey" =: (aa :: String) 
-    areq <- req PUT ouri NoReqBody lbsResponse params
+    
+    let passwdtxt = BC.pack Passwd.passwd
+    let params = 
+
+          (header "X-MBX-APIKEY" passwdtxt ) <>
+           "listenKey" =: (T.pack aa :: Text)
+
+    let abody = BLU.fromString $ NTB.urlEncodeVars [("listenKey",aa)] 
+    let ares = showDigest(hmacSha256 signature abody)
+    --let passwdtxt = BC.pack Passwd.passwd
+    --let httpparams = 
+          --(header "X-MBX-APIKEY" passwdtxt ) <>
+    --      "listenKey" =: (T.pack aa :: Text)
+          --("signature" =: (T.pack ares :: Text )) 
+    areq <- req PUT ouri  NoReqBody  lbsResponse params
     liftIO $ print (areq)
 
-data HStick = HStick {
-      st :: Integer,
-      op :: String,
-      cp :: String,
-      hp :: String,
-      lp :: String
+
+data WSevent = WSevent {
+      wstream :: String,
+      wsdata :: Value
 } deriving (Show,Generic)
 
+instance FromJSON WSevent where
+   parseJSON (Object v) = do
+      WSevent <$> (v .: "stream") 
+              <*> (v .: "data")
+   parseJSON _ = mzero
 
 data Mseries = Mseries  [HStick] deriving (Show,Generic) 
 
@@ -201,6 +234,13 @@ getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
 --instance  Show Mseries 
 
+data HStick = HStick {
+      st :: Integer,
+      op :: String,
+      cp :: String,
+      hp :: String,
+      lp :: String
+} deriving (Show,Generic)
 
 instance FromJSON HStick where
    parseJSON (Array v) = do
