@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f5b59d5b8b72f3a9c70b2a0ec30a09c087e2f3e2725b5e96241de9e456108aa3
+-- hash: 59f543a2a549f08e8f0676df52cc29bbb10c16ea36864225a2b7fc2b6312662b
 
 name:           trade
 version:        0.1.0.0
@@ -27,10 +27,28 @@ source-repository head
 
 library
   exposed-modules:
+      Network.WebSockets
+      Network.WebSockets.Client
+      Network.WebSockets.Connection
+      Network.WebSockets.Connection.Options
+      Network.WebSockets.Extensions
+      Network.WebSockets.Extensions.Description
+      Network.WebSockets.Extensions.PermessageDeflate
+      Network.WebSockets.Extensions.StrictUnicode
+      Network.WebSockets.Http
+      Network.WebSockets.Hybi13
+      Network.WebSockets.Hybi13.Demultiplex
+      Network.WebSockets.Hybi13.Mask
+      Network.WebSockets.Protocol
+      Network.WebSockets.Server
+      Network.WebSockets.Stream
+      Network.WebSockets.Types
+      Network.Wuss
       Analysistructure
       Globalvar
       Httpstructure
       Lib
+      Myutils
       Order
       Passwd
       Rediscache
@@ -47,27 +65,36 @@ library
     , SHA
     , aeson
     , async
+    , attoparsec
     , base >=4.7 && <5
+    , base64-bytestring
+    , binary
     , bytestring
+    , case-insensitive
+    , clock
+    , conduit
     , connection
     , containers
+    , entropy
     , eventful-core
     , hedis
     , lens
     , lens-aeson
     , modern-uri
     , mtl
+    , network
     , parallel
+    , random
     , req
     , split
     , stm
+    , streaming-commons
     , string-class
     , text
     , time
     , unordered-containers
     , utf8-string
     , vector
-    , websockets
     , wuss
   default-language: Haskell2010
 
@@ -83,20 +110,30 @@ executable trade-exe
     , SHA
     , aeson
     , async
+    , attoparsec
     , base >=4.7 && <5
+    , base64-bytestring
+    , binary
     , bytestring
+    , case-insensitive
+    , clock
+    , conduit
     , connection
     , containers
+    , entropy
     , eventful-core
     , hedis
     , lens
     , lens-aeson
     , modern-uri
     , mtl
+    , network
     , parallel
+    , random
     , req
     , split
     , stm
+    , streaming-commons
     , string-class
     , text
     , time
@@ -104,7 +141,6 @@ executable trade-exe
     , unordered-containers
     , utf8-string
     , vector
-    , websockets
     , wuss
   default-language: Haskell2010
 
@@ -121,20 +157,30 @@ test-suite trade-test
     , SHA
     , aeson
     , async
+    , attoparsec
     , base >=4.7 && <5
+    , base64-bytestring
+    , binary
     , bytestring
+    , case-insensitive
+    , clock
+    , conduit
     , connection
     , containers
+    , entropy
     , eventful-core
     , hedis
     , lens
     , lens-aeson
     , modern-uri
     , mtl
+    , network
     , parallel
+    , random
     , req
     , split
     , stm
+    , streaming-commons
     , string-class
     , text
     , time
@@ -142,6 +188,5 @@ test-suite trade-test
     , unordered-containers
     , utf8-string
     , vector
-    , websockets
     , wuss
   default-language: Haskell2010

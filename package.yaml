@@ -25,7 +25,7 @@ dependencies:
 - wuss 
 - aeson 
 - text
-- websockets
+  #  --- websockets
 - bytestring 
 - modern-uri
 - SHA 
@@ -44,6 +44,17 @@ dependencies:
 - string-class
 - time
 - split
+- conduit
+- clock
+- random
+- base64-bytestring
+- entropy 
+  #- websockets
+- streaming-commons
+- network
+- binary
+- attoparsec
+- case-insensitive 
 - HTTP
 - stm
 library:

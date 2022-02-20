@@ -31,7 +31,8 @@ import Control.Exception
 import Control.Monad.Trans (liftIO)
 import Control.Concurrent
 import Control.Lens
-import Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
+import Network.WebSockets as NW --(ClientApp, receiveData, sendClose, sendTextData,send,WebSocketsData)
+import Network.WebSockets (sendPong)
 import Network.WebSockets.Connection as NC
 import Control.Concurrent.Async
 import Control.Concurrent.STM
@@ -51,10 +52,14 @@ import qualified Data.ByteString.Lazy as BL
 import Data.Aeson.Types as DAT
 import Data.List as DL
 import Data.Maybe
+import Data.Either
 import Httpstructure
+import Type.Reflection
 import Rediscache
 import Globalvar
 import Order
+import Myutils
+
 
 
 replydo :: Redis (Either Reply [ByteString], Either Reply [ByteString])
@@ -75,13 +80,25 @@ isstrategyinvalid = True
 --the predications of rule system 
 
 
-msgcacheandpingtempdo :: Integer -> ByteString -> Redis ()
-msgcacheandpingtempdo a msg = do
+msgcacheandpingtempdo :: Integer -> ByteString -> NC.Connection-> Redis ()
+msgcacheandpingtempdo a msg wc = do
         case compare a 300000 of -- 300000= 5min
         --case compare a 300000 of -- 300000= 5min
             GT -> do 
               void $ publish "cache:1" ("cache" <> msg)
               void $ publish "listenkey:1" ("listenkey" <> msg)
+             -- NC.sendPong wc
+            EQ ->
+              return ()
+            LT ->
+              return ()
+
+
+sendpongdo :: Integer -> NC.Connection -> IO ()
+sendpongdo a conn = do
+        case compare a 300000 of -- 300000= 5min
+            GT -> do 
+                  sendPong conn (T.pack $ show "1")
             EQ ->
               return ()
             LT ->
@@ -90,9 +107,9 @@ msgcacheandpingtempdo a msg = do
 
 matchmsgfun :: ByteString -> Bool
 matchmsgfun msg = matchmsg == matchamsg  
-                     where  
-                         matchmsg = DB.drop 11 $ DB.take 24 msg 
-                         matchamsg = BLU.fromString "adausdt@kline"
+              where  
+                  matchmsg = DB.drop 11 $ DB.take 24 msg 
+                  matchamsg = BLU.fromString "adausdt@kline"
 
 
 msgordertempdo :: ByteString -> ByteString -> Redis ()
@@ -104,7 +121,7 @@ msgordertempdo msg osdetail =  do
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
 
-    when (orderstate == "0" && orderquan > 0 ) $ do 
+    when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
         void $ publish "order:1" ("order" <> mmsg )
     
     when (matchmsgfun msg /= True ) $ do 
@@ -112,11 +129,11 @@ msgordertempdo msg osdetail =  do
 
 generatehlsheet :: ByteString -> IO ()
 generatehlsheet msg = do 
-         conn <- connect defaultConnectInfo
-         mseriesFromredis conn msg--get all mseries from redis 
-         ---generate high low point spreet
-         ---quant analysis under high low (risk spreed) 
-         ---return open/close event to redis 
+    conn <- connect defaultConnectInfo
+    mseriesFromredis conn msg--get all mseries from redis 
+    ---generate high low point spreet
+    ---quant analysis under high low (risk spreed) 
+    ---return open/close event to redis 
 
 msgsklinetoredis :: ByteString -> Redis ()
 msgsklinetoredis msg = do
@@ -135,17 +152,11 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
-  forever $ do
-      message <- receiveData wc 
-      --let msg = BL.fromStrict message
-      --let test = A.decode msg :: Maybe Klinedata --Klinedata
-      --stop <-getCurrentTime
-      --SI.putStrLn (show (test))
+    forever $ do
+      message <- NC.receiveData wc 
       liftIO $ print (message)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
-     
-   -- add
       let orderitem = snd res
       let klineitem = fst res
       let cachetime = case klineitem of
@@ -155,7 +166,8 @@ publishThread rc wc tvar =
             Left _ ->  "some error"
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-      --liftIO $ print (replydomarray!!0)
+      liftIO $ print ("-----------------------cachetime---------------------")
+      liftIO $ print (replydomarray)
       let replydores = (read (replydomarray !! 0)) :: Integer
       --liftIO $ print (replydores)
       let timediff = curtimestamp-replydores
@@ -173,12 +185,13 @@ publishThread rc wc tvar =
       --2.check all open and close condition ,if match ,send open/close command
       --dispatch event to detail command
       runRedis rc $ do 
-         msgcacheandpingtempdo timediff message 
+         msgcacheandpingtempdo timediff message wc 
 --         msgpingtempdo timediff message
          --void $ publish "cache" ("cache" <> "aaaaaaa")
          msgsklinetoredis message
          msganalysistoredis message
          msgordertempdo message orderdet
+      sendpongdo timediff  wc
  -- let loop = do
  --         line <- T.getline
  --         unless (T.null line) $ do 
@@ -216,9 +229,8 @@ opclHandler channel  msg = do
     -- if msg send grid not match to redis grid ,cancel operation
     -- ==> command set from analysishandler ==> redis ==> publish ==> opclHandler
     --mtthread <- myThreadId
-    
-    liftIO $ print (msg)
-    liftIO $ print ("))))))))))))))))))")
+    conn <- connect defaultConnectInfo
+    liftIO $ print ("start opcl ++++++++++++++++++++++++++++++++++++++++++++")
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
@@ -230,35 +242,111 @@ opclHandler channel  msg = do
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg
          let msgitem = DLT.splitOn ":::" msgorigin 
-         liftIO $ print (msgitem)
+         --liftIO $ print (msgitem)
          let order = DLT.splitOn "|" $  (msgitem!!0)
          let klinemsg = msgitem !! 1
-         liftIO $ print ("start take order")
-         liftIO $ print (klinemsg)
+         --liftIO $ print ("start take order")
+         --liftIO $ print (klinemsg)
          let orderquan = read (order !!4) :: Integer
-         liftIO $ print (orderquan)
+         let orderpr = read (order !!5) :: Double
+         let orderstate = order !!6
+         --liftIO $ print (orderquan)
+         -- check need to close at what a price or need to open
          kline <- getmsg  klinemsg 
+         liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
          let curpr = read $ kclose kline :: Double
-         let pr = 0.01 + curpr
+         liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
          currtime <- getcurtimestamp 
          let curtime = fromInteger currtime ::Double
-         liftIO $ print (curtime)
-         conn <- connect defaultConnectInfo
-         runRedis conn (proordertorediszset orderquan pr curtime)
-         takeorder "BUY" orderquan pr 
+         when (orderstate == (show $ fromEnum Prepare)) $ do
+              let pr = 0.01 + curpr
+              runRedis conn (proordertorediszset orderquan pr curtime)
+              takeorder "BUY" orderquan pr 
+
+         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.0005)    ) $ do
+              let pr = curpr-0.01
+              runRedis conn (cproordertorediszset orderquan pr curtime)
+              takeorder "SELL" orderquan pr 
+
 
     when (dettype /= "adausdt@kline_1m") $ do 
-         let eventstr = fromJust $ detdata ^? key "e"
-         let kline = case eventstr of 
-                          DAT.String l -> l
-         when (kline == "outboundAccountPosition") $ do 
-            --get last record from redis ,than compare balance,if returnbalance-befbalance <= order quan then still under process,else set to End  
-             
-              liftIO $ print ("eeeee") 
          
-         liftIO $ print $  (detdata ^? key "e") 
-         liftIO $ print $  (detdata ^? key "E") 
-         liftIO $ print $  (detdata ^? key "e") 
+         liftIO $ print ("not kline ++++++++++++++++++++++++++++++++++++++++++++")
+         let eventstr = fromJust $ detdata ^? key "e"
+         let eventname = outString eventstr 
+         liftIO $ print (eventname)
+         currtime <- getcurtimestamp 
+         let curtime = fromInteger currtime ::Double
+         when (eventname == "outboundAccountPosition") $ do 
+         
+              liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
+              let eventstr = fromJust $ detdata ^? key "e"
+              let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
+              let adacurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "ADA"))) !!0
+              let usdtcurballl = fromJust $ usdtcurball ^? key "f" 
+              let adacurballl = fromJust $ adacurball ^? key "f" 
+              let usdtcurbal = read $ T.unpack $ outString usdtcurballl :: Double
+              let adacurbal = read $ T.unpack $ outString adacurballl :: Double
+              runRedis conn $ do  
+                 balres <- getbalfromredis
+                 orderres <- getorderfromredis
+                 let adabal = read $ BLU.toString $ fromJust $ fromRight Nothing $ fst balres :: Double
+                 let usdtbal = read $ BLU.toString $ fromJust $ fromRight Nothing $ snd balres :: Double
+                 let quantyl =  fromRight [DB.empty] orderres
+                 let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
+                 let quantylll = read $ (quantyll !! 4) :: Integer
+                 let quantdouble = read $ (quantyll !! 4) :: Double
+                 liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
+                 when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
+                     liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
+                     liftIO $ print (usdtcurbal,quantdouble,usdtbal)
+                     when (abs (usdtcurbal+ quantdouble-usdtbal)< 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
+                         hlfendordertorediszset quantylll curtime  
+                         setkvfromredis adakey $ show adacurbal 
+                         setkvfromredis usdtkey $ show usdtcurbal 
+                         --need to update bal key and do close request 
+                     
+                 when (usdtcurbal >= usdtbal-0.1) $ do   -- that is now >= past ,means to sell
+                     liftIO $ print ("enter sell pro++++++++++++++++++++++++++++++++++++++++++++")
+                     when (abs (adacurbal+ quantdouble-adabal)< 1 ) $ do -- record as end
+                         cendordertorediszset quantylll curtime  
+                         setkvfromredis adakey $ show adacurbal 
+                         setkvfromredis usdtkey $ show usdtcurbal 
+                  --if lastrecord state == prepare  and diff <= quanty  then hlfendordertorediszset and closeorder
+                  --if lastrecord state == cprepare  and diff <= quanty  then endordertorediszset
+             
+         when (eventname == "executionReport" ) $ do 
+               --for this event come before outbound ,so need to add price first,after outbound come ,correct quanty
+               --pexpandordertorediszset
+              liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
+              let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
+              liftIO $ print (curorderstate)
+              when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
+                  liftIO $ print ("1++++++++++++++++++++++++++++++++++++++++++++")
+                  let cpr = T.unpack $ outString $ fromJust $ detdata ^? key "L" 
+                  let cty = T.unpack $ outString $ fromJust $ detdata ^? key "l"
+                  liftIO $ print (cpr,cty)
+
+                  let curorderpr = read cpr :: Double
+                  liftIO $ print ("2++++++++++++++++++++++++++++++++++++++++++++")
+                  let curquantyy = read cty :: Double
+                  let curquanty = round curquantyy :: Integer
+                  liftIO $ print ("3++++++++++++++++++++++++++++++++++++++++++++")
+                  let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
+                  liftIO $ print ("4++++++++++++++++++++++++++++++++++++++++++++")
+                  let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
+                  liftIO $ print ("5++++++++++++++++++++++++++++++++++++++++++++")
+                  liftIO $ print (curorderpr,curquanty)
+                  liftIO $ print ("6++++++++++++++++++++++++++++++++++++++++++++")
+                  --still need to  judge buy or sell
+                  when (curside == "BUY" && curcoin == "ADA") $ do 
+                       liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
+                       runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
+
+                  when (curside == "SELL" && curcoin == "ADA") $ do 
+                       liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
+                       runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
+         
          --executionReport and outboundAccountPosition
         
    -- takeorder
@@ -271,8 +359,7 @@ getmsg msg = do
     let mmsg = BLU.fromString msg
     let mmmsg = BL.fromStrict mmsg
     let test = A.decode mmmsg :: Maybe Klinedata --Klinedata
-    let kline = case test of 
-                    Just l -> l
+    let kline = fromJust test 
     return kline
 
 addklinetoredis :: ByteString -> Redis ()
@@ -299,6 +386,7 @@ addklinetoredis msg  = do
 sklineHandler :: RedisChannel -> ByteString -> IO ()
 sklineHandler channel msg = do 
       conn <- connect defaultConnectInfo
+      liftIO $ print ("start skline ++++++++++++++++++++++++++++++++++++++++++++")
       runRedis conn (addklinetoredis msg)
       debugtime
 
@@ -306,11 +394,13 @@ sklineHandler channel msg = do
 analysisHandler :: RedisChannel -> ByteString -> IO ()
 analysisHandler channel msg = do 
       --conn <- connect defaultConnectInfo
+      liftIO $ print ("start analysis ++++++++++++++++++++++++++++++++++++++++++++")
       generatehlsheet msg
       debugtime
 
 cacheHandler :: RedisChannel -> ByteString -> IO ()
 cacheHandler channel msg = do 
+      liftIO $ print ("start cache ++++++++++++++++++++++++++++++++++++++++++++")
       conn <- connect defaultConnectInfo
       getSticksToCache conn
       debugtime

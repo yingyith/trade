@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveAnyClass #-}
-import Wuss
+import Network.Wuss
 import Database.Redis
 import Control.Concurrent (forkIO)
 import Control.Concurrent.Async
@@ -10,7 +10,7 @@ import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
 import Control.Exception (catch)
 import Data.Text (Text, pack)
-import Network.WebSockets (ClientApp, receiveData, sendClose, sendTextData)
+import Network.WebSockets as NW (ClientApp, receiveData, sendClose, sendTextData)
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
@@ -35,7 +35,6 @@ import Redispipe
 import Rediscache
 import Data.Text.Encoding
 import System.IO
-
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 

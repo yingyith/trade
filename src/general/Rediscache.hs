@@ -11,6 +11,8 @@ module Rediscache (
    liskeytoredis,
    getorderfromredis, 
    getspotbaltoredis,
+   setkvfromredis,
+   getbalfromredis,
    Ordervar (..),
 --   liskeygetredis,
    initdict
@@ -59,6 +61,20 @@ getorderfromredis = do
    res <- zrange bklinename 0 0
    return res
 
+getbalfromredis :: Redis (Either Reply (Maybe BL.ByteString),Either Reply (Maybe BL.ByteString))
+getbalfromredis = do 
+   let adaname = BL.fromString adakey
+   adab <- get adaname 
+   let usdtname = BL.fromString usdtkey
+   usdtb <- get usdtname 
+   return (adab,usdtb)
+
+setkvfromredis :: String -> String -> Redis ()
+setkvfromredis key value = do 
+   let keybs = BL.fromString key
+   let valuebs = BL.fromString value
+   void $ set keybs valuebs
+
 liskeytoredis :: String -> Redis ()
 liskeytoredis a = do 
     --string to bytestring
@@ -67,7 +83,7 @@ liskeytoredis a = do
    void $ del [key] 
    void $ set key value
    void $ zremrangebyrank (BL.fromString orderkey) 0 2000
-   let abyvaluestr = BL.fromString  $ intercalate "|" ["start","Buy","0","0","2"]
+   let abyvaluestr = BL.fromString  $ intercalate "|" ["start","Buy","0","0","20","1","5"]
    void $ zadd (BL.fromString orderkey) [(0,abyvaluestr)]
    ---delete other key
 
@@ -192,13 +208,13 @@ mseriesFromredis conn msg = do
      let interprl = [(x,y)|x<-defintervallist,let y= dcp]
      res <- zipWithM saferegionrule interprl hlsheet
      timecur <- getcurtimestamp
-     liftIO $ print (timecur,dcp)
-     liftIO $ print (res)
+     liftIO $ print ("start pre or cpre --------------------------------------")
+     liftIO $  print (dcp)
      let sumres = sum res
      when (sumres > 0) $ do
           curtimestampi <- getcurtimestamp
           runRedis conn $ do
-             preordertorediszset sumres dcp  curtimestampi
+             preorcpreordertorediszset sumres dcp hlsheet curtimestampi
      --genposgrid hlsheet dcp
   --write order command to zset
      
