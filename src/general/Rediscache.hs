@@ -112,11 +112,11 @@ getSticksToCache conn = do
     tt <- mapM parsekline defintervallist
     initdict tt conn
 
-mseriesToredis :: [DpairMserie] -> R.Connection -> IO ()
+mseriesToredis :: [DpairMserie] -> R.Connection -> IO (Either Reply [BL.ByteString])
 mseriesToredis a conn = do
-    void $ runRedis conn $ do
+    runRedis conn $ do
                  zipWithM hsticklistToredis  a  defintervallist 
-
+                 zrange (BL.fromString secondkey)  0 40  
 
 --pinghandledo :: Maybe BL.ByteString -> IO ()
 --pinghandledo a  =  runReq defaultHttpConfig $ do
@@ -162,10 +162,6 @@ analysistrdo aa bb = do
      let highgrid = maximum highsheet
      let lowgrid = minimum lowsheet
      let diff = (highgrid-lowgrid)/3 
-     -- 1day earn : 0.02*2*24/6 
-     --if current price in range (lowgrid+diff,highgrid-diff),can open,other forbiden
-     --
-     
 
      return [lowgrid,highgrid]
 
@@ -178,10 +174,16 @@ parsetokline msg = do
                      Just l -> l
      return kline
 
-analysisdo :: [Either Reply [BL.ByteString]] -> IO [[Double]]
-analysisdo aim  = do 
+analysismindo :: [Either Reply [BL.ByteString]] -> IO [[Double]]
+analysismindo aim  = do 
      hlsheet <-  zipWithM analysistrdo aim defintervallist
      return hlsheet
+
+analysisseddo :: Either Reply [BL.ByteString] -> IO [BL.ByteString] 
+analysisseddo aim  = do 
+     let res = case aim of 
+                    Right l ->l
+     return res
      
 
 mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
@@ -190,26 +192,37 @@ mserieFromredis klinename = do
      let bklinename = BL.fromString klinename
      res <- zrange bklinename 0 15
      return res
+
+getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],
+                            Either Reply [BL.ByteString])
+getdiffintervalflow = do 
+     fisar <- mapM mserieFromredis defintervallist 
+     sndar <- zrange (BL.fromString secondkey)  0 40  
+     return (fisar,sndar)
+     
               
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
 mseriesFromredis conn msg = do
-     res <- runRedis conn $ do
-                  mapM mserieFromredis defintervallist 
-     hlsheet <- analysisdo res 
+     res <- runRedis conn (getdiffintervalflow)
+     hlsheet <- analysismindo $ fst res 
+     secondsheet <- analysisseddo $ snd res 
+     liftIO $ print ("second data is ----------------------------")
+     liftIO $ print (secondsheet)
      kline <- parsetokline msg
-     --liftIO $ print (hlsheet)
+    -- liftIO $ print (hlsheet)
      let mconlist = (DL.sort $ concat hlsheet) ++ [1000]
      --liftIO $ print (mconlist)
      let lenmcon = length mconlist
      let mconlistl = [mconlist!!i |i<-[0..(lenmcon-2)],(mconlist!!(i+1)-mconlist!!i)>=0.006]
      --let aimlist = [i|i <- x,x <- hlsheet]
-     --liftIO $ print (mconlistl)
+    -- liftIO $ print (mconlistl)
      let dcp = read $ kclose kline :: Double
      let interprl = [(x,y)|x<-defintervallist,let y= dcp]
      res <- zipWithM saferegionrule interprl hlsheet
      timecur <- getcurtimestamp
      liftIO $ print ("start pre or cpre --------------------------------------")
      liftIO $  print (dcp)
+     liftIO $  print (res)
      let sumres = sum res
      when (sumres > 0) $ do
           curtimestampi <- getcurtimestamp
@@ -261,7 +274,7 @@ initdict rsp conn = do
   --   --liftIO $ print (tdata)
   --   let ttdata = getmsilist tdata
   --   liftIO $ print (ttdata)
-     mseriesToredis rsp conn 
+     void $ mseriesToredis rsp conn 
      
    --get from web api and update
    

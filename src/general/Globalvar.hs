@@ -8,6 +8,7 @@ module Globalvar (
     orderkey,
     fivemkey,
     adakey,
+    secondkey,
     usdtkey
 ) where
 
@@ -17,6 +18,7 @@ defintervallist = ["1m","5m","15m","1h","4h","12h","3d"]
 orderkey = "Order"
 
 fivemkey = "5m"
+secondkey = "1s"
 
 adakey = "Ada"
 usdtkey = "Usdt"

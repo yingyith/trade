@@ -117,6 +117,7 @@ msgordertempdo msg osdetail =  do
     let orderorigin = BLU.toString osdetail
     let order = DLT.splitOn "|" orderorigin 
     let orderstate = DL.last order
+    liftIO $ print (orderorigin)
     let orderquan =  read $ order!!4 :: Integer
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
@@ -135,10 +136,16 @@ generatehlsheet msg = do
     ---quant analysis under high low (risk spreed) 
     ---return open/close event to redis 
 
-msgsklinetoredis :: ByteString -> Redis ()
-msgsklinetoredis msg = do
+msgsklinetoredis :: ByteString -> Integer -> Redis ()
+msgsklinetoredis msg stamp = do
     when (matchmsgfun msg == True ) $ do 
       void $ publish "skline:1" ( msg)
+      let abyvaluestr = msg
+      let abykeystr = BLU.fromString secondkey
+      let stamptime = fromInteger stamp :: Double
+      void $ zadd abykeystr [(-stamptime,abyvaluestr)]
+      void $ zremrangebyrank abykeystr 50 1000
+      --add kline to redis zset for 1second
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       --liftIO $ print (test)
       -- store to kline seconds in  redis key as  1m 
@@ -188,7 +195,7 @@ publishThread rc wc tvar =
          msgcacheandpingtempdo timediff message wc 
 --         msgpingtempdo timediff message
          --void $ publish "cache" ("cache" <> "aaaaaaa")
-         msgsklinetoredis message
+         msgsklinetoredis message curtimestamp
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
@@ -387,7 +394,7 @@ sklineHandler :: RedisChannel -> ByteString -> IO ()
 sklineHandler channel msg = do 
       conn <- connect defaultConnectInfo
       liftIO $ print ("start skline ++++++++++++++++++++++++++++++++++++++++++++")
-      runRedis conn (addklinetoredis msg)
+      runRedis conn (addklinetoredis msg )
       debugtime
 
       
@@ -397,6 +404,7 @@ analysisHandler channel msg = do
       liftIO $ print ("start analysis ++++++++++++++++++++++++++++++++++++++++++++")
       generatehlsheet msg
       debugtime
+      liftIO $ print ("end analysis ++++++++++++++++++++++++++++++++++++++++++++")
 
 cacheHandler :: RedisChannel -> ByteString -> IO ()
 cacheHandler channel msg = do 
