@@ -54,9 +54,8 @@ instance Enum Ostate where
      fromEnum Done = 5
 
 preorcpreordertorediszset :: Integer -> Double -> [[Double]] -> Integer -> Redis ()
-preorcpreordertorediszset quan pr hlsheet stamp  = do 
+preorcpreordertorediszset sumres pr hlsheet stamp  = do 
 -- quantity ,side ,price ,ostate
-   let quantity = quan :: Integer
    let price  = pr :: Double
    let coin = "ADA" :: String
    let otype = "Open" :: String
@@ -73,7 +72,11 @@ preorcpreordertorediszset quan pr hlsheet stamp  = do
    let lastprr = recorditem !! 5
    liftIO $ print (lastprr)
    let lastpr = read (recorditem !! 5) :: Double
+   let lastquan = read (recorditem !! 4) :: Integer
    when (recordstate == (show $ fromEnum Done)) $ do
+
+       liftIO $ print ("enter prepare is -------------------------")
+       let quantity = sumres :: Integer
        let orderid =  show stamp 
        let side = "Buy" :: String
        let shprice =  show pr
@@ -82,17 +85,18 @@ preorcpreordertorediszset quan pr hlsheet stamp  = do
                            _  -> show quantity
        liftIO $ print (shquant)
        let shstate =  show $ fromEnum Prepare
-       when (quan > 0) $ do
+       when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  intercalate "|" [coin,side,otype,orderid,shquant,shprice,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum HalfDone)) $ do
+       let quantity = lastquan 
        let orderid =  show stamp 
        let side = "Sell" :: String
-       let shprice =  show (lastpr+0.005)
+       let shprice =  show (lastpr+0.002)
        let shquant =  show quantity
        let shstate =  show $ fromEnum Cprepare
-       when (quan > 0) $ do
+       when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  intercalate "|" [coin,side,otype,orderid,shquant,shprice,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
@@ -128,8 +132,8 @@ pexpandordertorediszset side quan pr stamp = do
    -- this operation only append the order detail ,not alter the state
    let abykeystr = BL.fromString orderkey
    let coin = case side of 
-                   "BUY" -> "ADA"
-                   "SELL" -> "USDT"
+                   "Buy" -> "ADA"
+                   "Sell" -> "USDT"
    let otype = "Taken" :: String
    res <- zrange abykeystr 0 0
    let tdata = case res of 
@@ -143,9 +147,10 @@ pexpandordertorediszset side quan pr stamp = do
    let orderid =  show stamp 
    let shprice =  show pr
    let shquant =  show quan
+   liftIO $ print (side ++ "is -------------------------------")
    let shstate = case side of 
-                      "BUY" -> show $ fromEnum Process
-                      "SELL" -> show $ fromEnum Cprocess
+                      "Buy" -> show $ fromEnum Process
+                      "Sell" -> show $ fromEnum Cprocess
    let prestate = show $ fromEnum Prepare
    let cprestate = show $ fromEnum Cprepare
    liftIO $ print (prestate,cprestate,shstate)
@@ -196,29 +201,29 @@ hlfendordertorediszset quan  stamp  = do
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 
-cpreordertorediszset :: Integer -> Double -> Redis ()
-cpreordertorediszset quan  stamp  = do 
-   let abykeystr = BL.fromString orderkey
-   let side = "Sell" :: String
-   let coin = "ADA" :: String
-   let otype = "Open" :: String
-   res <- zrange abykeystr 0 0
-   let tdata = case res of 
-                    Right c -> c
-   let lastrecord = BL.toString $ tdata !!0
-   let recorditem = DLT.splitOn "|" lastrecord
-   let lastorderid = recorditem !! 3
-   liftIO $ print ("bef cpre record is -------------------------")
-   liftIO $ print (recorditem)
-   let recordstate = last recorditem
-   let lastpr = recorditem !! 4
-   let orderid =  show lastorderid ::String
-   let shprice =  show lastpr
-   let shquant =  show quan
-   let shstate =  show $ fromEnum Cprepare
-   when (recordstate == (show $ fromEnum HalfDone) ) $ do
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shstate]
-       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+--cpreordertorediszset :: Integer -> Double -> Redis ()
+--cpreordertorediszset quan  stamp  = do 
+--   let abykeystr = BL.fromString orderkey
+--   let side = "Sell" :: String
+--   let coin = "ADA" :: String
+--   let otype = "Open" :: String
+--   res <- zrange abykeystr 0 0
+--   let tdata = case res of 
+--                    Right c -> c
+--   let lastrecord = BL.toString $ tdata !!0
+--   let recorditem = DLT.splitOn "|" lastrecord
+--   let lastorderid = recorditem !! 3
+--   liftIO $ print ("bef cpre record is -------------------------")
+--   liftIO $ print (recorditem)
+--   let recordstate = last recorditem
+--   let lastpr = recorditem !! 4
+--   let orderid =  show lastorderid ::String
+--   let shprice =  show lastpr
+--   let shquant =  show quan
+--   let shstate =  show $ fromEnum Cprepare
+--   when (recordstate == (show $ fromEnum HalfDone) ) $ do
+--       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shstate]
+--       void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 cproordertorediszset :: Integer -> Double -> Double -> Redis ()
 cproordertorediszset quan pr stamp  = do 

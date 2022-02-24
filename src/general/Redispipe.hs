@@ -144,7 +144,7 @@ msgsklinetoredis msg stamp = do
       let abykeystr = BLU.fromString secondkey
       let stamptime = fromInteger stamp :: Double
       void $ zadd abykeystr [(-stamptime,abyvaluestr)]
-      void $ zremrangebyrank abykeystr 50 1000
+      void $ zremrangebyrank abykeystr 90 1000
       --add kline to redis zset for 1second
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       --liftIO $ print (test)
@@ -259,7 +259,7 @@ opclHandler channel  msg = do
          let orderstate = order !!6
          --liftIO $ print (orderquan)
          -- check need to close at what a price or need to open
-         kline <- getmsg  klinemsg 
+         kline <- getmsgfromstr  klinemsg 
          liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
          let curpr = read $ kclose kline :: Double
          liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
@@ -271,6 +271,7 @@ opclHandler channel  msg = do
               takeorder "BUY" orderquan pr 
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.0005)    ) $ do
+              liftIO $ print ("-------------start sell process---------------")
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
               takeorder "SELL" orderquan pr 
@@ -307,7 +308,7 @@ opclHandler channel  msg = do
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
                      liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
                      liftIO $ print (usdtcurbal,quantdouble,usdtbal)
-                     when (abs (usdtcurbal+ quantdouble-usdtbal)< 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
+                     when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
                          hlfendordertorediszset quantylll curtime  
                          setkvfromredis adakey $ show adacurbal 
                          setkvfromredis usdtkey $ show usdtcurbal 
@@ -361,13 +362,6 @@ opclHandler channel  msg = do
     --if type just = msg  and predication is qualified,then try get lock 
     --if type      = websocket account change/order token, release lock
 
-getmsg :: String -> IO Klinedata
-getmsg msg = do 
-    let mmsg = BLU.fromString msg
-    let mmmsg = BL.fromStrict mmsg
-    let test = A.decode mmmsg :: Maybe Klinedata --Klinedata
-    let kline = fromJust test 
-    return kline
 
 addklinetoredis :: ByteString -> Redis ()
 addklinetoredis msg  = do 
