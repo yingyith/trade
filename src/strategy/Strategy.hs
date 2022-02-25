@@ -40,9 +40,9 @@ import Httpstructure
 --                                  only sum of all predication > = 0 ,then can open
 risksheet :: DM.Map String [Integer]
 risksheet = fromList [
-             ("3m", [20,-5,5,-45]),
+             ("3m", [-150,-50,5,-45]),
              ("5m", [20,-15,10,-25]),
-             ("15m",[25,-65,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
+             ("15m",[-150,-125,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
              ("1h", [20,20,-10,-25]),    -- long interval have effect on short interval ,if 1hour is rise ,then ,15min low point  should rely on ,easy to have benefit.
              ("4h", [25,20,-15,-25]),
              ("12h", [5,5,0,0]),
