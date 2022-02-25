@@ -226,7 +226,7 @@ getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],
                             Either Reply [BL.ByteString])
 getdiffintervalflow = do 
      fisar <- mapM mserieFromredis defintervallist 
-     sndar <- zrange (BL.fromString secondkey)  0 40  
+     sndar <- zrange (BL.fromString secondkey)  0 80  
      return (fisar,sndar)
      
   --            
