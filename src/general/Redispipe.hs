@@ -347,11 +347,11 @@ opclHandler channel  msg = do
                   liftIO $ print (curorderpr,curquanty)
                   liftIO $ print ("6++++++++++++++++++++++++++++++++++++++++++++")
                   --still need to  judge buy or sell
-                  when (curside == "BUY" && curcoin == "ADA") $ do 
+                  when (curside == "Buy" && curcoin == "ADA") $ do 
                        liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
                        runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
 
-                  when (curside == "SELL" && curcoin == "ADA") $ do 
+                  when (curside == "Sell" && curcoin == "ADA") $ do 
                        liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
                        runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
          

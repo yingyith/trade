@@ -99,7 +99,8 @@ secondrule records = do
                                         let highpr = fst highgrid 
                                         let lowpr = fst lowgrid 
                                         let diff = highpr - lowpr
-                                       -- liftIO $ print (highpr,lowpr)
+                                        liftIO $ print (highpr,lowpr)
+                                        liftIO $ print ("second high low price is--------------------------------")
                                        -- return 0 
                                         if (abs (highpr - lowpr ) <=0.0004)
                                            then do return 0
