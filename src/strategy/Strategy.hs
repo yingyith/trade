@@ -108,8 +108,8 @@ secondrule records = do
                                            else do 
                                                    if ( (snd highgrid) < (snd lowgrid) && currentpr > lowpr ) --low point is near ,check diff 
                                                       then do 
-                                                          if (currentpr > (highpr-diff/2)) 
-                                                             then do return 25 
+                                                          if ((currentpr < (highpr-diff*0.7)) && (currentpr >= (lowpr-diff/6))) 
+                                                             then do return 15 
                                                              else do return (-100000)                                   -- currrentpr > high-1/3 diff  ,no open
                                                                                                                 -- if hight point only single stick,have big  diff to other ,then diff should be bigger
                                                                                                          -- currrentpr < high-1/3 diff  , open 25
