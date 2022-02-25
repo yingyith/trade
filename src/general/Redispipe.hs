@@ -305,7 +305,7 @@ opclHandler channel  msg = do
                  let quantylll = read $ (quantyll !! 4) :: Integer
                  let quantdouble = read $ (quantyll !! 4) :: Double
                  liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
-                 let adanum = round adacurbal :: Integer
+                 let adanum = floor adacurbal :: Integer
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
                      liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
                      liftIO $ print (usdtcurbal,quantdouble,usdtbal)
