@@ -119,7 +119,7 @@ mseriesToredis :: [DpairMserie] -> R.Connection -> IO (Either Reply [BL.ByteStri
 mseriesToredis a conn = do
     runRedis conn $ do
        zipWithM hsticklistToredis  a  defintervallist 
-       zrange (BL.fromString secondkey)  0 40  
+       zrange (BL.fromString secondkey)  0 80  
 
 --pinghandledo :: Maybe BL.ByteString -> IO ()
 --pinghandledo a  =  runReq defaultHttpConfig $ do

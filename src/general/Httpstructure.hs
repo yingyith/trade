@@ -66,6 +66,7 @@ getcurtimestamp = do
 getspotbalance :: IO (Double,Double)
 getspotbalance = do 
    curtimestamp <- getcurtimestamp
+   liftIO $ print (curtimestamp)
    runReq defaultHttpConfig $ do 
       let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
       let signature = BLU.fromString sk
