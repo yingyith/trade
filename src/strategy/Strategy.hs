@@ -103,7 +103,7 @@ secondrule records = do
                                         liftIO $ print ("second high low price is--------------------------------")
                                        -- return 0 
                                         if (abs (highpr - lowpr ) <=0.0004)
-                                           then do return 0
+                                           then do return (-100000)
                                            else do 
                                                    if ( (snd highgrid) > (snd lowgrid) && currentpr > lowpr ) --low point is near ,check diff 
                                                       then do 
