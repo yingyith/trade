@@ -105,9 +105,9 @@ secondrule records = do
                                         if (abs (highpr - lowpr ) <=0.005)
                                            then do return (-100000)
                                            else do 
-                                                   if ( (snd highgrid) > (snd lowgrid) && currentpr > lowpr ) --low point is near ,check diff 
+                                                   if ( (snd highgrid) < (snd lowgrid) && currentpr > lowpr ) --low point is near ,check diff 
                                                       then do 
-                                                          if (currentpr < (highpr-diff/2)) 
+                                                          if (currentpr > (highpr-diff/2)) 
                                                              then do return 25 
                                                              else do return (-100000)                                   -- currrentpr > high-1/3 diff  ,no open
                                                                                                                 -- if hight point only single stick,have big  diff to other ,then diff should be bigger
