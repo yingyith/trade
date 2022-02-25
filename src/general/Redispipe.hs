@@ -305,11 +305,12 @@ opclHandler channel  msg = do
                  let quantylll = read $ (quantyll !! 4) :: Integer
                  let quantdouble = read $ (quantyll !! 4) :: Double
                  liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
+                 let adanum = round adacurbal :: Integer
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
                      liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
                      liftIO $ print (usdtcurbal,quantdouble,usdtbal)
                      when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
-                         hlfendordertorediszset quantylll curtime  
+                         hlfendordertorediszset adanum curtime  
                          setkvfromredis adakey $ show adacurbal 
                          setkvfromredis usdtkey $ show usdtcurbal 
                          --need to update bal key and do close request 
