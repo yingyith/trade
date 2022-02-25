@@ -123,7 +123,7 @@ mseriesToredis :: [DpairMserie] -> R.Connection -> IO (Either Reply [BL.ByteStri
 mseriesToredis a conn = do
     runRedis conn $ do
        zipWithM hsticklistToredis  a  defintervallist 
-       zrange (BL.fromString secondkey)  0 80  
+       zrange (BL.fromString secondkey)  0 secondstick  
 
 --pinghandledo :: Maybe BL.ByteString -> IO ()
 --pinghandledo a  =  runReq defaultHttpConfig $ do
@@ -230,7 +230,7 @@ getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],
                             Either Reply [BL.ByteString])
 getdiffintervalflow = do 
      fisar <- mapM mserieFromredis defintervallist 
-     sndar <- zrange (BL.fromString secondkey)  0 80  
+     sndar <- zrange (BL.fromString secondkey)  0 secondstick  
      return (fisar,sndar)
      
   --            

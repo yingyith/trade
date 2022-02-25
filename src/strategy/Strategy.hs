@@ -28,6 +28,7 @@ import qualified Data.ByteString.Char8 as B
 import Data.Aeson.Types
 import Analysistructure as AS
 import Httpstructure
+import Globalvar
 
 
 --every grid have a position value, 1min value -> 15  up_fast->5      oppsite -> -15 fall_fast -> -25
@@ -40,8 +41,8 @@ import Httpstructure
 --                                  only sum of all predication > = 0 ,then can open
 risksheet :: DM.Map String [Integer]
 risksheet = fromList [
-             ("3m", [-150,-150,5,-45]),
-             ("5m", [20,-15,10,-25]),
+             ("3m", [-150,-150,-15,-45]),
+             ("5m", [10,-15,10,-25]),
              ("15m",[-150,-125,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
              ("1h", [20,20,-10,-25]),    -- long interval have effect on short interval ,if 1hour is rise ,then ,15min low point  should rely on ,easy to have benefit.
              ("4h", [25,20,-15,-25]),
@@ -85,7 +86,7 @@ secondrule :: [Klinedata] -> IO Integer
 secondrule records = do 
                         let slenrecord = length records
                         liftIO $ print (slenrecord)
-                        case compare slenrecord 80  of 
+                        case compare slenrecord (fromIntegral secondstick)  of 
                              GT -> do  
                                         rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..80] :: IO [AS.Hlnode]
                                         let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
