@@ -80,8 +80,9 @@ preorcpreordertorediszset sumres pr hlsheet stamp  = do
        let orderid =  show stamp 
        let side = "Buy" :: String
        let shprice =  show pr
-       let shquant =  case compare quantity 11 of
-                           LT -> show 11
+       let minquan = (round (10/pr))+2 :: Integer
+       let shquant =  case compare quantity minquan of
+                           LT -> show minquan
                            _  -> show quantity
        liftIO $ print (shquant)
        let shstate =  show $ fromEnum Prepare
