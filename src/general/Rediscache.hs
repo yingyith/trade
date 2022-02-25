@@ -81,8 +81,12 @@ liskeytoredis :: String -> Redis ()
 liskeytoredis a = do 
     --string to bytestring
    let value = BL.fromString a
-   let key = BL.fromString "liskey"
+   let key = BL.fromString liskey
+   let badakey = BL.fromString adakey
+   let busdtkey = BL.fromString usdtkey
    void $ del [key] 
+   void $ del [badakey] 
+   void $ del [busdtkey] 
    void $ set key value
    void $ zremrangebyrank (BL.fromString orderkey) 0 2000
    void $ zremrangebyrank (BL.fromString secondkey) 0 2000

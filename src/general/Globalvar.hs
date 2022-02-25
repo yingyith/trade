@@ -9,7 +9,8 @@ module Globalvar (
     fivemkey,
     adakey,
     secondkey,
-    usdtkey
+    usdtkey,
+    liskey
 ) where
 
 defintervallist :: [String]
@@ -22,3 +23,4 @@ secondkey = "1s"
 
 adakey = "Ada"
 usdtkey = "Usdt"
+liskey = "liskey"
