@@ -78,7 +78,7 @@ preorcpreordertorediszset sumres pr hlsheet stamp  = do
        liftIO $ print ("enter prepare is -------------------------")
        let quantity = sumres :: Integer
        let orderid =  show stamp 
-       let side = "Buy" :: String
+       let side = "BUY" :: String
        let shprice =  show pr
        let minquan = (round (10/pr))+2 :: Integer
        let shquant =  case compare quantity minquan of
@@ -93,7 +93,7 @@ preorcpreordertorediszset sumres pr hlsheet stamp  = do
    when (recordstate == (show $ fromEnum HalfDone)) $ do
        let quantity = lastquan 
        let orderid =  show stamp 
-       let side = "Sell" :: String
+       let side = "SELL" :: String
        let shprice =  show (lastpr+0.002)
        let shquant =  show quantity
        let shstate =  show $ fromEnum Cprepare
@@ -107,7 +107,7 @@ proordertorediszset quan pr stamp = do
    --res <- zrange abykeystr 0 1
    --let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
    let abykeystr = BL.fromString orderkey
-   let side = "Buy" :: String
+   let side = "BUY" :: String
    let coin = "ADA" :: String
    let otype = "Open" :: String
    res <- zrange abykeystr 0 0
@@ -133,8 +133,8 @@ pexpandordertorediszset side quan pr stamp = do
    -- this operation only append the order detail ,not alter the state
    let abykeystr = BL.fromString orderkey
    let coin = case side of 
-                   "Buy" -> "ADA"
-                   "Sell" -> "USDT"
+                   "BUY" -> "ADA"
+                   "SELL" -> "USDT"
    let otype = "Taken" :: String
    res <- zrange abykeystr 0 0
    let tdata = case res of 
@@ -150,8 +150,8 @@ pexpandordertorediszset side quan pr stamp = do
    let shquant =  show quan
    liftIO $ print (side ++ "is -------------------------------")
    let shstate = case side of 
-                      "Buy" -> show $ fromEnum Process
-                      "Sell" -> show $ fromEnum Cprocess
+                      "BUY" -> show $ fromEnum Process
+                      "SELL" -> show $ fromEnum Cprocess
    let prestate = show $ fromEnum Prepare
    let cprestate = show $ fromEnum Cprepare
    liftIO $ print (prestate,cprestate,shstate)
@@ -179,7 +179,7 @@ pexpandordertorediszset side quan pr stamp = do
 hlfendordertorediszset :: Integer  -> Double -> Redis ()
 hlfendordertorediszset quan  stamp  = do 
    let abykeystr = BL.fromString orderkey
-   let side = "Buy" :: String
+   let side = "BUY" :: String
    let coin = "ADA" :: String
    let otype = "Hdone" :: String
    res <- zrange abykeystr 0 0
@@ -205,7 +205,7 @@ hlfendordertorediszset quan  stamp  = do
 --cpreordertorediszset :: Integer -> Double -> Redis ()
 --cpreordertorediszset quan  stamp  = do 
 --   let abykeystr = BL.fromString orderkey
---   let side = "Sell" :: String
+--   let side = "SELL" :: String
 --   let coin = "ADA" :: String
 --   let otype = "Open" :: String
 --   res <- zrange abykeystr 0 0
@@ -229,7 +229,7 @@ hlfendordertorediszset quan  stamp  = do
 cproordertorediszset :: Integer -> Double -> Double -> Redis ()
 cproordertorediszset quan pr stamp  = do 
    let abykeystr = BL.fromString orderkey
-   let side = "Sell" :: String
+   let side = "SELL" :: String
    let coin = "ADA" :: String
    let otype = "Taken" :: String
    res <- zrange abykeystr 0 0
@@ -252,7 +252,7 @@ cproordertorediszset quan pr stamp  = do
 cendordertorediszset :: Integer  -> Double -> Redis ()
 cendordertorediszset quan  stamp = do 
    let abykeystr = BL.fromString orderkey
-   let side = "Sell" :: String
+   let side = "SELL" :: String
    let coin = "ADA" :: String
    let otype = "Done" :: String
    res <- zrange abykeystr 0 0
