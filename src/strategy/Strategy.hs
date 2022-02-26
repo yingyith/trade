@@ -42,8 +42,8 @@ import Globalvar
 risksheet :: DM.Map String [Integer]
 risksheet = fromList [
              ("3m", [-150,-150,-15,-45]),
-             ("5m", [10,-15,10,-25]),
-             ("15m",[-150,-125,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
+             ("5m", [10,-150,10,-25]),
+             ("15m",[-150,-150,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
              ("1h", [20,20,-10,-25]),    -- long interval have effect on short interval ,if 1hour is rise ,then ,15min low point  should rely on ,easy to have benefit.
              ("4h", [25,20,-15,-25]),
              ("12h", [5,5,0,0]),
@@ -101,14 +101,15 @@ secondrule records = do
                                         let lowpr = fst lowgrid 
                                         let diff = highpr - lowpr
                                         liftIO $ print (highpr,lowpr)
+                                        liftIO $ print (snd highgrid,snd lowgrid,lowpr,currentpr)
                                         liftIO $ print ("second high low price is--------------------------------")
                                        -- return 0 
                                         if (abs (highpr - lowpr ) <=0.005)
                                            then do return (-100000)
                                            else do 
-                                                   if ( (snd highgrid) < (snd lowgrid) && currentpr > lowpr ) --low point is near ,check diff 
+                                                   if ( (snd highgrid) > (snd lowgrid) && currentpr > lowpr ) --low point is near ,check diff 
                                                       then do 
-                                                          if ((currentpr < (highpr-diff*0.7)) && (currentpr >= (lowpr-diff/6))) 
+                                                          if ((currentpr < (highpr-diff*0.7)) && (currentpr >= (lowpr+diff/6))) 
                                                              then do return 15 
                                                              else do return (-100000)                                   -- currrentpr > high-1/3 diff  ,no open
                                                                                                                 -- if hight point only single stick,have big  diff to other ,then diff should be bigger
