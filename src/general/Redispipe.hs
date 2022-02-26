@@ -144,7 +144,7 @@ msgsklinetoredis msg stamp = do
       let abykeystr = BLU.fromString secondkey
       let stamptime = fromInteger stamp :: Double
       void $ zadd abykeystr [(-stamptime,abyvaluestr)]
-      void $ zremrangebyrank abykeystr 90 1000
+      void $ zremrangebyrank abykeystr 121 1000
       --add kline to redis zset for 1second
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       --liftIO $ print (test)
@@ -381,7 +381,7 @@ addklinetoredis msg  = do
     let abyvaluestr =  BLU.fromString $ DL.intercalate "|" [dst,dop,dcp,dhp,dlp]
                     
     void $ zadd abykeystr [(-kt,abyvaluestr)]
-    void $ zremrangebyrank abykeystr 50 1000
+    void $ zremrangebyrank abykeystr 121 1000
       --let msg = BL.fromStrict message
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       
