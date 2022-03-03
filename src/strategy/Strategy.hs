@@ -141,7 +141,7 @@ secondrule records = do
                         liftIO $ print (slenrecord)
                         case compare slenrecord (fromIntegral secondstick)  of 
                              GT -> do  
-                                        rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..80] :: IO [AS.Hlnode]
+                                        rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..115] :: IO [AS.Hlnode]
                                         let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
                                         let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
                                         let highsheet = [((hprice $ xlist!!x),x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "high")] where xlist = rehllist
@@ -153,7 +153,7 @@ secondrule records = do
                                         let diff = highpr - lowpr
                                         let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
                                         let hlpredi = (snd highgrid) > (snd lowgrid)
-                                        let prlocpredi = (currentpr < (highpr-diff*0.2)) && (currentpr >= (lowpr+diff/6))
+                                        let prlocpredi = (currentpr < (highpr-diff*0.4)) && (currentpr >= (lowpr+diff/6))
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
                                             (True,_,_,_)-> return (-10000) 
