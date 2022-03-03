@@ -117,7 +117,7 @@ msgordertempdo msg osdetail =  do
     let orderorigin = BLU.toString osdetail
     let order = DLT.splitOn "|" orderorigin 
     let orderstate = DL.last order
-    liftIO $ print (orderorigin)
+    --liftIO $ print (orderorigin)
     let orderquan =  read $ order!!4 :: Integer
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
@@ -161,7 +161,7 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
     forever $ do
       message <- NC.receiveData wc 
-      liftIO $ print (message)
+      --liftIO $ print (message)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
       let orderitem = snd res
@@ -173,8 +173,8 @@ publishThread rc wc tvar =
             Left _ ->  "some error"
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-      liftIO $ print ("-----------------------cachetime---------------------")
-      liftIO $ print (replydomarray)
+      --liftIO $ print ("-----------------------cachetime---------------------")
+      --liftIO $ print (replydomarray)
       let replydores = (read (replydomarray !! 0)) :: Integer
       --liftIO $ print (replydores)
       let timediff = curtimestamp-replydores
@@ -241,9 +241,9 @@ opclHandler channel  msg = do
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
-    liftIO $ print (restmsg)
+    --liftIO $ print (restmsg)
     let detdata = wsdata $ fromJust restmsg
-    liftIO $ print (detdata)
+    --liftIO $ print (detdata)
     let dettype = wstream $ fromJust restmsg
     --liftIO $ print (dettype)
     when (dettype == "adausdt@kline_1m") $ do 
@@ -260,9 +260,9 @@ opclHandler channel  msg = do
          --liftIO $ print (orderquan)
          -- check need to close at what a price or need to open
          kline <- getmsgfromstr  klinemsg 
-         liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
+        -- liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
          let curpr = read $ kclose kline :: Double
-         liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
+        -- liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
          currtime <- getcurtimestamp 
          let curtime = fromInteger currtime ::Double
          when (orderstate == (show $ fromEnum Prepare)) $ do
@@ -271,7 +271,7 @@ opclHandler channel  msg = do
               takeorder "BUY" orderquan pr 
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
-              liftIO $ print ("-------------start sell process---------------")
+             -- liftIO $ print ("-------------start sell process---------------")
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
               takeorder "SELL" orderquan pr 
@@ -279,15 +279,15 @@ opclHandler channel  msg = do
 
     when (dettype /= "adausdt@kline_1m") $ do 
          
-         liftIO $ print ("not kline ++++++++++++++++++++++++++++++++++++++++++++")
+         --liftIO $ print ("not kline ++++++++++++++++++++++++++++++++++++++++++++")
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = outString eventstr 
-         liftIO $ print (eventname)
+         --liftIO $ print (eventname)
          currtime <- getcurtimestamp 
          let curtime = fromInteger currtime ::Double
          when (eventname == "outboundAccountPosition") $ do 
          
-              liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
+             -- liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
               let eventstr = fromJust $ detdata ^? key "e"
               let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
               let adacurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "ADA"))) !!0
@@ -304,11 +304,11 @@ opclHandler channel  msg = do
                  let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
                  let quantylll = read $ (quantyll !! 4) :: Integer
                  let quantdouble = read $ (quantyll !! 4) :: Double
-                 liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
+                -- liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
                  let adanum = floor adacurbal :: Integer
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
-                     liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
-                     liftIO $ print (usdtcurbal,quantdouble,usdtbal)
+                    -- liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
+                    -- liftIO $ print (usdtcurbal,quantdouble,usdtbal)
                      when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
                          hlfendordertorediszset adanum curtime  
                          setkvfromredis adakey $ show adacurbal 
@@ -316,7 +316,7 @@ opclHandler channel  msg = do
                          --need to update bal key and do close request 
                      
                  when (usdtcurbal >= usdtbal-0.1) $ do   -- that is now >= past ,means to sell
-                     liftIO $ print ("enter sell pro++++++++++++++++++++++++++++++++++++++++++++")
+                     --liftIO $ print ("enter sell pro++++++++++++++++++++++++++++++++++++++++++++")
                      when (abs (adacurbal+ quantdouble-adabal)< 1 ) $ do -- record as end
                          cendordertorediszset quantylll curtime  
                          setkvfromredis adakey $ show adacurbal 
@@ -327,20 +327,20 @@ opclHandler channel  msg = do
          when (eventname == "executionReport" ) $ do 
                --for this event come before outbound ,so need to add price first,after outbound come ,correct quanty
                --pexpandordertorediszset
-              liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
+              --liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
               let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
-              liftIO $ print (curorderstate)
+              --liftIO $ print (curorderstate)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
-                  liftIO $ print ("1++++++++++++++++++++++++++++++++++++++++++++")
+                 -- liftIO $ print ("1++++++++++++++++++++++++++++++++++++++++++++")
                   let cpr = T.unpack $ outString $ fromJust $ detdata ^? key "L" 
                   let cty = T.unpack $ outString $ fromJust $ detdata ^? key "l"
-                  liftIO $ print (cpr,cty)
+                  --liftIO $ print (cpr,cty)
 
                   let curorderpr = read cpr :: Double
-                  liftIO $ print ("2++++++++++++++++++++++++++++++++++++++++++++")
+                  --liftIO $ print ("2++++++++++++++++++++++++++++++++++++++++++++")
                   let curquantyy = read cty :: Double
                   let curquanty = round curquantyy :: Integer
-                  liftIO $ print ("3++++++++++++++++++++++++++++++++++++++++++++")
+                  --liftIO $ print ("3++++++++++++++++++++++++++++++++++++++++++++")
                   let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
                   liftIO $ print ("4++++++++++++++++++++++++++++++++++++++++++++")
                   let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 

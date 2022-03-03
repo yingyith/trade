@@ -173,7 +173,7 @@ getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata]
 getsndkline aim  = do 
      let res = fromRight []  aim  
      klines <- mapM parsetokline res
-     liftIO $ print (klines)
+     --liftIO $ print (klines)
      return klines
      
 
@@ -197,14 +197,14 @@ mseriesFromredis conn msg = do
      res <- runRedis conn (getdiffintervalflow)
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
-     liftIO $ print ("start analysis min --------------------------------------")
+     --liftIO $ print ("start analysis min --------------------------------------")
      biginterval <- analysismindo (fst res ) dcp
-     liftIO $ print ("start analysis snd --------------------------------------")
+     --liftIO $ print ("start analysis snd --------------------------------------")
      sndinterval <- getsndkline (snd res) 
      timecur <- getcurtimestamp
      secondnum <- secondrule sndinterval
-     liftIO $ print ("start pre or cpre --------------------------------------")
-     liftIO $  print (biginterval,secondnum)
+     --liftIO $ print ("start pre or cpre --------------------------------------")
+     --liftIO $  print (biginterval,secondnum)
      let sumres = (sum biginterval) + secondnum
      curtimestampi <- getcurtimestamp
      runRedis conn $ do
