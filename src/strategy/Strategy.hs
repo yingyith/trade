@@ -139,7 +139,6 @@ gethlsheetsec index kll =  do
 secondrule :: [Klinedata] -> IO Int
 secondrule records = do 
                         let slenrecord = length records
-                        liftIO $ print (slenrecord)
                         case compare slenrecord (fromIntegral secondstick)  of 
                              GT -> do  
                                         rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..115] :: IO [AS.Hlnode]
@@ -156,6 +155,7 @@ secondrule records = do
                                         let hlpredi = (snd highgrid) > (snd lowgrid)
                                         let prlocpredi = (currentpr < (highpr-diff*0.4)) && (currentpr >= (lowpr+diff/6))
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
+                                        liftIO $ print (highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi)
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
                                             (True,_,_,_)-> return (-10000) 
                                             (False,True,True,False)-> return 70 
