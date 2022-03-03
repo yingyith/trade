@@ -204,7 +204,7 @@ mseriesFromredis conn msg = do
      timecur <- getcurtimestamp
      secondnum <- secondrule sndinterval
      --liftIO $ print ("start pre or cpre --------------------------------------")
-     --liftIO $  print (biginterval,secondnum)
+     liftIO $  print (biginterval,secondnum)
      let sumres = (sum biginterval) + secondnum
      curtimestampi <- getcurtimestamp
      runRedis conn $ do

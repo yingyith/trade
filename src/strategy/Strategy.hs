@@ -110,12 +110,6 @@ minrule ahl pr interval = do
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
   -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
-   liftIO $ print (ahl)
-   liftIO $ print ("it is debug ahl rule---------------------")
-   liftIO $ print (reslist)
-   liftIO $ print ("it is debug min rule---------------------")
-   liftIO $ print (highsheet,lowsheet)
-   liftIO $ print ("it is debug min rule---------------------")
    liftIO $ print (maxhigh,minlow)
    case (pr > fst maxhigh,pr < fst  minlow ,bigpredi,smallpredi) of 
         (True,False,_,_) -> return ( (!!0) $ fromJust $  minrisksheet!?interval) -- up fast
