@@ -139,6 +139,7 @@ gethlsheetsec index kll =  do
 secondrule :: [Klinedata] -> IO Int
 secondrule records = do 
                         let slenrecord = length records
+                        liftIO $ print (slenrecord)
                         case compare slenrecord (fromIntegral secondstick)  of 
                              GT -> do  
                                         rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..115] :: IO [AS.Hlnode]
