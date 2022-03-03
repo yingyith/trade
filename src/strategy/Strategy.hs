@@ -99,8 +99,8 @@ minrule ahl pr interval = do
    -- return this grid risk
    -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
    let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
-   let highsheet = [((hprice $ xlist!!x),x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "high")||((stype $ xlist!!x) == "wbig")] where xlist = ahl
-   let lowsheet = [((lprice $ xlist!!x),x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "low")||((stype $ xlist!!x) == "wbig")] where xlist = ahl
+   let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
+   let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
    let maxhigh = DT.foldr (\(l,h) y -> (max l (fst y),h)) (highsheet!!0) highsheet
    let minlow = DT.foldr (\(l,h) y -> (min l (fst y),h)) (lowsheet!!0)  lowsheet 
    let nearhigh = highsheet !!0
@@ -149,8 +149,8 @@ secondrule records = do
                                         rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..115] :: IO [AS.Hlnode]
                                         let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
                                         let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
-                                        let highsheet = [((hprice $ xlist!!x),x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "high")] where xlist = rehllist
-                                        let lowsheet = [((lprice $ xlist!!x),x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "low")] where xlist = rehllist
+                                        let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
+                                        let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")] where xlist = reslist
                                         let highgrid = DT.foldr (\(l,h) y -> (max l (fst y),h)) (highsheet!!0) highsheet
                                         let lowgrid = DT.foldr (\(l,h) y -> (min l (fst y),h)) (lowsheet!!0)  lowsheet 
                                         let highpr = fst highgrid 
