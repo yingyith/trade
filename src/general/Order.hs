@@ -76,11 +76,16 @@ preorcpreordertorediszset sumres pr  stamp  = do
    when (recordstate == (show $ fromEnum Done)) $ do
 
        liftIO $ print ("enter prepare is -------------------------")
-       let quantity = toInteger sumres 
+       let quanty = toInteger sumres
+       let quantity = case compare quanty 100 of
+                           LT -> quanty 
+                           GT -> 100 
+                           _  -> 100
        let orderid =  show stamp 
        let side = "BUY" :: String
        let shprice =  show pr
        let minquan = (round (10/pr))+2 :: Integer
+
        let shquant =  case compare quantity minquan of
                            LT -> show minquan
                            _  -> show quantity

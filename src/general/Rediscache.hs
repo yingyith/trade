@@ -198,17 +198,17 @@ mseriesFromredis conn msg = do
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
      liftIO $ print ("start analysis min --------------------------------------")
-    -- biginterval <- analysismindo (fst res )
-    -- liftIO $ print ("start analysis snd --------------------------------------")
-    -- sndinterval <- getsndkline (snd res) 
-    -- timecur <- getcurtimestamp
-    -- secondnum <- secondrule sndinterval
-    -- liftIO $ print ("start pre or cpre --------------------------------------")
-    -- liftIO $  print (res)
-    -- let sumres = (sum biginterval) + secondnum
-    -- curtimestampi <- getcurtimestamp
-    -- runRedis conn $ do
-    --    preorcpreordertorediszset sumres dcp  curtimestampi
+     biginterval <- analysismindo (fst res ) dcp
+     liftIO $ print ("start analysis snd --------------------------------------")
+     sndinterval <- getsndkline (snd res) 
+     timecur <- getcurtimestamp
+     secondnum <- secondrule sndinterval
+     liftIO $ print ("start pre or cpre --------------------------------------")
+     liftIO $  print (res)
+     let sumres = (sum biginterval) + secondnum
+     curtimestampi <- getcurtimestamp
+     runRedis conn $ do
+        preorcpreordertorediszset sumres dcp  curtimestampi
      --genposgrid hlsheet dcp
   --write order command to zset
      
