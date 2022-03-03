@@ -56,11 +56,11 @@ import Globalvar
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
-                 ("3m", [-65,45,-45,-105]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m", [-5,25,0,-15]), --
-                 ("15m",[0,15,-65,-25]),
-                 ("1h", [5,15,-15,-25]),
-                 ("4h", [5,15,-25,-25]),
+                 ("3m", [-10,45,-45,-105]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m", [-10,25,0,-15]), --
+                 ("15m",[-75,30,-65,-25]),
+                 ("1h", [5,15,-35,-25]),
+                 ("4h", [5,15,-45,-25]),
                  ("12h",[5,15,-15,-25]),
                  ("3d", [5,15,0,-25])
             ]
@@ -151,13 +151,13 @@ secondrule records = do
                                         let highpr = fst highgrid 
                                         let lowpr = fst lowgrid 
                                         let diff = highpr - lowpr
-                                        let wavediffpredi = (abs (highpr - lowpr ) <=0.004)
+                                        let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
                                         let hlpredi = (snd highgrid) > (snd lowgrid)
                                         let prlocpredi = (currentpr < (highpr-diff*0.2)) && (currentpr >= (lowpr+diff/6))
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
                                             (True,_,_,_)-> return (-10000) 
-                                            (False,True,True,False)-> return 15 
+                                            (False,True,True,False)-> return 70 
                                             (False,_,_,True)-> return 150
                                             (False,_,_,_)-> return (-10000)
                              LT -> return (-1000000)  
