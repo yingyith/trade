@@ -53,8 +53,8 @@ instance Enum Ostate where
      fromEnum Cprocess = 4
      fromEnum Done = 5
 
-preorcpreordertorediszset :: Integer -> Double -> [[Double]] -> Integer -> Redis ()
-preorcpreordertorediszset sumres pr hlsheet stamp  = do 
+preorcpreordertorediszset :: Int -> Double  -> Integer -> Redis ()
+preorcpreordertorediszset sumres pr  stamp  = do 
 -- quantity ,side ,price ,ostate
    let price  = pr :: Double
    let coin = "ADA" :: String
@@ -76,7 +76,7 @@ preorcpreordertorediszset sumres pr hlsheet stamp  = do
    when (recordstate == (show $ fromEnum Done)) $ do
 
        liftIO $ print ("enter prepare is -------------------------")
-       let quantity = sumres :: Integer
+       let quantity = toInteger sumres 
        let orderid =  show stamp 
        let side = "BUY" :: String
        let shprice =  show pr

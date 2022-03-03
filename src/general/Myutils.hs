@@ -34,3 +34,4 @@ import Globalvar
 outString :: Value -> Text
 outString a =  case a of 
                    DAT.String l -> l
+

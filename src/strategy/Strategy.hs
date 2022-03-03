@@ -4,7 +4,9 @@
 module Strategy
     ( 
      secondrule,
-     saferegionrule
+     minrule,
+     genehighlowsheet,
+     minrisksheet
     ) where
 import Data.Monoid ((<>))
 import Control.Monad
@@ -25,6 +27,8 @@ import System.IO as SI
 import Data.Aeson
 import Data.Aeson.Lens
 import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.UTF8 as BL
+import Data.List.Split as DLT
 import Data.Aeson.Types
 import Analysistructure as AS
 import Httpstructure
@@ -39,31 +43,80 @@ import Globalvar
 --                                  1day value -> 5   up_fast->-5      oppsite -> -5  fall_fast -> 0
 --                                  3day value -> 5   up_fast->-5      oppsite -> -5  fall_fast -> 0
 --                                  only sum of all predication > = 0 ,then can open
-risksheet :: DM.Map String [Integer]
-risksheet = fromList [
-             ("3m", [-150,-150,-15,-45]),
-             ("5m", [10,-150,10,-25]),
-             ("15m",[-150,-150,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
-             ("1h", [20,20,-10,-25]),    -- long interval have effect on short interval ,if 1hour is rise ,then ,15min low point  should rely on ,easy to have benefit.
-             ("4h", [25,20,-15,-25]),
-             ("12h", [5,5,0,0]),
-             ("3d", [0,5,0,0])
+--risksheet :: DM.Map String [Integer]
+--risksheet = fromList [
+--             ("3m", [-150,-150,-15,-45]),
+--             ("5m", [10,-150,10,-25]),
+--             ("15m",[-150,-150,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
+--             ("1h", [20,20,-10,-25]),    -- long interval have effect on short interval ,if 1hour is rise ,then ,15min low point  should rely on ,easy to have benefit.
+--             ("4h", [25,20,-15,-25]),
+--             ("12h", [5,5,0,0]),
+--             ("3d", [0,5,0,0])
+--            ]
+
+minrisksheet :: DM.Map String [Int] 
+minrisksheet = fromList [
+                 ("3m", [-65,45,-45,-105]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m", [-5,25,0,-15]), --
+                 ("15m",[0,15,-65,-25]),
+                 ("1h", [5,15,-15,-25]),
+                 ("4h", [5,15,-25,-25]),
+                 ("12h",[5,15,-15,-25]),
+                 ("3d", [5,15,0,-25])
             ]
 
 
-saferegionrule :: (String,Double) -> [Double] -> IO Integer
-saferegionrule minpr sheet  = do 
-   let lp = sheet!!0
-   let hp = sheet!!1
-   let lhdiff = hp-lp
-   let interval = fst minpr
-   let pr = snd minpr
-   let action | (pr >= (hp-lhdiff/4)) = (return $ (fromJust $ risksheet!?interval)!!1)
-              | (pr < (hp-lhdiff/4) && pr >= (hp-lhdiff/3)) = (return $ (fromJust $  risksheet!?interval)!!0)
-              | (pr > (lp+lhdiff/4) && pr <= (lp+lhdiff/3)) = (return $ (fromJust $ risksheet!?interval)!!2)
-              | (pr <= (lp+lhdiff/4))  = (return $ (fromJust $  risksheet!?interval)!!3)
-              | (pr > (lp+lhdiff/3) && pr < (hp-lhdiff/3)) = return 15
-   action
+genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
+genehighlowsheet index hl key = do 
+    let curitemstr = BL.toString $ hl !! index
+    let nextitemstr= BL.toString $ hl !! (index+1)
+    let curitem = DLT.splitOn "|" curitemstr
+    let nextitem = DLT.splitOn "|" nextitemstr
+    let curitemt = read $ curitem !! 0  :: Integer
+    let curitemop = read $ curitem !! 1  :: Double
+    let curitemhp = read $ curitem !! 2  :: Double
+    let curitemlp = read $ curitem !! 3  :: Double
+    let curitemcp = read $ curitem !! 4  :: Double
+    let nextitemop = read $ nextitem !! 1  :: Double
+    let nextitemhp = read $ nextitem !! 2  :: Double
+    let nextitemlp = read $ nextitem !! 3  :: Double
+    let nextitemcp = read $ nextitem !! 4  :: Double
+    let hpointpredication = (curitemhp - nextitemhp) <= 0
+    let lpointpredication = (curitemlp - nextitemlp) <= 0
+    let predication = (hpointpredication,lpointpredication)
+    let res = case predication of 
+                  (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key)
+                  (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key)
+                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key)
+                  (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key)
+    return res
+
+minrule :: [AS.Hlnode]-> Double-> String -> IO Int
+minrule ahl pr interval = do 
+   -- get max (high)
+   -- get min (low)
+   -- confirm nearest (high or low)
+   -- return this grid risk
+   -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
+   let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
+   let highsheet = [((hprice $ xlist!!x),x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "high")||((stype $ xlist!!x) == "wbig")] where xlist = ahl
+   let lowsheet = [((lprice $ xlist!!x),x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "low")||((stype $ xlist!!x) == "wbig")] where xlist = ahl
+   let maxhigh = DT.foldr (\(l,h) y -> (max l (fst y),h)) (highsheet!!0) highsheet
+   let minlow = DT.foldr (\(l,h) y -> (min l (fst y),h)) (lowsheet!!0)  lowsheet 
+   let nearhigh = highsheet !!0
+   let nearlow = lowsheet !!0
+   let bigpredi =  (snd maxhigh) > (snd minlow) --true is low near
+   let smallpredi =  (snd nearhigh)- (snd nearlow) 
+                                                       -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
+  -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
+  -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
+   case (pr > fst maxhigh,pr < fst  minlow ,bigpredi,smallpredi) of 
+        (True,False,_,_) -> return ( (!!0) $ fromJust $  minrisksheet!?interval) -- up fast
+        (False,True,_,_) -> return ( (!!3) $ fromJust $  minrisksheet!?interval) -- down fast
+        (False,False,True,_) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- normal ()
+        (False,False,False,_) ->  return ( (!!2) $ fromJust $  minrisksheet!?interval) -- normal ()
+   
+
 
 gethlsheetsec :: Int -> [ Klinedata ] -> IO (AS.Hlnode)
 gethlsheetsec index kll =  do 
@@ -82,7 +135,7 @@ gethlsheetsec index kll =  do
     return res
 
 
-secondrule :: [Klinedata] -> IO Integer
+secondrule :: [Klinedata] -> IO Int
 secondrule records = do 
                         let slenrecord = length records
                         liftIO $ print (slenrecord)
@@ -90,8 +143,6 @@ secondrule records = do
                              GT -> do  
                                         rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..80] :: IO [AS.Hlnode]
                                         let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
-                    --lookup the highlow point near from time,if it only apprear on one stick ,then the safe place should lower
-                    --lookup the nearest point from distance in price diff. 
                                         let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
                                         let highsheet = [((hprice $ xlist!!x),x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "high")] where xlist = rehllist
                                         let lowsheet = [((lprice $ xlist!!x),x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  && ((stype $ xlist!!x) == "low")] where xlist = rehllist
@@ -100,44 +151,14 @@ secondrule records = do
                                         let highpr = fst highgrid 
                                         let lowpr = fst lowgrid 
                                         let diff = highpr - lowpr
-                                        liftIO $ print (highpr,lowpr)
-                                        liftIO $ print (snd highgrid,snd lowgrid,lowpr,currentpr)
-                                        liftIO $ print ("second high low price is--------------------------------")
-                                       -- return 0 
-                                        if (abs (highpr - lowpr ) <=0.005)
-                                           then do return (-100000)
-                                           else do 
-                                                   if ( (snd highgrid) > (snd lowgrid) && currentpr > lowpr ) --low point is near ,check diff 
-                                                      then do 
-                                                          if ((currentpr < (highpr-diff*0.7)) && (currentpr >= (lowpr+diff/6))) 
-                                                             then do return 15 
-                                                             else do return (-100000)                                   -- currrentpr > high-1/3 diff  ,no open
-                                                                                                                -- if hight point only single stick,have big  diff to other ,then diff should be bigger
-                                                                                                         -- currrentpr < high-1/3 diff  , open 25
-                                                                     
-                                                               
-                                                      else do
-                                                          return (-100000)
+                                        let wavediffpredi = (abs (highpr - lowpr ) <=0.004)
+                                        let hlpredi = (snd highgrid) > (snd lowgrid)
+                                        let prlocpredi = (currentpr < (highpr-diff*0.2)) && (currentpr >= (lowpr+diff/6))
+                                        let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
+                                        case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
+                                            (True,_,_,_)-> return (-10000) 
+                                            (False,True,True,False)-> return 15 
+                                            (False,_,_,True)-> return 150
+                                            (False,_,_,_)-> return (-10000)
                              LT -> return (-1000000)  
                              EQ -> return (-1000000)
-                             _  -> return (-1000000)
-         -- if nearest point is high and > high-1/3 grid ,do not open 
-         --                          if  <high-1/3 and > low+1/3 , open small 
-         --                          if  <low+/1/3 and > low+1+1/4 , open small 
-         --                          if  <low+/1/3 and > low+1+1/4 , no open
-  --   if close to 3m or 5m low point ,then do not open ,but after pass ,then open few 
-  --   if close to 15m low point  ,then do not open,but after back ,open .close pr due to  hold position and price after  merge
-  --   if close to 1h low point ,then do not open,but after back ,open .close pr due to  hold position and price after  merge
-        -- liftIO $ print (highsheet,lowsheet)
-   -- liftIO $ print (reslist)
-    -- case (compare  (length records) 45)  of 
-    --      GT -> return 0
-    --      LT -> return 0
-    --      EQ -> return 0
-    
-
-closerule :: IO ()
-closerule = do
-    -- rule1: if base on second interval, the benefit diff should be low like 0.0002
-    return ()
-   

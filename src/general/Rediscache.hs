@@ -28,6 +28,7 @@ import qualified Data.ByteString.UTF8 as BL
 import qualified Data.ByteString.Lazy as BLL
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Text (Text)
+import Data.Either
 import Data.Maybe
 import Network.HTTP.Req
 import qualified Data.Map as Map
@@ -45,6 +46,7 @@ import Analysistructure as AS
 import Order
 import Globalvar
 import Strategy
+import Sndsrule
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -125,98 +127,54 @@ mseriesToredis a conn = do
        zipWithM hsticklistToredis  a  defintervallist 
        zrange (BL.fromString secondkey)  0 secondstick  
 
---pinghandledo :: Maybe BL.ByteString -> IO ()
---pinghandledo a  =  runReq defaultHttpConfig $ do
-genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
-genehighlowsheet index hl key = do 
-    let curitemstr = BL.toString $ hl !! index
-    let nextitemstr= BL.toString $ hl !! (index+1)
-    let curitem = DLT.splitOn "|" curitemstr
-    let nextitem = DLT.splitOn "|" nextitemstr
-    let curitemt = read $ curitem !! 0  :: Integer
-    let curitemop = read $ curitem !! 1  :: Double
-    let curitemhp = read $ curitem !! 2  :: Double
-    let curitemlp = read $ curitem !! 3  :: Double
-    let curitemcp = read $ curitem !! 4  :: Double
-    let nextitemop = read $ nextitem !! 1  :: Double
-    let nextitemhp = read $ nextitem !! 2  :: Double
-    let nextitemlp = read $ nextitem !! 3  :: Double
-    let nextitemcp = read $ nextitem !! 4  :: Double
-    let hpointpredication = (curitemhp - nextitemhp) <= 0
-    let lpointpredication = (curitemlp - nextitemlp) <= 0
-    let predication = (hpointpredication,lpointpredication)
-    let res = case predication of 
-                  (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key)
-                  (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key)
-                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key)
-                  (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key)
-    --liftIO $ print (res)
-    return res
-
---gengridsheet
 
 
-analysistrdo :: Either Reply [BL.ByteString] -> String -> IO [Double]
+analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO Int
 analysistrdo aa bb = do 
-     let tdata = case aa of 
-                     Right c -> c
+     let tdata = fromRight []  aa 
+     let interval = fst bb
+     let curpr = snd bb
      let hllist = [] :: [AS.Hlnode]
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      --liftIO $ print (tdata)
-     rehllist <- mapM ((\s ->  genehighlowsheet s tdata bb) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
+     rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
      --liftIO $ print ("hlsheet 1--------------------------")
-     let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
-    -- liftIO $ print ("hlsheet 2--------------------------")
-     let highsheet = [(hprice $ xlist!!x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
-     let lowsheet = [(lprice $ xlist!!x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
-     let highgrid = maximum highsheet
-     let lowgrid = minimum lowsheet
-     let diff = (highgrid-lowgrid)/3 
-
-     return [lowgrid,highgrid]
+  --   let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
+  --  -- liftIO $ print ("hlsheet 2--------------------------")
+  --   let highsheet = [(hprice $ xlist!!x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
+  --   let lowsheet = [(lprice $ xlist!!x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
+  --   let highgrid = maximum highsheet
+  --   let lowgrid = minimum lowsheet
+  --   let diff = (highgrid-lowgrid)/3 
+     quantylist <- minrule rehllist curpr interval 
+     return quantylist
 
 parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
      let mmsg = BLL.fromStrict msg
      let test = A.decode mmsg :: Maybe Klinedata --Klinedata
-     let abykeystr = BL.fromString "1s" 
-     let kline = case test of 
-                     Just l -> l
+     let kline = fromJust test
      return kline
 
-analysismindo :: [Either Reply [BL.ByteString]] -> IO [[Double]]
-analysismindo aim  = do 
-     --liftIO $ print ("start hlsheet------------------------------")
-     --liftIO $ print (aim)
-     hlsheet <-  zipWithM analysistrdo aim defintervallist
+analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [Int]
+analysismindo aim curpr = do 
+     let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
+     hlsheet <-  zipWithM analysistrdo aim aimlist
      --liftIO $ print (hlsheet)
      return hlsheet
-
-getmsgfrombs :: BL.ByteString -> IO Klinedata
---getmsg :: String -> IO Klinedata
-getmsgfrombs msg = do 
-    --let mmsg = BL.fromString msg
-    --let mmsg = BL.fromString msg
-    let mmmsg = BLL.fromStrict msg
-    let test = A.decode mmmsg :: Maybe Klinedata --Klinedata
-    let kline = fromJust test 
-    return kline
 
 getmsgfromstr :: String -> IO Klinedata
 getmsgfromstr msg = do 
     let mmsg = BL.fromString msg
-    let mmmsg = BLL.fromStrict mmsg
-    let test = A.decode mmmsg :: Maybe Klinedata --Klinedata
-    let kline = fromJust test 
-    return kline
+    res <- parsetokline mmsg
+    return res
 
-analysisseddo :: Either Reply [BL.ByteString] -> IO [Klinedata] 
-analysisseddo aim  = do 
-     let res = case aim of 
-                    Right l ->l
-     kline <- mapM getmsgfrombs res
-     liftIO $ print (kline)
-     return kline
+getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
+getsndkline aim  = do 
+     let res = fromRight []  aim  
+     klines <- mapM parsetokline res
+     liftIO $ print (klines)
+     return klines
      
 
 mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
@@ -227,52 +185,30 @@ mserieFromredis klinename = do
      return res
 
 getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],
-                            Either Reply [BL.ByteString])
+                            Either Reply [BL.ByteString]) 
 getdiffintervalflow = do 
      fisar <- mapM mserieFromredis defintervallist 
      sndar <- zrange (BL.fromString secondkey)  0 secondstick  
      return (fisar,sndar)
      
-  --            
-
 
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
 mseriesFromredis conn msg = do
      res <- runRedis conn (getdiffintervalflow)
-     hlsheet <- analysismindo $ fst res 
-     liftIO $ print ("hlsheet is ----------------------------")
-     liftIO $ print (hlsheet)
-     secondsheet <- analysisseddo $ snd res 
-     --liftIO $ print (secondsheet)
-     liftIO $ print ("second data is ----------------------------")
-     --liftIO $ print (secondsheet)
      kline <- parsetokline msg
-     liftIO $ print ("second data 1 ----------------------------")
-    -- liftIO $ print (hlsheet)
-     let mconlist = (DL.sort $ concat hlsheet) ++ [1000]
-     --liftIO $ print (mconlist)
-     let lenmcon = length mconlist
-     let mconlistl = [mconlist!!i |i<-[0..(lenmcon-2)],(mconlist!!(i+1)-mconlist!!i)>=0.006]
-     liftIO $ print ("second data 2 ----------------------------")
-     --let aimlist = [i|i <- x,x <- hlsheet]
-    -- liftIO $ print (mconlistl)
      let dcp = read $ kclose kline :: Double
-     liftIO $ print ("second data 3 ----------------------------")
-     liftIO $ print (dcp)
-     let interprl = [(x,y)|x<-defintervallist,let y= dcp]
-     liftIO $ print (interprl)
-     liftIO $ print (hlsheet)
-     liftIO $ print ("second data 4 ----------------------------")
-     res <- zipWithM saferegionrule interprl hlsheet
-     timecur <- getcurtimestamp
-     secondnum <- secondrule secondsheet
-     liftIO $ print ("start pre or cpre --------------------------------------")
-     liftIO $  print (dcp)
-     liftIO $  print (res)
-     let sumres = (sum res) + secondnum
-     curtimestampi <- getcurtimestamp
-     runRedis conn $ do
-        preorcpreordertorediszset sumres dcp hlsheet curtimestampi
+     liftIO $ print ("start analysis min --------------------------------------")
+    -- biginterval <- analysismindo (fst res )
+    -- liftIO $ print ("start analysis snd --------------------------------------")
+    -- sndinterval <- getsndkline (snd res) 
+    -- timecur <- getcurtimestamp
+    -- secondnum <- secondrule sndinterval
+    -- liftIO $ print ("start pre or cpre --------------------------------------")
+    -- liftIO $  print (res)
+    -- let sumres = (sum biginterval) + secondnum
+    -- curtimestampi <- getcurtimestamp
+    -- runRedis conn $ do
+    --    preorcpreordertorediszset sumres dcp  curtimestampi
      --genposgrid hlsheet dcp
   --write order command to zset
      

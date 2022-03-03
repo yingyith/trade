@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 59f543a2a549f08e8f0676df52cc29bbb10c16ea36864225a2b7fc2b6312662b
+-- hash: 39be970a2f11a909748078dac42ceb4408021fefd6e72b50ec7f15f3beac5c25
 
 name:           trade
 version:        0.1.0.0
@@ -53,6 +53,7 @@ library
       Passwd
       Rediscache
       Redispipe
+      Sndsrule
       Strategy
   other-modules:
       Paths_trade
