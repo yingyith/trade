@@ -101,8 +101,8 @@ minrule ahl pr interval = do
    let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
-   let maxhigh = DT.foldr (\(l,h) y -> (max l (fst y),h)) (highsheet!!0) highsheet
-   let minlow  = DT.foldr (\(l,h) y -> (min l (fst y),h)) (lowsheet!!0)  lowsheet 
+   let maxhigh = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
+   let minlow  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
    let nearhigh = highsheet !!0
    let nearlow = lowsheet !!0
    let bigpredi =  (snd maxhigh) > (snd minlow) --true is low near
@@ -153,8 +153,8 @@ secondrule records = do
                                         let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
                                         let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
                                         let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")] where xlist = reslist
-                                        let highgrid = DT.foldr (\(l,h) y -> (max l (fst y),h)) (highsheet!!0) highsheet
-                                        let lowgrid = DT.foldr (\(l,h) y -> (min l (fst y),h)) (lowsheet!!0)  lowsheet 
+                                        let highgrid = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y ) (highsheet!!0) highsheet
+                                        let lowgrid  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y ) (lowsheet!!0)  lowsheet 
                                         let highpr = fst highgrid 
                                         let lowpr = fst lowgrid 
                                         let diff = highpr - lowpr
