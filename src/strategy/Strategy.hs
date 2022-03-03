@@ -102,7 +102,7 @@ minrule ahl pr interval = do
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
    let maxhigh = DT.foldr (\(l,h) y -> (max l (fst y),h)) (highsheet!!0) highsheet
-   let minlow = DT.foldr (\(l,h) y -> (min l (fst y),h)) (lowsheet!!0)  lowsheet 
+   let minlow  = DT.foldr (\(l,h) y -> (min l (fst y),h)) (lowsheet!!0)  lowsheet 
    let nearhigh = highsheet !!0
    let nearlow = lowsheet !!0
    let bigpredi =  (snd maxhigh) > (snd minlow) --true is low near
@@ -113,6 +113,8 @@ minrule ahl pr interval = do
    liftIO $ print (ahl)
    liftIO $ print ("it is debug ahl rule---------------------")
    liftIO $ print (reslist)
+   liftIO $ print ("it is debug min rule---------------------")
+   liftIO $ print (highsheet,lowsheet)
    liftIO $ print ("it is debug min rule---------------------")
    liftIO $ print (maxhigh,minlow)
    case (pr > fst maxhigh,pr < fst  minlow ,bigpredi,smallpredi) of 
