@@ -287,7 +287,7 @@ opclHandler channel  msg = do
          let curtime = fromInteger currtime ::Double
          when (eventname == "outboundAccountPosition") $ do 
          
-             -- liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
+              liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
               let eventstr = fromJust $ detdata ^? key "e"
               let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
               let adacurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "ADA"))) !!0
@@ -307,8 +307,8 @@ opclHandler channel  msg = do
                 -- liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
                  let adanum = floor adacurbal :: Integer
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
-                    -- liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
-                    -- liftIO $ print (usdtcurbal,quantdouble,usdtbal)
+                     liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
+                     liftIO $ print (usdtcurbal,quantdouble,usdtbal)
                      when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
                          hlfendordertorediszset adanum curtime  
                          setkvfromredis adakey $ show adacurbal 
@@ -327,7 +327,7 @@ opclHandler channel  msg = do
          when (eventname == "executionReport" ) $ do 
                --for this event come before outbound ,so need to add price first,after outbound come ,correct quanty
                --pexpandordertorediszset
-              --liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
+              liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
               let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
               --liftIO $ print (curorderstate)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
