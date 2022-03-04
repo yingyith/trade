@@ -102,11 +102,15 @@ minrule ahl pr interval = do
    liftIO $ print ("enter min do ---------------------")
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
-   liftIO $ print (highsheet,lowsheet)
    let maxhigh = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
    let minlow  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
-   let nearhigh = highsheet !!0
-   let nearlow = lowsheet !!0
+   
+   let nearhigh = case highsheet of 
+                       [] -> last lowsheet 
+                       _  -> highsheet!!0
+   let nearlow = case lowsheet of 
+                       [] -> last highsheet
+                       _  -> lowsheet!!0
    let bigpredi =  (snd maxhigh) > (snd minlow) --true is low near
    let smallpredi =  (snd nearhigh)- (snd nearlow) 
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
