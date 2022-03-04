@@ -99,8 +99,10 @@ minrule ahl pr interval = do
    -- return this grid risk
    -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
    let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
+   liftIO $ print ("enter min do ---------------------")
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
+   liftIO $ print (highsheet,lowsheet)
    let maxhigh = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
    let minlow  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
    let nearhigh = highsheet !!0
@@ -154,7 +156,7 @@ secondrule records = do
                                         let diff = highpr - lowpr
                                         let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
                                         let hlpredi = (snd highgrid) > (snd lowgrid)
-                                        let prlocpredi = (currentpr < (highpr-diff*0.4)) && (currentpr >= (lowpr+diff/6))
+                                        let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
                                         liftIO $ print (highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi)
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
