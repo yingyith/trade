@@ -310,6 +310,7 @@ opclHandler channel  msg = do
                      liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
                      liftIO $ print (usdtcurbal,quantdouble,usdtbal)
                      when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
+                         liftIO $ print ("enter execute pro++++++++++++++++++++++++++++++++++++++++++++")
                          hlfendordertorediszset adanum curtime  
                          setkvfromredis adakey $ show adacurbal 
                          setkvfromredis usdtkey $ show usdtcurbal 
