@@ -304,8 +304,9 @@ opclHandler channel  msg = do
                  let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
                  let quantylll = read $ (quantyll !! 4) :: Integer
                  let quantdouble = read $ (quantyll !! 4) :: Double
-                -- liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
+                 liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
                  let adanum = floor adacurbal :: Integer
+                 liftIO $ print (usdtcurbal-usdtbal+0.1 )
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
                      liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
                      liftIO $ print (usdtcurbal,quantdouble,usdtbal)
