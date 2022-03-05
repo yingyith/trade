@@ -149,10 +149,14 @@ pexpandordertorediszset side quan pr stamp = do
    liftIO $ print ("expand record is -------------------------")
    liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
+   let lastorderquant = read $ recorditem !!4 ::Integer
+   let lastordertype = recorditem !!2 
    let recordstate = last recorditem
    let orderid =  show stamp 
    let shprice =  show pr
-   let shquant =  show quan
+   let shquant =  case lastordertype of 
+                    "Open"-> show quan
+                    "Taken"-> show (quan+ lastorderquant)
    liftIO $ print (side ++ "is -------------------------------")
    let shstate = case side of 
                       "BUY" -> show $ fromEnum Process
