@@ -57,11 +57,11 @@ import Globalvar
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
-                 ("3m", [-10,45,-45,-25]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m", [-10,25,0,-15]), --
+                 ("3m", [-10,150,-45,-90]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m", [-10,50,0,-65]), --
                  ("15m",[-75,30,-65,-125]),
                  ("1h", [5,15,-25,-50]),
-                 ("4h", [5,15,-45,-25]),
+                 ("4h", [5,15,-45,-90]),
                  ("12h",[5,15,-15,-25]),
                  ("3d", [5,15,0,-25])
             ]
@@ -143,6 +143,7 @@ minrule ahl pr interval = do
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
   -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
    liftIO $ print (maxhigh,minlow)
+   liftIO $ print (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi)
    case (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi) of 
         (True  ,_     ,_     ,_     ,_     ,_     ,_     ,_    ) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- up 
         (False ,True  ,False ,_     ,_     ,_     ,_     ,_    ) ->  return ( (!!0) $ fromJust $  minrisksheet!?interval) -- up fast
