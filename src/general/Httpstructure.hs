@@ -205,7 +205,8 @@ pinghandledo a  =  runReq defaultHttpConfig $ do
     --      "listenKey" =: (T.pack aa :: Text)
           --("signature" =: (T.pack ares :: Text )) 
     areq <- req PUT ouri  NoReqBody  lbsResponse params
-    liftIO $ print (areq)
+    return ()
+    --liftIO $ print (areq)
 
 
 data WSevent = WSevent {

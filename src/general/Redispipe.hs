@@ -306,7 +306,7 @@ opclHandler channel  msg = do
                  let quantdouble = read $ (quantyll !! 4) :: Double
                  liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
                  let adanum = floor adacurbal :: Integer
-                 liftIO $ print (usdtcurbal-usdtbal+0.1 )
+                 --liftIO $ print (usdtcurbal-usdtbal+0.1 )
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
                      liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
                      liftIO $ print (usdtcurbal,quantdouble,usdtbal)
@@ -344,11 +344,11 @@ opclHandler channel  msg = do
                   let curquanty = round curquantyy :: Integer
                   --liftIO $ print ("3++++++++++++++++++++++++++++++++++++++++++++")
                   let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
-                  liftIO $ print ("4++++++++++++++++++++++++++++++++++++++++++++")
+                  --liftIO $ print ("4++++++++++++++++++++++++++++++++++++++++++++")
                   let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
-                  liftIO $ print ("5++++++++++++++++++++++++++++++++++++++++++++")
-                  liftIO $ print (curorderpr,curquanty)
-                  liftIO $ print ("6++++++++++++++++++++++++++++++++++++++++++++")
+                  --liftIO $ print ("5++++++++++++++++++++++++++++++++++++++++++++")
+                  --liftIO $ print (curorderpr,curquanty)
+                  --liftIO $ print ("6++++++++++++++++++++++++++++++++++++++++++++")
                   --still need to  judge buy or sell
                   when (curside == "BUY" && curcoin == "ADA") $ do 
                        liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
@@ -423,8 +423,8 @@ listenkeyHandler channel msg = do
       conn <- connect defaultConnectInfo
       aaim <- runRedis conn (getkeyfromredis)
       pinghandledo aaim
-      SI.hPutStrLn stderr $ "Saw msg: " ++ T.unpack (decodeUtf8 msg)
-      debugtime
+      --SI.hPutStrLn stderr $ "Saw msg: " ++ T.unpack (decodeUtf8 msg)
+      --debugtime
 
 
 showChannels :: R.Connection -> IO ()
