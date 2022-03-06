@@ -57,14 +57,14 @@ import Globalvar
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
-                 ("3m", [-10,150,-45,-90]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m", [-10,50,0,-65]), --
-                 ("15m",[-75,30,-65,-125]),
-                 ("1h", [5,15,-25,-50]),
-                 ("4h", [5,15,-45,-90]),
-                 ("12h",[5,15,-15,-25]),
-                 ("3d", [5,15,0,-25])
-            ]
+                 ("3m", [50,  60,  -45, -90 ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m", [30,  60,  -60, -125 ]), --
+                 ("15m",[60,  60,  -65, -125]),
+                 ("1h", [30,  60,  -45, -175]),
+                 ("4h", [5,   15,  -55, -50 ]),
+                 ("12h",[5,   15,  -15, -25 ]),
+                 ("3d", [5,   15,    0, -25 ])
+               ]
 
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
@@ -100,7 +100,7 @@ minrule ahl pr interval = do
    -- return this grid risk
    -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
    let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
-   liftIO $ print ("enter min do ---------------------")
+   --liftIO $ print ("enter min do ---------------------")
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
    
@@ -142,7 +142,7 @@ minrule ahl pr interval = do
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
   -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
-   liftIO $ print (maxhigh,minlow)
+   --liftIO $ print (maxhigh,minlow)
    liftIO $ print (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi)
    case (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi) of 
         (True  ,_     ,_     ,_     ,_     ,_     ,_     ,_    ) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- up 

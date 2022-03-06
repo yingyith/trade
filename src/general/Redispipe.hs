@@ -82,7 +82,7 @@ isstrategyinvalid = True
 
 msgcacheandpingtempdo :: Integer -> ByteString -> NC.Connection-> Redis ()
 msgcacheandpingtempdo a msg wc = do
-        case compare a 300000 of -- 300000= 5min
+        case compare a 100000 of -- 300000= 5min
         --case compare a 300000 of -- 300000= 5min
             GT -> do 
               void $ publish "cache:1" ("cache" <> msg)
