@@ -202,7 +202,7 @@ secondrule records = do
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.005 
                                         liftIO $ print (highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi)
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
-                                            (True,_,_,_)-> return (-10000) 
+                                            (True,_,_,_)-> return (0) 
                                             (False,True,True,False)-> return 70 
                                             (False,_,_,True)-> return 250
                                             (False,_,_,_)-> return (-30)
