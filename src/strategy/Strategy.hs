@@ -62,7 +62,7 @@ minrisksheet = fromList [
                  ("15m",[60,  60,  -65, -125]),
                  ("1h", [30,  60,  -45, -175]),
                  ("4h", [5,   15,  -55, -50 ]),
-                 ("12h",[5,   15,  -15, -25 ]),
+                 ("12h",[5,   15,  -15, -50 ]),
                  ("3d", [5,   15,    0, -25 ])
                ]
 
@@ -197,14 +197,14 @@ secondrule records = do
                                         let lowpr = fst lowgrid 
                                         let diff = highpr - lowpr
                                         let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
-                                        let hlpredi = (snd highgrid) > (snd lowgrid)
+                                        let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
                                         let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
-                                        let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
+                                        let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.005 
                                         liftIO $ print (highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi)
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
                                             (True,_,_,_)-> return (-10000) 
                                             (False,True,True,False)-> return 70 
-                                            (False,_,_,True)-> return 150
-                                            (False,_,_,_)-> return (-10000)
+                                            (False,_,_,True)-> return 250
+                                            (False,_,_,_)-> return (-30)
                              LT -> return (-1000000)  
                              EQ -> return (-1000000)
