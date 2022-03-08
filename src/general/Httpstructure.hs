@@ -145,8 +145,8 @@ takeorder a b c = do
       response <- areq
       let result = responseBody response :: Object
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
-      liftIO $ print ("ss")
-      --liftIO $ print (response)
+      --liftIO $ print ("ss")
+      liftIO $ print (response)
       --how to change bs to json
    
 parsekline :: String -> IO (DpairMserie) 
