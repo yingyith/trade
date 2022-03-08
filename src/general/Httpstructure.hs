@@ -147,6 +147,7 @@ takeorder a b c = do
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
       --liftIO $ print ("ss")
       liftIO $ print (response)
+      liftIO $ print (result)
       --how to change bs to json
    
 parsekline :: String -> IO (DpairMserie) 
