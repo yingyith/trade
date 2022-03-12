@@ -82,6 +82,7 @@ getspotbalance = do
             ("timestamp" =: (curtimestamp :: Integer ))<>
             ("signature" =: (T.pack ares :: Text ))
       liftIO $ print uri
+      liftIO $ print (useHttpsURI uri)
 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req GET url NoReqBody jsonResponse  params
