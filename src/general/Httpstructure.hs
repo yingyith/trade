@@ -89,13 +89,13 @@ getspotbalance = do
       let areq = req GET url NoReqBody jsonResponse  params
       response <- areq
       let result = responseBody response :: Value
-      let adabal = (result ^.. key "balances" .values.filtered (has (key "asset"._String.only "ADA"))) !!0
-      let adaadabal = fromJust $ adabal ^? key "free"
+      let adabal = (result ^.. key "assets" .values.filtered (has (key "asset"._String.only "ADA"))) !!0
+      let adaadabal = fromJust $ adabal ^? key "availableBalance"
       let aadabal = case adaadabal of 
                           DAT.String l -> l
       let adaball = read $ T.unpack aadabal :: Double
-      let usdtbal = (result ^.. key "balances" .values.filtered (has (key "asset"._String.only "USDT"))) !!0
-      let usdtusdtbal = fromJust $ usdtbal ^? key "free"
+      let usdtbal = (result ^.. key "assets" .values.filtered (has (key "asset"._String.only "USDT"))) !!0
+      let usdtusdtbal = fromJust $ usdtbal ^? key "availableBalance"
       let uusdtbal = case usdtusdtbal of 
                           DAT.String l -> l
       let usdtball = read $ T.unpack uusdtbal :: Double
