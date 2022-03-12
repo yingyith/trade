@@ -72,7 +72,7 @@ getspotbalance = do
       let signature = BLU.fromString sk
       let ares = showDigest(hmacSha256 signature astring)
       --let ares = showDigest(hmacSha256 signature params)
-      let ouri = "https:/fapi.binance.com/fapi/v2/account"  
+      let ouri = "https:/fapi.binance.com/fapi/v2/balance"  
       --let ouri = "https://api.binance.com/api/v3/account"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       uri <- URI.mkURI auri 
