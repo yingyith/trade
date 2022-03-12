@@ -101,7 +101,7 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 9443 aimss  ws
     liftIO $ print ("connect to websocket------")
-    runSecureClient "fstream.binance.com" 443 aimss  ws
+    runSecureClient "fstream-auth.binance.com" 443 aimss  ws
 --issue streams = <listenKey> -- add user Data Stream
 ws :: ClientApp ()
 ws connection = do
