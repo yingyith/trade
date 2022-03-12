@@ -88,10 +88,10 @@ main =
     --let aimss = "/stream?streams=btcusdt@markPrice?listenkey=" ++ aas -----------------------------------------------
     --liftIO $ print (aimss)
     --let aimss = "/stream?streams=adausdt@kline_1m/"  ++ aas -----------------------------------------------
-    let aimss = "/stream?streams=adausdt@kline_1m/"  -----------------------------------------------
+   -- let aimss = "/stream?streams=adausdt@kline_1m/"  -----------------------------------------------
     --let aimss = "/ws/" ++aas++"?listenkey="  ++ aas -----------------------------------------------
     --let aimss = "/ws/streams=btcusdt@markPrice/"++ "&listenkey="  ++ aas -----------------------------------------------
-    --let aimss = "/ws/adausdt@kline_1m/"++ "&listenkey="  ++ aas -----------------------------------------------
+    let aimss = "/ws/adausdt@kline_1m/"++ "&listenkey="  ++ aas -----------------------------------------------
     --"send ping every 30mins"
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins
