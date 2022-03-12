@@ -81,6 +81,7 @@ getspotbalance = do
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("timestamp" =: (curtimestamp :: Integer ))<>
             ("signature" =: (T.pack ares :: Text ))
+      liftIO $ print uri
 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req GET url NoReqBody jsonResponse  params
