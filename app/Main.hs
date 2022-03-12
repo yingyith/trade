@@ -88,7 +88,8 @@ main =
     --let aimss = "/stream?streams=btcusdt@markPrice?listenkey=" ++ aas -----------------------------------------------
     --liftIO $ print (aimss)
     --let aimss = "/stream?streams=adausdt@kline_1m/"  ++ aas -----------------------------------------------
-    let aimss = "/ws/streams=bnbbtc@bookTicker/" ++aas++"?listenkey="  ++ aas -----------------------------------------------
+    let aimss = "/ws/" ++aas++"?listenkey="  ++ aas -----------------------------------------------
+    --let aimss = "/ws/streams=bnbbtc@bookTicker/" ++aas++"?listenkey="  ++ aas -----------------------------------------------
     --"send ping every 30mins"
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins
@@ -98,9 +99,9 @@ main =
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
     --runSecureClient "stream.binance.com" 9443 aimss  ws
-    runSecureClient "fstream.binance.com" 9443 aimss  ws
+    --runSecureClient "fstream.binance.com" 9443 aimss  ws
     liftIO $ print ("connect to websocket------")
-    --runSecureClient "fstream3.binance.com" 443 aimss  ws
+    runSecureClient "fstream.binance.com" 443 aimss  ws
 --issue streams = <listenKey> -- add user Data Stream
 ws :: ClientApp ()
 ws connection = do

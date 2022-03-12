@@ -103,6 +103,9 @@ minrule ahl pr interval = do
    --liftIO $ print ("enter min do ---------------------")
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
+   let emptypred = case (highsheet,lowsheet) of 
+                         ([],[])-> True
+                         (_,_)-> True
    
    let nearhigh = case highsheet of 
                        [] -> last lowsheet 
