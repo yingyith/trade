@@ -79,6 +79,7 @@ main =
         -----------------------
         --liftIO $ print (response)
         let result = responseBody response :: Object
+        liftIO $ print result
         --liftIO $ print (responseBody response :: Object)
         let ares = fromJust $  parseMaybe (.: "listenKey") result :: String
         pure ares
