@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 39be970a2f11a909748078dac42ceb4408021fefd6e72b50ec7f15f3beac5c25
+-- hash: a94d2d4649bde1c182d217b5977a76e7862dc9eeb66b3b7827ce398b841b96fe
 
 name:           trade
 version:        0.1.0.0
@@ -45,6 +45,7 @@ library
       Network.WebSockets.Types
       Network.Wuss
       Analysistructure
+      Bustate
       Globalvar
       Httpstructure
       Lib

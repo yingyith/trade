@@ -57,10 +57,10 @@ import Globalvar
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
-                 ("3m", [30,  60,  -45, -90 ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m", [30,  60,  -60, -125 ]), --
-                 ("15m",[30,  60,  -65, -125]),
-                 ("1h", [30,  60,  -45, -175]),
+                 ("3m", [-20,  60,  -45, -90 ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m", [-20,  60,  -60, -125 ]), --
+                 ("15m",[15,  60,  -75, -125]),
+                 ("1h", [15,  60,  -65, -175]),
                  ("4h", [5,   15,  -75, -50 ]),
                  ("12h",[5,   15,  -25, -50 ]),
                  ("3d", [5,   15,    0, -25 ])
