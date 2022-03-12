@@ -267,7 +267,7 @@ opclHandler channel  msg = do
          let curtime = fromInteger currtime ::Double
          when (orderstate == (show $ fromEnum Prepare)) $ do
               let fpr = 0.01 + curpr
-              let pr = (fromInteger $  round $ fpr * (10^3))/(10.0^^3)
+              let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               runRedis conn (proordertorediszset orderquan pr curtime)
               takeorder "BUY" orderquan pr 
 

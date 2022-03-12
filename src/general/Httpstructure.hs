@@ -72,7 +72,8 @@ getspotbalance = do
       let signature = BLU.fromString sk
       let ares = showDigest(hmacSha256 signature astring)
       --let ares = showDigest(hmacSha256 signature params)
-      let ouri = "https://api.binance.com/api/v3/account"  
+      let ouri = "https:/fapi.binance.com/fapi/v2/account"  
+      --let ouri = "https://api.binance.com/api/v3/account"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       uri <- URI.mkURI auri 
       let passwdtxt = BC.pack Passwd.passwd
@@ -136,7 +137,8 @@ takeorder a b c = do
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("signature" =: (T.pack ares :: Text ))
       
-      let ouri = "https://api.binance.com/api/v3/order"  
+      let ouri = "https://fapi.binance.com/fapi/v1/order"  
+      --let ouri = "https://api.binance.com/api/v3/order"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       --增加对astring的hmac的处理 
       uri <- URI.mkURI auri 
@@ -153,8 +155,7 @@ takeorder a b c = do
 parsekline :: String -> IO (DpairMserie) 
 --getStickToCache :: String -> IO () 
 parsekline nstr  = runReq defaultHttpConfig $ do
-    let ouri = https "api.binance.com" /: "api" /: "v3" /: "klines"  
-    let intervals=["5m","15m","1h","4h","12h"]
+    let ouri = https "fapi.binance.com" /: "fapi" /: "v1" /: "klines"  
     let symbol = "ADAUSD"
     let tnstr = nstr 
     let limit = 3
@@ -190,7 +191,8 @@ pinghandledo a  =  runReq defaultHttpConfig $ do
     let signature = BLU.fromString Passwd.sk
     let ae = fromJust a 
     let aa = BL.toString ae 
-    let ouri = https "api.binance.com" /: "api" /: "v3" /: "userDataStream"  
+    let ouri = https "fapi.binance.com" /: "fapi" /: "v1" /: "listenKey"  
+    --let ouri = https "fapi.binance.com" /: "fapi" /: "v1" /: "userDataStream"  
     
     let passwdtxt = BC.pack Passwd.passwd
     let params = 
