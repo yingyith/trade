@@ -168,7 +168,7 @@ parsekline nstr  = runReq defaultHttpConfig $ do
           "limit" =: (15 :: Int)
     areq <- req GET ouri NoReqBody lbsResponse params
     let breq = responseBody areq
-    --liftIO $ print (areq)
+    liftIO $ print (areq)
     --liftIO $ DC.putStrLn (breq)
     --convert areq to sticks
     --convert sticks to redis cache wl
