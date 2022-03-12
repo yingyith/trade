@@ -88,9 +88,9 @@ main =
     runRedis conn (liskeytoredis aas)
     --let aimss = "/stream?streams=adausdt@kline_1m&listenkey=" ++ aas -----------------------------------------------
     --liftIO $ print (aimss)
-    --let aimss = "/stream?streams=adausdt@kline_1m/"  ++ aas -----------------------------------------------
+    let aimss = "/stream?streams=adausdt@kline_1m/"  ++ aas -----------------------------------------------
    -- let aimss = "/stream?streams=adausdt@kline_1m/"  -----------------------------------------------
-    let aimss = "/ws/" ++aas -----------------------------------------------
+    --let aimss = "/ws/" ++aas -----------------------------------------------
     --let aimss = "/ws/streams=btcusdt@markPrice/"++ "&listenkey="  ++ aas -----------------------------------------------
     --let aimss = "/ws/adausdt@kline_1m/"++ aas ++ "&listenkey="  ++ aas -----------------------------------------------
     --"send ping every 30mins"
