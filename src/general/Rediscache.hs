@@ -183,7 +183,7 @@ mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
 mserieFromredis klinename = do  
      --get kline and ada position,usdt position
      let bklinename = BL.fromString klinename
-     res <- zrange bklinename 0 15
+     res <- zrange bklinename 0 21
      return res
 
 getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],

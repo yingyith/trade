@@ -132,6 +132,7 @@ generatehlsheet :: ByteString -> IO ()
 generatehlsheet msg = do 
     conn <- connect defaultConnectInfo
     mseriesFromredis conn msg--get all mseries from redis 
+    liftIO $ print "stop highlowsheet"
     ---generate high low point spreet
     ---quant analysis under high low (risk spreed) 
     ---return open/close event to redis 
