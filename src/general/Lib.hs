@@ -7,6 +7,7 @@ import GHC.Generics
 import Data.Aeson
 import Data.Text
 import Data.List as DL
+import Prelude as DT
 import Httpstructure
 import Control.Monad
 import Control.Monad.IO.Class
@@ -15,8 +16,8 @@ import Analysistructure
 getrsi :: [Hlnode] -> IO (Int,String)
 getrsi hl = do 
   let klen = 8
-  let updiff   =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,((cprice $ (!!i) al)-(cprice $ (!!(i-1)) al)  > 0)] where al = hl
-  let downdiff =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,((cprice $ (!!i) al)-(cprice $ (!!(i-1)) al)  < 0)] where al = hl
+  let updiff   =  [(cprice $ (!!i) hl) - (cprice $ (!!(i+1)) hl  ) | i <- [0,klen-2] ,((cprice $ (!!i) hl)-(cprice $ (!!(i+1)) hl)  < 0)] 
+  let downdiff =  [(cprice $ (!!i) hl) - (cprice $ (!!(i+1)) hl  ) | i <- [0,klen-2] ,((cprice $ (!!i) hl)-(cprice $ (!!(i+1)) hl)  > 0)] 
 
   let gain = case (DL.length updiff) of 
                   x|x<1 -> 0.00001 
