@@ -199,10 +199,10 @@ mseriesFromredis conn msg = do
      res <- runRedis conn (getdiffintervalflow)
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
-     --liftIO $ print ("start analysis min --------------------------------------")
+     liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
      let biginterval = [fst x| x<-bigintervall]
-     --liftIO $ print ("start analysis snd --------------------------------------")
+     liftIO $ print ("start analysis snd --------------------------------------")
      sndinterval <- getsndkline (snd res) 
      timecur <- getcurtimestamp
      secondnum <- secondrule sndinterval
