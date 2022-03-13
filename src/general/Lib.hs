@@ -17,8 +17,8 @@ getrsi hl = do
   let klen = 8
   let updiff   =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,let idiff = (cprice $ (!!i) al)-(cprice $ (!!(i-1)) al) in idiff > 0] where al = hl
   let downdiff =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,let idiff = (cprice $ (!!i) al)-(cprice $ (!!(i-1)) al) in idiff < 0] where al = hl
-  let gain = sum updiff
-  let loss = abs $ sum downdiff
+  let gain = (sum updiff)/(fromIntegral $ DL.length updiff :: Double) 
+  let loss = (abs $ sum downdiff)/(fromIntegral $ DL.length downdiff :: Double)
   let rs = gain/loss 
   let rsi  = (100 - 100 /(1+rs))
   return (round rsi,"")
