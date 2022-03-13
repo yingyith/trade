@@ -15,7 +15,7 @@ import Analysistructure
 
 getrsi :: [Hlnode] -> IO (Int,String)
 getrsi hl = do 
-  let klen = 9
+  let klen = 8
   let updiff   =  [(cprice $ (!!i) hl) -(cprice $ (!!(i+1)) hl)   | i <- [0..klen-2], (cprice $ (!!i) hl) -(cprice $ (!!(i+1)) hl) > 0] 
   let downdiff =  [(cprice $ (!!i) hl) -(cprice $ (!!(i+1)) hl)   | i <- [0..klen-2], (cprice $ (!!i) hl) -(cprice $ (!!(i+1)) hl) < 0] 
 
