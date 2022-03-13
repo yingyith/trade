@@ -15,8 +15,8 @@ import Analysistructure
 getrsi :: [Hlnode] -> IO (Int,String)
 getrsi hl = do 
   let klen = 8
-  let updiff   =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,let idiff = (cprice $ (!!i) al)-(cprice $ (!!(i-1)) al) in idiff > 0] where al = hl
-  let downdiff =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,let idiff = (cprice $ (!!i) al)-(cprice $ (!!(i-1)) al) in idiff < 0] where al = hl
+  let updiff   =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,((cprice $ (!!i) al)-(cprice $ (!!(i-1)) al)  > 0)] where al = hl
+  let downdiff =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,((cprice $ (!!i) al)-(cprice $ (!!(i-1)) al)  < 0)] where al = hl
 
   let gain = case (DL.length updiff) of 
                   x|x<1 -> 0.00001 
