@@ -90,10 +90,10 @@ genehighlowsheet index hl key = do
     let lpointpredication = (curitemlp - nextitemlp) <= 0
     let predication = (hpointpredication,lpointpredication)
     let res = case predication of 
-                  (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key curitemcp)
-                  (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key curitemcp)
-                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key curitemcp)
-                  (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key curitemcp)
+                  (True,True)   ->  (AS.Hlnode curitemt 0         curitemlp     0 "low"    key curitemcp)
+                  (False,False) ->  (AS.Hlnode curitemt curitemhp 0             0 "high"   key curitemcp)
+                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "wbig"   key curitemcp)
+                  (True,False)  ->  (AS.Hlnode curitemt 0         0             0 "wsmall" key curitemcp)
     liftIO $ print "____________hlsheet--------"
     return res
 
