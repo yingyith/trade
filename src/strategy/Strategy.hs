@@ -97,7 +97,7 @@ genehighlowsheet index hl key = do
     --liftIO $ print "____________hlsheet--------"
     return res
 
-minrule :: [AS.Hlnode]-> Double-> String -> IO (Int,String)
+minrule :: [AS.Hlnode]-> Double-> String -> IO (Int,(String,Int))
 minrule ahl pr interval = do 
    -- get max (high)
    -- get min (low)
@@ -167,19 +167,19 @@ minrule ahl pr interval = do
    --liftIO $ print (maxhigh,minlow)
    liftIO $ print (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi,fifteenmindenyrulepredi)
    case (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi,fifteenmindenyrulepredi) of 
-        (True  ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- up 
-        (False ,True  ,False ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!0) $ fromJust $  minrisksheet!?interval),"uf") -- up fast
-        (False ,False ,True  ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!3) $ fromJust $  minrisksheet!?interval),"df") -- down fast
-        (False ,False ,False ,False ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () down  max high is near, no snd low point, have snd high point,
-        (False ,False ,False ,False ,True  ,False ,False ,True ,True  ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up    max high is near, have snd low point, no snd high point,
-        (False ,False ,False ,False ,True  ,False ,False ,True ,False ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () up    max high is near, have snd low point, no snd high point,
-        (False ,False ,False ,True  ,True  ,False ,False ,True ,False ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up    min low is near, have snd low point, no snd high point,
-        (False ,False ,False ,True  ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () down  min low is near, no snd low point, have snd high point,
-        (False ,False ,False ,_     ,True  ,True  ,True  ,True ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up
-        (False ,False ,False ,_     ,True  ,True  ,True  ,False,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal() down
-        (False ,False ,False ,True  ,False ,False ,False ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up min low is near,
-        (False ,False ,False ,False ,False ,False ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () down
-        (False ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal ()
+        (True  ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- up 
+        (False ,True  ,False ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!0) $ fromJust $  minrisksheet!?interval),("uf",rsiindex)) -- up fast
+        (False ,False ,True  ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!3) $ fromJust $  minrisksheet!?interval),("df",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () down  max high is near, no snd low point, have snd high point,
+        (False ,False ,False ,False ,True  ,False ,False ,True ,True  ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up    max high is near, have snd low point, no snd high point,
+        (False ,False ,False ,False ,True  ,False ,False ,True ,False ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () up    max high is near, have snd low point, no snd high point,
+        (False ,False ,False ,True  ,True  ,False ,False ,True ,False ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up    min low is near, have snd low point, no snd high point,
+        (False ,False ,False ,True  ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () down  min low is near, no snd low point, have snd high point,
+        (False ,False ,False ,_     ,True  ,True  ,True  ,True ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up
+        (False ,False ,False ,_     ,True  ,True  ,True  ,False,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal() down
+        (False ,False ,False ,True  ,False ,False ,False ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up min low is near,
+        (False ,False ,False ,False ,False ,False ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () down
+        (False ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal ()
    
 
 

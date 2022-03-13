@@ -129,7 +129,7 @@ mseriesToredis a conn = do
 
 
 
-analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO (Int,String)
+analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO (Int,(String,Int))
 analysistrdo aa bb = do 
      let tdata = fromRight []  aa 
      let interval = fst bb
@@ -160,7 +160,7 @@ parsetokline msg = do
      let kline = fromJust test
      return kline
 
-analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(Int,String)]
+analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(Int,(String,Int))]
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
      liftIO $ print ("analysisdi--------------------ai")
@@ -207,6 +207,7 @@ mseriesFromredis conn msg = do
      let dcp = read $ kclose kline :: Double
      liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
+     liftIO $ print bigintervall
      let biginterval = [fst x| x<-bigintervall]
      liftIO $ print ("start analysis snd --------------------------------------")
      sndinterval <- getsndkline (snd res) 
