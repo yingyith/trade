@@ -13,7 +13,9 @@ import Analysistructure
 getrsi :: [Hlnode] -> IO (Int,String)
 getrsi hl = do 
   print "enter getesi"
+  print hl
   let klen = DL.length hl
+  print klen
   let updiff   =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,let idiff = (cprice $ (!!i) al)-(cprice $ (!!(i-1)) al) in idiff > 0] where al = hl
   let downdiff =  [(cprice $ (!!i) al) - (cprice $ (!!(i-1)) al  ) | i <- [1,klen-1] ,let idiff = (cprice $ (!!i) al)-(cprice $ (!!(i-1)) al) in idiff < 0] where al = hl
   print "enter getesi2"
