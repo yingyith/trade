@@ -71,6 +71,7 @@ minrisksheet = fromList [
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
 genehighlowsheet index hl key = do 
     liftIO $ print "____________hlsheet--------"
+    liftIO $ print hl
 
     let curitemstr = BL.toString $ hl !! index
     let nextitemstr= BL.toString $ hl !! (index+1)
