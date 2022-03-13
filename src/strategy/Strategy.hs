@@ -146,6 +146,7 @@ minrule ahl pr interval = do
    let lastonediff =abs (lprice befstick - lprice nowstick)
    liftIO $ print ("enter minr do ---------------------")
    rsiindexres <-  getrsi ahl 
+   liftIO $ print (rsiindexres)
    let rsiindex = fst rsiindexres
    liftIO $ print ("enter minrr do ---------------------")
    let rsipredi = case rsiindex  of 
