@@ -162,6 +162,8 @@ parsetokline msg = do
 analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(Int,String)]
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
+     liftIO $ print ("analysisdi--------------------ai")
+     liftIO $ print (aim)
      hlsheet <-  zipWithM analysistrdo aim aimlist
 
      --liftIO $ print (hlsheet)
