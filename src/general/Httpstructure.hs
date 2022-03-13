@@ -166,7 +166,7 @@ parsekline nstr  = runReq defaultHttpConfig $ do
     let params = 
           "symbol" =: ("ADAUSDT" :: Text) <>
           "interval" =: (tnstr ) <>
-          "limit" =: (23 :: Int)
+          "limit" =: (24 :: Int)
     areq <- req GET ouri NoReqBody lbsResponse params
     let breq = responseBody areq
     --liftIO $ print (areq)
