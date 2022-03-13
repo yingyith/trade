@@ -20,10 +20,10 @@ getrsi hl = do
 
   let gain = case (DL.length updiff) of 
                   x|x<1 -> 0.00001 
-                  _     -> (abs $ sum updiff)/(fromIntegral $ DL.length updiff :: Double) 
+                  _     -> (abs $ sum updiff)
   let loss = case (DL.length downdiff) of 
                   x|x<1 -> 0.00001
-                  _     -> (abs $ sum downdiff)/(fromIntegral $ DL.length downdiff :: Double)
+                  _     -> (abs $ sum downdiff)
   liftIO $ print (gain,loss)
   let rs = gain/loss 
   let rsi  = (100 - (100 /(1+rs)))
