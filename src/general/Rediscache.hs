@@ -139,7 +139,7 @@ analysistrdo aa bb = do
      liftIO $ print ("tdata is ---------------------")
      liftIO $ print (tdata)
      let lentdata = length tdata
-     rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-1)] :: IO [AS.Hlnode] 
+     rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
      liftIO $ print (rehllist)
      --liftIO $ print ("hlsheet 1--------------------------")
   --   let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
