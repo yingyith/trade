@@ -34,6 +34,7 @@ import Data.Aeson.Types
 import Analysistructure as AS
 import Httpstructure
 import Globalvar
+import Lib
 
 
 --every grid have a position value, 1min value -> 15  up_fast->5      oppsite -> -15 fall_fast -> -25
@@ -86,32 +87,29 @@ genehighlowsheet index hl key = do
     let lpointpredication = (curitemlp - nextitemlp) <= 0
     let predication = (hpointpredication,lpointpredication)
     let res = case predication of 
-                  (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key)
-                  (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key)
-                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key)
-                  (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key)
+                  (True,True)   ->  (AS.Hlnode curitemt 0 curitemlp 0 "low" key curitemcp)
+                  (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key curitemcp)
+                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key curitemcp)
+                  (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key curitemcp)
     return res
 
-minrule :: [AS.Hlnode]-> Double-> String -> IO Int
+minrule :: [AS.Hlnode]-> Double-> String -> IO (Int,String)
 minrule ahl pr interval = do 
    -- get max (high)
    -- get min (low)
    -- confirm nearest (high or low)
    -- return this grid risk
    -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
-   let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
+   let reslist = [(xlist!!x,x)|x<-[1..(length xlist-7)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
    --liftIO $ print ("enter min do ---------------------")
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
-   let emptypred = case (highsheet,lowsheet) of 
-                         ([],[])-> True
-                         (_,_)-> True
    
    let nearhigh = case highsheet of 
-                       [] -> last lowsheet 
+                       [] -> (cprice $ last ahl,0)
                        _  -> highsheet!!0
    let nearlow = case lowsheet of 
-                       [] -> last highsheet
+                       [] -> (cprice $ last ahl,0)
                        _  -> lowsheet!!0
    let maxhigh = case highsheet of 
                        [] -> last lowsheet
@@ -140,6 +138,13 @@ minrule ahl pr interval = do
    let minlasttwo = min (lprice nowstick) (lprice befstick)
    let lasttwodiff =abs (lprice nowstick - lprice befstick)
    let lastonediff =abs (lprice befstick - lprice nowstick)
+   rsiindexres <-  getrsi ahl 
+   let rsiindex = fst rsiindexres
+   let rsipredi = case rsiindex  of 
+                  x|x<20 -> "do"
+                  x|x>65 -> "up"
+                  _     -> "no"
+   liftIO $ print (rsiindex,rsipredi)
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < minlasttwo+ 1/3*lasttwodiff)&& (lasttwodiff > 0.012) && (interval == "3m")) 
                            ||((stype nowstick == "low")&& (pr < minlasttwo+ 1/3*lasttwodiff)&& (lastonediff > 0.01) && (interval == "3m")) 
 
@@ -150,19 +155,19 @@ minrule ahl pr interval = do
    --liftIO $ print (maxhigh,minlow)
    liftIO $ print (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi,fifteenmindenyrulepredi)
    case (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi,fifteenmindenyrulepredi) of 
-        (True  ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- up 
-        (False ,True  ,False ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return ( (!!0) $ fromJust $  minrisksheet!?interval) -- up fast
-        (False ,False ,True  ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return ( (!!3) $ fromJust $  minrisksheet!?interval) -- down fast
-        (False ,False ,False ,False ,False ,True  ,False ,_    ,_     ) ->  return ( (!!2) $ fromJust $  minrisksheet!?interval) -- normal () down  max high is near, no snd low point, have snd high point,
-        (False ,False ,False ,False ,True  ,False ,False ,True ,True ) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- normal () up    max high is near, have snd low point, no snd high point,
-        (False ,False ,False ,False ,True  ,False ,False ,True ,False  ) ->  return ( (!!2) $ fromJust $  minrisksheet!?interval) -- normal () up    max high is near, have snd low point, no snd high point,
-        (False ,False ,False ,True  ,True  ,False ,False ,True ,False ) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- normal () up    min low is near, have snd low point, no snd high point,
-        (False ,False ,False ,True  ,False ,True  ,False ,_    ,_     ) ->  return ( (!!2) $ fromJust $  minrisksheet!?interval) -- normal () down  min low is near, no snd low point, have snd high point,
-        (False ,False ,False ,_     ,True  ,True  ,True  ,True ,_     ) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- normal () up
-        (False ,False ,False ,_     ,True  ,True  ,True  ,False,_     ) ->  return ( (!!2) $ fromJust $  minrisksheet!?interval) -- normal() down
-        (False ,False ,False ,True  ,False ,False ,False ,_    ,_     ) ->  return ( (!!1) $ fromJust $  minrisksheet!?interval) -- normal () up min low is near,
-        (False ,False ,False ,False ,False ,False ,False ,_    ,_     ) ->  return ( (!!2) $ fromJust $  minrisksheet!?interval) -- normal () down
-        (False ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return ( (!!2) $ fromJust $  minrisksheet!?interval) -- normal ()
+        (True  ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- up 
+        (False ,True  ,False ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!0) $ fromJust $  minrisksheet!?interval),"uf") -- up fast
+        (False ,False ,True  ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!3) $ fromJust $  minrisksheet!?interval),"df") -- down fast
+        (False ,False ,False ,False ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () down  max high is near, no snd low point, have snd high point,
+        (False ,False ,False ,False ,True  ,False ,False ,True ,True  ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up    max high is near, have snd low point, no snd high point,
+        (False ,False ,False ,False ,True  ,False ,False ,True ,False ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () up    max high is near, have snd low point, no snd high point,
+        (False ,False ,False ,True  ,True  ,False ,False ,True ,False ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up    min low is near, have snd low point, no snd high point,
+        (False ,False ,False ,True  ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () down  min low is near, no snd low point, have snd high point,
+        (False ,False ,False ,_     ,True  ,True  ,True  ,True ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up
+        (False ,False ,False ,_     ,True  ,True  ,True  ,False,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal() down
+        (False ,False ,False ,True  ,False ,False ,False ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),"up") -- normal () up min low is near,
+        (False ,False ,False ,False ,False ,False ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal () down
+        (False ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),"do") -- normal ()
    
 
 
@@ -177,9 +182,9 @@ gethlsheetsec index kll =  do
     let nextitemcp = read $ kclose nextitem :: Double 
     let predication = (curitemcp - nextitemcp) 
     let res = case compare predication  0 of 
-                  LT   ->  (AS.Hlnode curitemt 0 curitemcp 0 "low" "1s")
-                  GT ->  (AS.Hlnode curitemt curitemcp 0 0 "high" "1s")
-                  EQ ->  (AS.Hlnode curitemt curitemcp 0 0 "wsmall" "1s")
+                  LT   ->  (AS.Hlnode curitemt 0 curitemcp 0 "low" "1s" curitemcp)
+                  GT ->  (AS.Hlnode curitemt curitemcp 0 0 "high" "1s" curitemcp)
+                  EQ ->  (AS.Hlnode curitemt curitemcp 0 0 "wsmall" "1s" curitemcp)
     return res
 
 

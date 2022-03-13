@@ -151,8 +151,9 @@ takeorder a b c = do
       let result = responseBody response :: Object
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
       --liftIO $ print ("ss")
-      liftIO $ print (response)
-      liftIO $ print (result)
+      --liftIO $ print (response)
+      --liftIO $ print (result)
+      return ()
       --how to change bs to json
    
 parsekline :: String -> IO (DpairMserie) 
@@ -165,10 +166,10 @@ parsekline nstr  = runReq defaultHttpConfig $ do
     let params = 
           "symbol" =: ("ADAUSDT" :: Text) <>
           "interval" =: (tnstr ) <>
-          "limit" =: (15 :: Int)
+          "limit" =: (23 :: Int)
     areq <- req GET ouri NoReqBody lbsResponse params
     let breq = responseBody areq
-    liftIO $ print (areq)
+    --liftIO $ print (areq)
     --liftIO $ DC.putStrLn (breq)
     --convert areq to sticks
     --convert sticks to redis cache wl

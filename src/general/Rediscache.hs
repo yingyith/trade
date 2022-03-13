@@ -129,7 +129,7 @@ mseriesToredis a conn = do
 
 
 
-analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO Int
+analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO (Int,String)
 analysistrdo aa bb = do 
      let tdata = fromRight []  aa 
      let interval = fst bb
@@ -137,7 +137,7 @@ analysistrdo aa bb = do
      let hllist = [] :: [AS.Hlnode]
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      --liftIO $ print (tdata)
-     rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..13] :: IO [AS.Hlnode] 
+     rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..22] :: IO [AS.Hlnode] 
      --liftIO $ print ("hlsheet 1--------------------------")
   --   let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
   --  -- liftIO $ print ("hlsheet 2--------------------------")
@@ -147,6 +147,7 @@ analysistrdo aa bb = do
   --   let lowgrid = minimum lowsheet
   --   let diff = (highgrid-lowgrid)/3 
      quantylist <- minrule rehllist curpr interval 
+
      return quantylist
 
 parsetokline :: BL.ByteString -> IO Klinedata
@@ -156,10 +157,11 @@ parsetokline msg = do
      let kline = fromJust test
      return kline
 
-analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [Int]
+analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(Int,String)]
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
      hlsheet <-  zipWithM analysistrdo aim aimlist
+
      --liftIO $ print (hlsheet)
      return hlsheet
 
@@ -198,7 +200,8 @@ mseriesFromredis conn msg = do
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
      --liftIO $ print ("start analysis min --------------------------------------")
-     biginterval <- analysismindo (fst res ) dcp
+     bigintervall <- analysismindo (fst res ) dcp
+     let biginterval = [fst x| x<-bigintervall]
      --liftIO $ print ("start analysis snd --------------------------------------")
      sndinterval <- getsndkline (snd res) 
      timecur <- getcurtimestamp

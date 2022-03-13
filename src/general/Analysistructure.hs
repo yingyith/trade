@@ -40,7 +40,8 @@ data Hlnode = Hlnode {
               lprice :: Double,
               rank :: Integer,
               stype :: String, -- high or low` 
-              rtype :: String  -- '5min' or '1h'
+              rtype :: String,  -- '5min' or '1h'
+              cprice :: Double
               } deriving (Show,Generic)
 
 --mix 1m and 5m kline analysis

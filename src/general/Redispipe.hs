@@ -269,13 +269,13 @@ opclHandler channel  msg = do
               let fpr = 0.01 + curpr
               let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               runRedis conn (proordertorediszset orderquan pr curtime)
-              takeorder "BUY" orderquan pr 
+              --takeorder "BUY" orderquan pr 
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
              -- liftIO $ print ("-------------start sell process---------------")
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
-              takeorder "SELL" orderquan pr 
+              --takeorder "SELL" orderquan pr 
 
 
     when (dettype /= "adausdt@kline_1m") $ do 
