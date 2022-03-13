@@ -152,6 +152,7 @@ minrule ahl pr interval = do
                   x|x<20 -> "do"
                   x|x>65 -> "up"
                   _     -> "no"
+   liftIO $ print ("enter minrrr do ---------------------")
    liftIO $ print (rsiindex,rsipredi)
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < minlasttwo+ 1/3*lasttwodiff)&& (lasttwodiff > 0.012) && (interval == "3m")) 
                            ||((stype nowstick == "low")&& (pr < minlasttwo+ 1/3*lasttwodiff)&& (lastonediff > 0.01) && (interval == "3m")) 
