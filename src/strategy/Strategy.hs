@@ -147,6 +147,7 @@ minrule ahl pr interval = do
    liftIO $ print ("enter minr do ---------------------")
    rsiindexres <-  getrsi ahl 
    let rsiindex = fst rsiindexres
+   liftIO $ print ("enter minrr do ---------------------")
    let rsipredi = case rsiindex  of 
                   x|x<20 -> "do"
                   x|x>65 -> "up"
