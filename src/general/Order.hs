@@ -10,6 +10,7 @@ module Order (
     preorcpreordertorediszset,
     cproordertorediszset,
     cendordertorediszset,
+    ctestendordertorediszset,
     pexpandordertorediszset
 ) where
 
@@ -279,5 +280,29 @@ cendordertorediszset quan  stamp = do
    let shquant =  show quan
    let shstate =  show $ fromEnum Done
    when (recordstate == (show $ fromEnum Cprocess) ) $ do
+       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shstate]
+       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+
+ctestendordertorediszset :: Integer->Double  -> Double -> Redis ()
+ctestendordertorediszset quan pr  stamp = do 
+   let abykeystr = BL.fromString orderkey
+   let side = "SELL" :: String
+   let coin = "ADA" :: String
+   let otype = "Done" :: String
+   res <- zrange abykeystr 0 0
+   let tdata = case res of 
+                    Right c -> c
+   let lastrecord = BL.toString $ tdata !!0
+   let recorditem = DLT.splitOn "|" lastrecord
+   liftIO $ print ("bef end record is -------------------------")
+   liftIO $ print (recorditem)
+   let lastorderid = recorditem !! 3
+   let pr = recorditem !! 5
+   let recordstate = last recorditem
+   let orderid =  show lastorderid ::String
+   let shprice =  show pr
+   let shquant =  show quan
+   let shstate =  show $ fromEnum Done
+   when (recordstate == (show $ fromEnum Cprepare) ) $ do
        let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
