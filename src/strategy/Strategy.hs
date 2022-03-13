@@ -128,6 +128,7 @@ minrule ahl pr interval = do
    let havesndhighpredi = case nearsndhigh of 
                            [] -> False
                            _ -> True
+   liftIO $ print ("enter min2 do ---------------------")
 
    let bigpredi =  (snd maxhigh) > (snd minlow) --true is low near
    let fastup = pr >= fst maxhigh
