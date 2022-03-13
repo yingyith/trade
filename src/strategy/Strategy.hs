@@ -71,6 +71,7 @@ minrisksheet = fromList [
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
 genehighlowsheet index hl key = do 
     liftIO $ print "____________hlsheet--------"
+
     let curitemstr = BL.toString $ hl !! index
     let nextitemstr= BL.toString $ hl !! (index+1)
     let curitem = DLT.splitOn "|" curitemstr
@@ -92,6 +93,7 @@ genehighlowsheet index hl key = do
                   (False,False) ->  (AS.Hlnode curitemt curitemhp 0 0 "high" key curitemcp)
                   (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp 0 "wbig" key curitemcp)
                   (True,False)  ->  (AS.Hlnode curitemt 0 0 0 "wsmall" key curitemcp)
+    liftIO $ print "____________hlsheet--------"
     return res
 
 minrule :: [AS.Hlnode]-> Double-> String -> IO (Int,String)
