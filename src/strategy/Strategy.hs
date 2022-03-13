@@ -137,8 +137,10 @@ minrule ahl pr interval = do
                            (True,True)-> True 
                            (_,_)      -> False
    let smallpredi = snd nearlow < snd nearhigh  -- true is low near
+   liftIO $ print ("enter min3 do ---------------------")
    let nowstick = ahl!!0
    let befstick = ahl!!1
+   liftIO $ print ("enter min4 do ---------------------")
    let minlasttwo = min (lprice nowstick) (lprice befstick)
    let lasttwodiff =abs (lprice nowstick - lprice befstick)
    let lastonediff =abs (lprice befstick - lprice nowstick)
