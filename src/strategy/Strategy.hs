@@ -104,6 +104,7 @@ minrule ahl pr interval = do
    -- confirm nearest (high or low)
    -- return this grid risk
    -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
+   liftIO $ print ahl
    let reslist = [(xlist!!x,x)|x<-[1..(length xlist-7)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
    liftIO $ print ("enter min do ---------------------")
    let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
