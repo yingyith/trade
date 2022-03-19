@@ -208,14 +208,14 @@ mseriesFromredis conn msg = do
      liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
      liftIO $ print bigintervall
-     let biginterval = [fst x| x<-bigintervall]
+     biginterval <- crossminstra bigintervall
      liftIO $ print ("start analysis snd --------------------------------------")
      sndinterval <- getsndkline (snd res) 
      timecur <- getcurtimestamp
      secondnum <- secondrule sndinterval
      --liftIO $ print ("start pre or cpre --------------------------------------")
      liftIO $  print ("++--",timecur,biginterval,secondnum)
-     let sumres = (sum biginterval) + secondnum
+     let sumres = biginterval + secondnum
      curtimestampi <- getcurtimestamp
      runRedis conn $ do
         preorcpreordertorediszset sumres dcp  curtimestampi

@@ -6,7 +6,8 @@ module Strategy
      secondrule,
      minrule,
      genehighlowsheet,
-     minrisksheet
+     minrisksheet,
+     crossminstra
     ) where
 import Data.Monoid ((<>))
 import Control.Monad
@@ -19,6 +20,7 @@ import Control.Concurrent.Async
 --import Data.Text as T
 import Data.Map as DM
 import Data.Maybe
+import Data.Ord
 import Data.List as DL
 import Prelude as DT
 import Data.Text.IO as TIO
@@ -58,15 +60,51 @@ import Lib
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
-                 ("3m", [-20,  60,  -45, -90 ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m", [-20,  60,  -60, -125 ]), --
-                 ("15m",[15,   60,  -75, -125]),
-                 ("1h", [15,   60,  -65, -175]),
-                 ("4h", [5,    15,  -75, -50 ]),
-                 ("12h",[5,    15,  -25, -50 ]),
-                 ("3d", [5,    15,    0, -25 ])
+                 ("3m" , [-20,  60,  -60, -90  ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m" , [-20,  60,  -60, -125 ]), --
+                 ("15m", [10 ,  60,  -60, -125 ]),
+                 ("1h" , [15 ,  60,  -60, -175 ]),
+                 ("4h" , [5  ,  60,  -60, -120 ]),
+                 ("12h", [5  ,  60,  -90, -50  ]),
+                 ("3d" , [5  ,   0,  -30, -25  ])
                ]
 
+crossminstra :: [(Int,(String,Int))]-> IO Int 
+crossminstra  abc = do 
+    --3m ,5m,15m,1h,4h  if all up ,then double up 
+    --3m ,5m,15m,1h,4h  if all down ,then double down 
+    --accroding to the continuous kline ,the largest interval go against others is the risk number(append rule)
+  --find  the near "up" "uf" "do" "df"
+    let uppredi  = (== 'u').(!!0) . fst .snd  --up and down predi
+    --let itemtrend = fst $ snd $ item 
+    --let rsiindex = snd $ snd $ item
+    --get the positive item ,if rsi match low ,double
+    --get the first d start ,it is the list append position period 
+    --find  the first down interval,if  all up ,then pass
+    --                              if have ,the first down interval high low point ,decide th appand position 
+    --                                       the up one bef first down decide the profit distance,match the the holding position interval,if shorter ,do nothing .
+    --                                       if longer,appand/reduce position()  
+  --  if the 15min and 1hour both down or downfast,then not open,or open small,then do not open until the longer interval show up
+  --  rsi > 60 ,not allow to open
+  --  set the close price
+    let trueresl = DL.group $ DT.map uppredi abc --[true,false,true ,false]
+    let grouplist = DT.map length trueresl
+    let maxindex = snd $ maximumBy (comparing fst) (zip grouplist [0..]) 
+    let item = trueresl  !! maxindex
+    let itemindex = sum $ DT.take (maxindex-1) grouplist
+    let itemlen = DT.length item
+    let remainlist = (DT.drop (maxindex+itemlen) abc) ++ (DT.take maxindex abc ) 
+    -- if itemindex > 3.not open ,must include 15m ,
+    --              <= 3.but ,no double
+    --let closepr = 
+    liftIO $ print (abc)
+    let itempredi = (itemlen <= 1)
+    let itemipredi = (itemindex>3)
+    case (itempredi,itemipredi) of 
+          (True , _   )   -> return (sum  [fst x|x<-abc]) 
+          (False,True )   -> return (sum  [fst x|x<-abc]) 
+          (False,False)   -> return ((sum [fst x| x<-remainlist]) +(sum [fst x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
+                                          
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
 genehighlowsheet index hl key = do 
@@ -97,89 +135,75 @@ genehighlowsheet index hl key = do
     --liftIO $ print "____________hlsheet--------"
     return res
 
-minrule :: [AS.Hlnode]-> Double-> String -> IO (Int,(String,Int))
-minrule ahl pr interval = do 
+minrule :: [AS.Hlnode]-> Double-> String  -> IO (Int,(String,Int))
+minrule ahl pr interval  = do 
    -- get max (high)
    -- get min (low)
    -- confirm nearest (high or low)
    -- return this grid risk
    -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
    liftIO $ print ahl
-   let reslist = [(xlist!!x,x)|x<-[1..(length xlist-2)],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
+   let reslist   =  [(xlist!!x,x)|x<-[1..(length xlist-2)],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
    liftIO $ print ("enter min do ---------------------")
-   let highsheet = [((hprice $ fst x),snd x)| x<-xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
-   let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")||((stype $ fst x) == "wbig")] where xlist = reslist
+   let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
+   let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
+   let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  && ((stype $ fst x) == "wsmall")] where xlist = reslist
    
-   let nearhigh = case highsheet of 
-                       [] -> (cprice $ last ahl,0)
-                       _  -> highsheet!!0
-   let nearlow = case lowsheet of 
-                       [] -> (cprice $ last ahl,0)
-                       _  -> lowsheet!!0
-   let maxhigh = case highsheet of 
-                       [] -> last lowsheet
-                       _  -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
-   let minlow  = case lowsheet of 
-                       [] -> last highsheet 
-                       _  -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
-   let nearsndlow = DL.filter (\n-> ((snd n)< snd maxhigh)&& (snd n /= snd minlow) && (fst n < (fst maxhigh - (fst maxhigh - fst minlow)*0.66))) lowsheet
-   let nearsndhigh = DL.filter (\n-> ((snd n)< snd minlow)&& (snd n /= snd maxhigh) && (fst n < (fst maxhigh - (fst maxhigh - fst minlow)*0.66))) highsheet
-   let havesndlowpredi  = case nearsndlow of 
-                           [] -> False
-                           _ -> True
-   let havesndhighpredi = case nearsndhigh of 
-                           [] -> False
-                           _ -> True
-   liftIO $ print ("enter min2 do ---------------------")
+   
+   let maxhigh   =  case (highsheet,lowsheet) of 
+                       ([],[]) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
+                       ([],_ ) -> last lowsheet
+                       (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
+   let minlow    =  case (highsheet,lowsheet) of 
+                       ([],[]) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
+                       ([],_ ) -> last highsheet 
+                       (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
+   let nowstick   =  ahl!!0
+   let befstick   =  ahl!!1
+   --if now stick is lowest point ,then down fast.not open in 3m and 15m, in 1hour and more other ,should half their up
+   --if previous stick is lowest point,and rsi fit,then up 
+   --if now stick is highest point , then up fast.not open
+   --if previous stick is highest point,and rsi fit,then down 
+   --if curpr > 3/4 grid < 7/8 ,is 1/4 up position  ,up      ,if rsi match then add 1/4 up 
+   --if curpr < 1/4 grid > 1/8 ,is 1/2 up position  ,down    ,if rsi match then add total up 
+   --                           else ,return -10, is notknown,if rsi match then add 1/2 up                
+   let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
+   let griddiff         =  (fst maxhigh)      -    (fst minlow)
+   let fastuppredi      =  (0   ==   (snd maxhigh))
+   let fastdownpredi    =  (0   ==   (snd minlow ))
+   let fastprevuppredi  =  (1   ==   (snd maxhigh)) &&  (interval == "15m") --need 3m support 
+   let fastprevdopredi  =  (1   ==   (snd minlow )) &&  (interval == "15m") --need 3m support
+   let openpos          = case pr of 
+                             x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.125
+                             x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.2 
+                             x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.25                                 
+                             x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 0.5                                
+                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.2                               
 
-   let bigpredi =  (snd maxhigh) > (snd minlow) --true is low near
-   let fastup = pr >= fst maxhigh
-   let fastdown = pr <= fst minlow
-   let waveveryfreq = case (havesndlowpredi,havesndhighpredi) of 
-                           (True,True)-> True 
-                           (_,_)      -> False
-   let smallpredi = snd nearlow < snd nearhigh  -- true is low near
-   liftIO $ print ("enter min3 do ---------------------")
-   let nowstick = ahl!!0
-   let befstick = ahl!!1
-   liftIO $ print ("enter min4 do ---------------------")
-   let minlasttwo = min (lprice nowstick) (lprice befstick)
-   let lasttwodiff =abs (lprice nowstick - lprice befstick)
-   let lastonediff =abs (lprice befstick - lprice nowstick)
-   liftIO $ print ("enter minr do ---------------------")
-   rsiindexres <-  getrsi ahl 
-   liftIO $ print (rsiindexres)
-   let rsiindex = fst rsiindexres
-   liftIO $ print ("enter minrr do ---------------------")
-   let rsipredi = case rsiindex  of 
-                  x|x<20 -> "do"
-                  x|x>65 -> "up"
-                  _     -> "no"
-   liftIO $ print ("enter minrrr do ---------------------")
-   liftIO $ print (rsiindex,rsipredi)
-   let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < minlasttwo+ 1/3*lasttwodiff)&& (lasttwodiff > 0.012) && (interval == "3m")) 
-                           ||((stype nowstick == "low")&& (pr < minlasttwo+ 1/3*lasttwodiff)&& (lastonediff > 0.01) && (interval == "3m")) 
 
-   let fifteenmindenyrulepredi = (stype befstick == "high") && (interval == "15m")
+   let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
+
+   rsiindexx <- getrsi ahl 8
+   let rsiindex = fst rsiindexx
+   let openrsipos       = case rsiindex of 
+                             x| x>75                                                                  -> -240
+                             x| x>40 && x<=75                                                         -> -120
+                             x| x>30 && x<=40                                                         -> 0
+                             x| x>22 && x<=30                                                         -> 60
+                             x| x>16 && x<=22                                                         -> 120
+                             x| x<=16                                                                 -> 340
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
   -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
-   --liftIO $ print (maxhigh,minlow)
-   liftIO $ print (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi,fifteenmindenyrulepredi)
-   case (threeminrulepredi,fastup,fastdown ,bigpredi,havesndlowpredi,havesndhighpredi,waveveryfreq,smallpredi,fifteenmindenyrulepredi) of 
-        (True  ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- up 
-        (False ,True  ,False ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!0) $ fromJust $  minrisksheet!?interval),("uf",rsiindex)) -- up fast
-        (False ,False ,True  ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!3) $ fromJust $  minrisksheet!?interval),("df",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () down  max high is near, no snd low point, have snd high point,
-        (False ,False ,False ,False ,True  ,False ,False ,True ,True  ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up    max high is near, have snd low point, no snd high point,
-        (False ,False ,False ,False ,True  ,False ,False ,True ,False ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () up    max high is near, have snd low point, no snd high point,
-        (False ,False ,False ,True  ,True  ,False ,False ,True ,False ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up    min low is near, have snd low point, no snd high point,
-        (False ,False ,False ,True  ,False ,True  ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () down  min low is near, no snd low point, have snd high point,
-        (False ,False ,False ,_     ,True  ,True  ,True  ,True ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up
-        (False ,False ,False ,_     ,True  ,True  ,True  ,False,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal() down
-        (False ,False ,False ,True  ,False ,False ,False ,_    ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- normal () up min low is near,
-        (False ,False ,False ,False ,False ,False ,False ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal () down
-        (False ,_     ,_     ,_     ,_     ,_     ,_     ,_    ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- normal ()
+   liftIO $ print (maxhigh,minlow,rsiindexx,openpos)
+   case (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi) of 
+        (True  ,_     ,_     ,_     ,_     ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- up 
+        (False ,True  ,False ,_     ,_     ,_     ) ->  return (( (!!0) $ fromJust $  minrisksheet!?interval),("uf",rsiindex)) -- up fast
+        (False ,False ,True  ,_     ,_     ,_     ) ->  return (( (!!3) $ fromJust $  minrisksheet!?interval),("df",rsiindex)) -- down fast
+        (False ,False ,False ,True  ,False ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- down fast
+        (False ,False ,False ,False ,True  ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,True  ) ->  return ((round $ (+ openrsipos) $ (* openpos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,False ) ->  return ((round $ (+ openrsipos) $ (* openpos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- down fast
    
 
 
@@ -222,6 +246,7 @@ secondrule records = do
                                         let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.005 
                                         liftIO $ print (highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi)
+                                        --rsiindexres <-  getrsi rehllist 64
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
                                             (True,_,_,_)-> return (-15) 
                                             (False,True,True,False)-> return 70 
