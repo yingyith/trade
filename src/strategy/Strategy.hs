@@ -232,7 +232,7 @@ secondrule records = do
                         case compare slenrecord (fromIntegral secondstick)  of 
                              GT -> do  
                                         rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..115] :: IO [AS.Hlnode]
-                                        rsiindexx <- getrsi rehllist 24
+                                        rsiindexx <- getrsi rehllist 60
                                         let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
                                         let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
                                         let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
