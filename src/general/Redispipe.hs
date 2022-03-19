@@ -82,7 +82,7 @@ isstrategyinvalid = True
 
 msgcacheandpingtempdo :: Integer -> ByteString -> NC.Connection-> Redis ()
 msgcacheandpingtempdo a msg wc = do
-        case compare a 100000 of -- 300000= 5min
+        case compare a 60000 of -- 300000= 5min
         --case compare a 300000 of -- 300000= 5min
             GT -> do 
               void $ publish "cache:1" ("cache" <> msg)
@@ -162,7 +162,7 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
     forever $ do
       message <- NC.receiveData wc 
-      liftIO $ print (message)
+      --liftIO $ print (message)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
       let orderitem = snd res
