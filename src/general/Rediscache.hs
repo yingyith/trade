@@ -137,7 +137,7 @@ analysistrdo aa bb = do
      let hllist = [] :: [AS.Hlnode]
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      liftIO $ print ("tdata is ---------------------")
-     liftIO $ print (tdata)
+     --liftIO $ print (tdata)
      let lentdata = length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
      liftIO $ print (rehllist)
@@ -164,7 +164,7 @@ analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(Int,(String,In
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
      liftIO $ print ("analysisdi--------------------ai")
-     liftIO $ print (aim)
+     --liftIO $ print (aim)
      hlsheet <-  zipWithM analysistrdo aim aimlist
 
      --liftIO $ print (hlsheet)

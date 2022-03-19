@@ -97,7 +97,7 @@ crossminstra  abc = do
     -- if itemindex > 3.not open ,must include 15m ,
     --              <= 3.but ,no double
     --let closepr = 
-    --liftIO $ print (abc)
+    liftIO $ print (abc)
     let itempredi = (itemlen <= 1)
     let itemipredi = (itemindex>3)
     case (itempredi,itemipredi) of 
@@ -190,7 +190,7 @@ minrule ahl pr interval  = do
                              x| x>40 && x<=75                                                         -> -120
                              x| x>30 && x<=40                                                         -> 0
                              x| x>22 && x<=30                                                         -> 60
-                             x| x>16 && x<=22                                                         -> 120
+                             x| x>16 && x<=22                                                         -> 100
                              x| x<=16                                                                 -> 340
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
