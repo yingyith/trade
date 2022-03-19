@@ -97,7 +97,7 @@ crossminstra  abc = do
     -- if itemindex > 3.not open ,must include 15m ,
     --              <= 3.but ,no double
     --let closepr = 
-    liftIO $ print (abc)
+    liftIO $ print ("min risk is ------",abc)
     let itempredi = (itemlen <= 1)
     let itemipredi = (itemindex>3)
     case (itempredi,itemipredi) of 
@@ -188,10 +188,11 @@ minrule ahl pr interval  = do
    let openrsipos       = case rsiindex of 
                              x| x>75                                                                  -> -240
                              x| x>40 && x<=75                                                         -> -120
-                             x| x>30 && x<=40                                                         -> 0
-                             x| x>22 && x<=30                                                         -> 60
-                             x| x>16 && x<=22                                                         -> 100
-                             x| x<=16                                                                 -> 340
+                             x| x>28 && x<=40                                                         -> -20
+                             x| x>18 && x<=28                                                         -> 60
+                             x| x>12 && x<=18                                                         -> 120
+                             x| x>5 && x<=12                                                          -> 240
+                             x| x<=5                                                                  -> 360
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
   -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
@@ -246,7 +247,7 @@ secondrule records = do
                                         let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
                                         let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.005 
-                                        liftIO $ print (highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi,rsiindexx)
+                                        liftIO $ print ("rsi is----",highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi,rsiindexx)
                                         --rsiindexres <-  getrsi rehllist 64
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
                                             (True,_,_,_)-> return (-15) 
