@@ -211,7 +211,7 @@ gethlsheetsec :: Int -> [ Klinedata ] -> IO (AS.Hlnode)
 gethlsheetsec index kll =  do 
     --- rule1: if last one stick < last low point , return  -unlimitKlinedata
   --    rule2: if near high point then not open,if near low point can open  ,
-    liftIO $ print ("debug hlsheet---------")
+    --liftIO $ print ("debug hlsheet---------")
     let curitem  = kll !! index 
     let nextitem  = kll !! (index + 1) 
     let curitemt = ktime curitem

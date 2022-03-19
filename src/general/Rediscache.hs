@@ -136,7 +136,7 @@ analysistrdo aa bb = do
      let curpr = snd bb
      let hllist = [] :: [AS.Hlnode]
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
-     liftIO $ print ("tdata is ---------------------")
+    -- liftIO $ print ("tdata is ---------------------")
      --liftIO $ print (tdata)
      let lentdata = length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
@@ -163,7 +163,7 @@ parsetokline msg = do
 analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(Int,(String,Int))]
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
-     liftIO $ print ("analysisdi--------------------ai")
+     --liftIO $ print ("analysisdi--------------------ai")
      --liftIO $ print (aim)
      hlsheet <-  zipWithM analysistrdo aim aimlist
 
@@ -205,11 +205,11 @@ mseriesFromredis conn msg = do
      --liftIO $ print res
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
-     liftIO $ print ("start analysis min --------------------------------------")
+     --liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall
-     liftIO $ print ("start analysis snd --------------------------------------")
+     --liftIO $ print ("start analysis snd --------------------------------------")
      sndinterval <- getsndkline (snd res) 
      timecur <- getcurtimestamp
      secondnum <- secondrule sndinterval
