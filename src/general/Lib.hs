@@ -25,7 +25,8 @@ getrsi hl hllen = do
   let loss = case (DL.length downdiff) of 
                   x|x<1 -> 0.00001
                   _     -> (abs $ sum downdiff)
-  liftIO $ print (updiff,downdiff,gain,loss)
+  --liftIO $ print (updiff,downdiff,gain,loss)
   let rs = gain/loss 
+  liftIO $ print (rs)
   let rsi  = (100 - (100 /(1+rs)))
   return (round rsi,"")
