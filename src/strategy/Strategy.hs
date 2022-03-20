@@ -186,8 +186,11 @@ minrule ahl pr interval  = do
    rsiindexx <- getrsi ahl 8
    let rsiindex = fst rsiindexx
    let openrsipos       = case rsiindex of 
-                             x| x>75                                                                  -> -240
-                             x| x>40 && x<=75                                                         -> -120
+                             x| x>85                                                                  -> -460
+                             x| x>75 && x<=85                                                         -> -230
+                             x| x>60 && x<=75                                                         -> -180
+                             x| x>50 && x<=60                                                         -> -120
+                             x| x>40 && x<=50                                                         -> -60
                              x| x>28 && x<=40                                                         -> -20
                              x| x>18 && x<=28                                                         -> 60
                              x| x>12 && x<=18                                                         -> 120
@@ -204,8 +207,8 @@ minrule ahl pr interval  = do
         (False ,False ,True  ,_     ,_     ,_     ) ->  return (( (!!3) $ fromJust $  minrisksheet!?interval),("df",rsiindex)) -- down fast
         (False ,False ,False ,True  ,False ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- down fast
         (False ,False ,False ,False ,True  ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,True  ) ->  return ((round $ (+ openrsipos) $ (* openpos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,False ) ->  return ((round $ (+ openrsipos) $ (* openpos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,True  ) ->  return ((round $ (+ openrsipos) $ (* openpos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,False ) ->  return ((round $ (+ openrsipos) $ (* openpos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- down fast
    
 
 
