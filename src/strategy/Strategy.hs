@@ -183,11 +183,11 @@ minrule ahl pr interval  = do
 
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
 
-   let indexlen = case interval of 
-                       "3m" -> 10
-                       "5m" -> 9
-                       _    -> 8
-   rsiindexx <- getrsi ahl indexlen
+   rsiindexf <- getrsi ahl 7
+   let indexlentwo = case (fst rsiindexf) of 
+                           x| x<2 -> 9
+                           _      -> 7
+   rsiindexx <- getrsi ahl indexlentwo
    let rsiindex = fst rsiindexx
    let openrsipos       = case rsiindex of 
                              x| x>85                                                                  -> -460
