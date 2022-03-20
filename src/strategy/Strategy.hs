@@ -197,6 +197,7 @@ minrule ahl pr interval  = do
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
   -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
    liftIO $ print (maxhigh,minlow,rsiindexx,openpos)
+   liftIO $ print (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi)
    case (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi) of 
         (True  ,_     ,_     ,_     ,_     ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- up 
         (False ,True  ,False ,_     ,_     ,_     ) ->  return (( (!!0) $ fromJust $  minrisksheet!?interval),("uf",rsiindex)) -- up fast
