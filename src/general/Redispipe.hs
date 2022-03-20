@@ -165,7 +165,9 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
     forever $ do
       message <- NC.receiveData wc 
+      datamsg <- NC.receiveDataMessage wc 
       liftIO $ print ("date is ---",message)
+      liftIO $ print ("control is ---",datamsg)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
       let orderitem = snd res
