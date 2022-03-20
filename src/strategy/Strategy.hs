@@ -136,7 +136,8 @@ genehighlowsheet index hl key = do
     return res
 
 minrule :: [AS.Hlnode]-> Double-> String  -> IO (Int,(String,Int))
-minrule ahl pr interval  = do 
+minrule ahll pr interval  = do 
+   let ahl = DT.take 10 ahll
    -- get max (high)
    -- get min (low)
    -- confirm nearest (high or low)
