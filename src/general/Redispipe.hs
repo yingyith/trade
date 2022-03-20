@@ -96,6 +96,7 @@ msgcacheandpingtempdo a msg wc = do
 
 sendpongdo :: Integer -> NC.Connection -> IO ()
 sendpongdo a conn = do
+        liftIO $ print ("send Pong")
         case compare a 60000 of -- 300000= 5min
             GT -> do 
                   sendPong conn (T.pack $ show "")
@@ -164,7 +165,7 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
     forever $ do
       message <- NC.receiveData wc 
-      --liftIO $ print (message)
+      liftIO $ print ("date is ---",message)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
       let orderitem = snd res
