@@ -96,9 +96,11 @@ msgcacheandpingtempdo a msg wc = do
 
 sendpongdo :: Integer -> NC.Connection -> IO ()
 sendpongdo a conn = do
-        case compare a 300000 of -- 300000= 5min
+        case compare a 60000 of -- 300000= 5min
             GT -> do 
-                  sendPong conn (T.pack $ show "1")
+                  sendPong conn (T.pack $ show "")
+                  sendPing conn (T.pack $ show "")
+                  sendPong conn (T.pack $ show "")
             EQ ->
               return ()
             LT ->
