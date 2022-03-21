@@ -69,7 +69,7 @@ minrisksheet = fromList [
                  ("3d" , [5  ,   0,  -30, -25  ])
                ]
 
-crossminstra :: [(Int,(String,Int))]-> IO Int 
+crossminstra :: [((Int,Double),(String,Int))]-> IO Int 
 crossminstra  abc = do 
     --3m ,5m,15m,1h,4h  if all up ,then double up 
     --3m ,5m,15m,1h,4h  if all down ,then double down 
@@ -98,12 +98,13 @@ crossminstra  abc = do
     --              <= 3.but ,no double
     --let closepr = 
     liftIO $ print ("min risk is ------",abc)
+    --below 4h  the longer interval the low rsi ,the close price  should accroding to 4h diff
     let itempredi = (itemlen <= 1)
     let itemipredi = (itemindex>3)
     case (itempredi,itemipredi) of 
-          (True , _   )   -> return (sum  [fst x|x<-abc]) 
-          (False,True )   -> return (sum  [fst x|x<-abc]) 
-          (False,False)   -> return ((sum [fst x| x<-remainlist]) +(sum [fst x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
+          (True , _   )   -> return (sum  [fst $ fst x|x<-abc]) 
+          (False,True )   -> return (sum  [fst $ fst x|x<-abc]) 
+          (False,False)   -> return ((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
                                           
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
@@ -135,7 +136,7 @@ genehighlowsheet index hl key = do
     --liftIO $ print "____________hlsheet--------"
     return res
 
-minrule :: [AS.Hlnode]-> Double-> String  -> IO (Int,(String,Int))
+minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,Double),(String,Int))
 minrule ahll pr interval  = do 
    let ahl = DT.take 10 ahll
    -- get max (high)
@@ -175,11 +176,11 @@ minrule ahll pr interval  = do
    let fastprevuppredi  =  (1   ==   (snd maxhigh)) &&  (interval == "15m") --need 3m support 
    let fastprevdopredi  =  (1   ==   (snd minlow )) &&  (interval == "15m") --need 3m support
    let openpos          = case pr of 
-                             x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.1
-                             x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.2 
+                             x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.125
+                             x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.25 
                              x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.5                                 
                              x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 1                                
-                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.1                               
+                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.125                               
 
 
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
@@ -191,12 +192,12 @@ minrule ahll pr interval  = do
    rsiindexx <- getrsi ahl indexlentwo
    let rsiindex = fst rsiindexx
    let openrsipos       = case rsiindex of 
-                             x| x>85                                                                  -> -460
+                             x| x>85                                                                  -> -480
                              x| x>75 && x<=85                                                         -> -230
                              x| x>60 && x<=75                                                         -> -180
                              x| x>50 && x<=60                                                         -> -120
                              x| x>40 && x<=50                                                         -> -60
-                             x| x>28 && x<=40                                                         -> -20
+                             x| x>28 && x<=40                                                         -> 20
                              x| x>18 && x<=28                                                         -> 60
                              x| x>12 && x<=18                                                         -> 120
                              x| x>5 && x<=12                                                          -> 240
@@ -207,13 +208,13 @@ minrule ahll pr interval  = do
    liftIO $ print (maxhigh,minlow,rsiindexx,openpos)
    liftIO $ print (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi)
    case (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi) of 
-        (True  ,_     ,_     ,_     ,_     ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- up 
-        (False ,True  ,False ,_     ,_     ,_     ) ->  return (( (!!0) $ fromJust $  minrisksheet!?interval),("uf",rsiindex)) -- up fast
-        (False ,False ,True  ,_     ,_     ,_     ) ->  return (( (!!3) $ fromJust $  minrisksheet!?interval),("df",rsiindex)) -- down fast
-        (False ,False ,False ,True  ,False ,_     ) ->  return (( (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- down fast
-        (False ,False ,False ,False ,True  ,_     ) ->  return (( (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,True  ) ->  return ((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),("up",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,False ) ->  return ((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),("do",rsiindex)) -- down fast
+        (True  ,_     ,_     ,_     ,_     ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),griddiff),("up",rsiindex)) -- up 
+        (False ,True  ,False ,_     ,_     ,_     ) ->  return ((( (!!0) $ fromJust $  minrisksheet!?interval),griddiff),("uf",rsiindex)) -- up fast
+        (False ,False ,True  ,_     ,_     ,_     ) ->  return ((( (!!3) $ fromJust $  minrisksheet!?interval),griddiff),("df",rsiindex)) -- down fast
+        (False ,False ,False ,True  ,False ,_     ) ->  return ((( (!!2) $ fromJust $  minrisksheet!?interval),griddiff),("do",rsiindex)) -- down fast
+        (False ,False ,False ,False ,True  ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),griddiff),("up",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,True  ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),griddiff),("up",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,False ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),griddiff),("do",rsiindex)) -- down fast
    
 
 

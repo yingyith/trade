@@ -129,7 +129,7 @@ mseriesToredis a conn = do
 
 
 
-analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO (Int,(String,Int))
+analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO ((Int,Double),(String,Int))
 analysistrdo aa bb = do 
      let tdata = fromRight []  aa 
      let interval = fst bb
@@ -160,7 +160,7 @@ parsetokline msg = do
      let kline = fromJust test
      return kline
 
-analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(Int,(String,Int))]
+analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [((Int,Double),(String,Int))]
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
      --liftIO $ print ("analysisdi--------------------ai")
