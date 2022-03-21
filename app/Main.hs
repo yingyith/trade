@@ -112,7 +112,7 @@ ws connection = do
     --ctrl <- newPubSubController [("order:*",opclHandler)][]
     ctrl <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-    liftIO $ print ("/////////////////////")
+    --liftIO $ T.putStrLn 
     --
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int

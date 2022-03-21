@@ -167,6 +167,7 @@ publishThread rc wc tvar =
       message <- NC.receiveData wc 
       datamsg <- NC.receiveDataMessage wc 
       liftIO $ print ("date is ---",message)
+      --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       liftIO $ print ("control is ---",datamsg)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
