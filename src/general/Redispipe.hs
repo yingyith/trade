@@ -164,13 +164,14 @@ getliskeyfromredis =  return ()
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
     forever $ do
+      liftIO $ print ("loop is ---+++++")
       message <- NC.receiveData wc 
       datamsg <- NC.receiveDataMessage wc 
       liftIO $ print ("date is ---",message)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       liftIO $ print ("control is ---",datamsg)
-      curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo ) 
+      curtimestamp <- round . (* 1000) <$> getPOSIXTime
       let orderitem = snd res
       let klineitem = fst res
       let cachetime = case klineitem of
@@ -206,18 +207,18 @@ publishThread rc wc tvar =
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
-      let loop = do
-              line <- T.getLine
-              print ("jjjjjj" )
-              unless (T.null line) $ do
-                  print (line )
-                  let reline = line
-                  NW.sendTextData wc (line)
-                  loop
-      liftIO $ print ("is is loop now --------!")
-      loop
+      --let loop = do
+      --        line <- T.getLine
+      --        print ("jjjjjj" )
+      --        unless (T.null line) $ do
+      --            print (line )
+      --            let reline = line
+      --            NW.sendTextData wc (line)
+      --            loop
+      --liftIO $ print ("is is loop now --------!")
+      --loop
 
-      NW.sendClose wc (B.pack "Bye!")
+      --NW.sendClose wc (B.pack "Bye!")
  -- let loop = do
  --         line <- T.getline
  --         unless (T.null line) $ do 
