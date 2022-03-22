@@ -126,9 +126,7 @@ ws connection = do
                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
-    print ("jjjjjj+++++++++" )
     let loop = do
-            print ("jjjjjj+++++++++" )
             line <- T.getLine
             print ("jjjjjj" )
             unless (T.null line) $ do
