@@ -208,27 +208,6 @@ publishThread rc wc tvar =
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
-      --let loop = do
-      --        line <- T.getLine
-      --        print ("jjjjjj" )
-      --        unless (T.null line) $ do
-      --            print (line )
-      --            let reline = line
-      --            NW.sendTextData wc (line)
-      --            loop
-      --liftIO $ print ("is is loop now --------!")
-      --loop
-
-      --NW.sendClose wc (B.pack "Bye!")
- -- let loop = do
- --         line <- T.getline
- --         unless (T.null line) $ do 
- --             print (line)
- --             let reline = line
- --             sendTextData connection (line)
- --             loop
-
- -- sendClose wc (B.pack "Bye!")
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"

@@ -117,14 +117,14 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
 
-    _ <- withAsync (publishThread conn connection orderVar) $ \_pubT -> do
-             withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                liftIO $ print ("ssss----------")
-                void $ addChannels ctrl [] [("order:*", opclHandler)]
-                void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+    void.forkIO.withAsync (publishThread conn connection orderVar) $ \_pubT -> do
+                    withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+                        liftIO $ print ("ssss----------")
+                        void $ addChannels ctrl [] [("order:*", opclHandler)]
+                        void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+                        void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+                        void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
     print ("jjjjjj+++++++++" )
     let loop = do
