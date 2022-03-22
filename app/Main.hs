@@ -127,6 +127,7 @@ ws connection = do
                 void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
     let loop = do
+            print ("jjjjjj+++++++++" )
             line <- T.getLine
             print ("jjjjjj" )
             unless (T.null line) $ do
@@ -134,7 +135,7 @@ ws connection = do
                 let reline = line
                 sendTextData connection (line)
                 loop
-    liftIO $ print ("is is loop now --------!")
+    liftIO $ print ("is isloop now --------!")
     loop
 
     sendClose connection (B.pack "Bye!")

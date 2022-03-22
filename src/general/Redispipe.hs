@@ -174,6 +174,7 @@ publishThread rc wc tvar =
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       let orderitem = snd res
       let klineitem = fst res
+      liftIO $ print (klineitem)
       let cachetime = case klineitem of
             Left _ ->  "some error"
             Right v ->   (v!!0)

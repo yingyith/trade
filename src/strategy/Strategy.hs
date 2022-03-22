@@ -151,7 +151,7 @@ minrule ahll pr interval  = do
    let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
    let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  && ((stype $ fst x) == "wsmall")] where xlist = reslist
    
-   
+   liftIO $ print (highsheet,lowsheet)
    let maxhigh   =  case (highsheet,lowsheet) of 
                        ([],[]) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
                        ([],_ ) -> last lowsheet
