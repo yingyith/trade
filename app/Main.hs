@@ -119,7 +119,6 @@ ws connection = do
 
     void.forkIO.withAsync (publishThread conn connection orderVar) $ \_pubT -> do
                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                        liftIO $ print ("ssss----------")
                         void $ addChannels ctrl [] [("order:*", opclHandler)]
                         void $ addChannels ctrl [] [("cache:*", cacheHandler)]
                         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
@@ -128,13 +127,12 @@ ws connection = do
 
     let loop = do
             line <- T.getLine
-            print ("jjjjjj" )
+            --print ("" )
             unless (T.null line) $ do
                 print (line )
                 let reline = line
                 sendTextData connection (line)
                 loop
-    liftIO $ print ("is isloop now --------!")
     loop
 
     sendClose connection (B.pack "Bye!")
