@@ -165,9 +165,12 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
     forever $ do
       liftIO $ print ("loop is ---+++++")
+      msgg <- NC.receive wc 
       message <- NC.receiveData wc 
+      msg <- NC.receive wc 
       datamsg <- NC.receiveDataMessage wc 
       liftIO $ print ("date is ---",message)
+      liftIO $ print ("date is ---",msgg)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       liftIO $ print ("control is ---",datamsg)
       res <- runRedis rc (replydo ) 
