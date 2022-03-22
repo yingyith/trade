@@ -158,7 +158,7 @@ minrule ahll pr interval  = do
                        (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
    let minlow    =  case (highsheet,lowsheet) of 
                        ([],[]) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
-                       ([],_ ) -> last highsheet 
+                       (_,[]) -> last highsheet 
                        (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
