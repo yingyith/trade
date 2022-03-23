@@ -11,6 +11,7 @@ module Globalvar (
     secondkey,
     usdtkey,
     liskey,
+    timekey,
     secondstick
 ) where
 
@@ -18,6 +19,8 @@ defintervallist :: [String]
 defintervallist = ["3m","5m","15m","1h","4h","12h","3d"] 
 
 orderkey = "Order"
+
+timekey = "Time"
 
 fivemkey = "5m"
 secondkey = "1s"

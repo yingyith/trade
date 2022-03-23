@@ -16,6 +16,7 @@ import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
 import Data.Aeson.Types
+import Data.Either
 import Data.HashMap.Lazy (HashMap)
 import Data.Maybe (fromJust)
 import Data.Monoid ((<>))
@@ -26,6 +27,8 @@ import GHC.Generics
 import Network.HTTP.Req
 import Data.Digest.Pure.SHA
 import Data.ByteString.Lazy.UTF8 as BLU
+import Data.ByteString.Lazy as BLL
+import qualified Data.ByteString.UTF8 as BL
 import Data.ByteString.Lazy.Char8
 import qualified Data.ByteString.Char8 as B
 import qualified Text.URI as URI
@@ -117,21 +120,20 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
 
-    _ <- withAsync (publishThread conn connection orderVar) $ \_pubT -> do
-                    withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                        void $ addChannels ctrl [] [("order:*", opclHandler)]
-                        void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                        void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                        void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+    void .forkIO . withAsync (publishThread conn connection orderVar) $ \_pubT -> do
+                      withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+                         void $ addChannels ctrl [] [("order:*", opclHandler)]
+                         void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+                         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
     let loop = do
-            line <- T.getLine
-            --print ("" )
-            unless (T.null line) $ do
-                print (line )
-                let reline = line
-                sendTextData connection (line)
+            beftimee <- runRedis conn gettimefromredis  
+            let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
+            curtime <- getcurtimestamp
+            liftIO $ print (beftime,curtime)
+            unless ((curtime-60000) < beftime) $ do
                 loop
     loop
 

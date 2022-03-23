@@ -10,6 +10,7 @@ module Rediscache (
    parsetokline,
    liskeytoredis,
    getorderfromredis, 
+   gettimefromredis, 
    getspotbaltoredis,
    setkvfromredis,
    getmsgfromstr,
@@ -63,6 +64,12 @@ getorderfromredis :: Redis (Either Reply [BL.ByteString])
 getorderfromredis = do 
    let bklinename = BL.fromString orderkey
    res <- zrange bklinename 0 0
+   return res
+
+gettimefromredis :: Redis (Either Reply (Maybe BL.ByteString))
+gettimefromredis = do 
+   let timekeybs = BL.fromString timekey
+   res <- get timekeybs
    return res
 
 getbalfromredis :: Redis (Either Reply (Maybe BL.ByteString),Either Reply (Maybe BL.ByteString))

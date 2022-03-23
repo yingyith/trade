@@ -62,14 +62,18 @@ import Myutils
 
 
 
-replydo :: Redis (Either Reply [ByteString], Either Reply [ByteString])
-replydo = do
+replydo :: Integer -> Redis (Either Reply [ByteString], Either Reply [ByteString])
+replydo timeint = do
         let akey = BLU.fromString fivemkey
         item <- zrange akey 0 1
+        let timevalue = BLU.fromString $  show timeint
+        let timekeyy = BLU.fromString timekey
+        void $ R.set timekeyy timevalue
         orderitem <- getorderfromredis
         let reitem = (item,orderitem)
         return  reitem 
         
+
             
 iscacheinvalid    ::         Bool  
 iscacheinvalid = True
@@ -173,8 +177,8 @@ publishThread rc wc tvar =
       liftIO $ print ("date is ---",msgg)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       liftIO $ print ("control is ---",datamsg)
-      res <- runRedis rc (replydo ) 
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
+      res <- runRedis rc (replydo curtimestamp ) 
       let orderitem = snd res
       let klineitem = fst res
       liftIO $ print (klineitem)
