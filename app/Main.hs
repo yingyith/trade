@@ -138,10 +138,8 @@ ws connection = do
 
     let loop = do
             beftimee <- runRedis conn gettimefromredis  
-            liftIO $ print (beftimee)
             let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
             curtime <- getcurtimestamp
-            liftIO $ print (beftime,curtime)
             unless ((curtime-60000) > beftime) $ do
                 loop
     loop
