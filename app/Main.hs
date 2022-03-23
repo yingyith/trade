@@ -88,7 +88,8 @@ main =
         pure ares
     liftIO $ print (aas)
     conn <- connect defaultConnectInfo
-    runRedis conn (liskeytoredis aas)
+    nowtime <- getcurtimestamp
+    runRedis conn (liskeytoredis aas nowtime)
     --let aimss = "/stream?streams=adausdt@kline_1m&listenkey=" ++ aas -----------------------------------------------
     --liftIO $ print (aimss)
     let aimss = "/stream?streams=adausdt@kline_1m/"  ++ aas -----------------------------------------------

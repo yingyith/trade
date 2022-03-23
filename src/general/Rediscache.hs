@@ -86,13 +86,17 @@ setkvfromredis key value = do
    let valuebs = BL.fromString value
    void $ set keybs valuebs
 
-liskeytoredis :: String -> Redis ()
-liskeytoredis a = do 
+liskeytoredis :: String -> Integer -> Redis ()
+liskeytoredis a b = do 
     --string to bytestring
    let value = BL.fromString a
    let key = BL.fromString liskey
    let badakey = BL.fromString adakey
    let busdtkey = BL.fromString usdtkey
+   let timekeyy = BL.fromString timekey
+   let timevalue = BL.fromString $ show b
+   void $ set timekeyy timevalue
+   --init curtime to redis ,let retry failure count it .
    void $ del [key] 
    void $ del [badakey] 
    void $ del [busdtkey] 
