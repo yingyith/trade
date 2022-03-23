@@ -239,7 +239,7 @@ hsticklistToredis hst  akey   = do
   --liftIO $ print (tdata)
   let ttdata = getmsilist tdata
   let abykeystr = BL.fromString akey
-  void $ zremrangebyrank abykeystr 0 1000
+  void $ zremrangebyrank abykeystr 1 1000
   forM_ ttdata $ \s -> do 
     let dst = st s 
     let dop = op s 

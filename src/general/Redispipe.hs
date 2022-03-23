@@ -64,7 +64,7 @@ import Myutils
 
 replydo :: Integer -> Redis (Either Reply [ByteString], Either Reply [ByteString])
 replydo timeint = do
-        let akey = BLU.fromString fivemkey
+        let akey = BLU.fromString threemkey
         item <- zrange akey 0 1
         let timevalue = BLU.fromString $  show timeint
         let timekeyy = BLU.fromString timekey
@@ -383,7 +383,7 @@ addklinetoredis :: ByteString -> Redis ()
 addklinetoredis msg  = do 
     let mmsg = BL.fromStrict msg
     let test = A.decode mmsg :: Maybe Klinedata --Klinedata
-    let abykeystr = BLU.fromString "1m" 
+    let abykeystr = BLU.fromString secondkey 
     let kline = case test of 
                     Just l -> l
     let ktf = ktime kline 

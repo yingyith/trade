@@ -7,6 +7,7 @@ module Globalvar (
     defintervallist,
     orderkey,
     fivemkey,
+    threemkey,
     adakey,
     secondkey,
     usdtkey,
@@ -23,6 +24,7 @@ orderkey = "Order"
 timekey = "Time"
 
 fivemkey = "5m"
+threemkey = "3m"
 secondkey = "1s"
 
 adakey = "Ada"
