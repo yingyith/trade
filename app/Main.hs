@@ -10,7 +10,7 @@ import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
 import Control.Exception (catch)
 import Data.Text (Text, pack)
-import Network.WebSockets as NW (ClientApp, receiveData, sendClose, sendTextData)
+import Network.WebSockets as NW (ClientApp, receiveData, sendClose, sendTextData,ConnectionException( ConnectionClosed ))
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
@@ -107,7 +107,14 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     liftIO $ print ("connect to websocket------")
-    runSecureClient "fstream.binance.com" 443 aimss  ws
+    --runSecureClient "fstream.binance.com" 443 aimss  ws
+    retryOnFailure ws
+
+retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
+  `catch` (\e ->
+      if e == ConnectionClosed 
+      then retryOnFailure ws
+      else return ())
 --issue streams = <listenKey> -- add user Data Stream
 ws :: ClientApp ()
 ws connection = do
