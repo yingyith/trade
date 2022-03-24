@@ -126,6 +126,7 @@ sendbye rconn wconn = do
       beftimee <- runRedis rconn gettimefromredis  
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
+      liftIO $ print (beftime ,curtime)
       unless ((curtime-60000) > beftime) $ do
           liftIO $ print ("bef sendbye")
           sendbye rconn wconn
