@@ -196,7 +196,7 @@ getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata]
 getsndkline aim  = do 
      let res = fromRight []  aim  
      klines <- mapM parsetokline res
-     --liftIO $ print (klines)
+     liftIO $ print (klines)
      return klines
      
 
