@@ -120,6 +120,7 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  :: R.Connection -> NC.Connection -> IO ()
 sendbye rconn wconn = do
+      liftIO $ print ("it is loop in sendbye")
       beftimee <- runRedis rconn gettimefromredis  
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
