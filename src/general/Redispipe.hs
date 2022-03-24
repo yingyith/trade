@@ -231,8 +231,7 @@ debugtime :: IO ()
 debugtime = do 
     currtime <- getcurtimestamp 
     let curtime = fromInteger currtime ::Double
-    liftIO $ print (curtime)
-
+    return ()
 
 handlerThread :: R.Connection -> PubSubController -> IO (TVar a) -> IO ()
 handlerThread conn ctrl tvar = forever $
@@ -252,7 +251,7 @@ opclHandler channel  msg = do
     -- ==> command set from analysishandler ==> redis ==> publish ==> opclHandler
     --mtthread <- myThreadId
     conn <- connect defaultConnectInfo
-    liftIO $ print ("start opcl ++++++++++++++++++++++++++++++++++++++++++++")
+    --liftIO $ print ("start opcl ++++++++++++++++++++++++++++++++++++++++++++")
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
@@ -308,7 +307,7 @@ opclHandler channel  msg = do
          let curtime = fromInteger currtime ::Double
          when (eventname == "outboundAccountPosition") $ do 
          
-              liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
+              --liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
               let eventstr = fromJust $ detdata ^? key "e"
               let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
               let adacurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "ADA"))) !!0
@@ -325,14 +324,14 @@ opclHandler channel  msg = do
                  let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
                  let quantylll = read $ (quantyll !! 4) :: Integer
                  let quantdouble = read $ (quantyll !! 4) :: Double
-                 liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
+                -- liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
                  let adanum = floor adacurbal :: Integer
                  --liftIO $ print (usdtcurbal-usdtbal+0.1 )
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
-                     liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
-                     liftIO $ print (usdtcurbal,quantdouble,usdtbal)
+                    -- liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
+                    -- liftIO $ print (usdtcurbal,quantdouble,usdtbal)
                      when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
-                         liftIO $ print ("enter execute pro++++++++++++++++++++++++++++++++++++++++++++")
+                     --    liftIO $ print ("enter execute pro++++++++++++++++++++++++++++++++++++++++++++")
                          hlfendordertorediszset adanum curtime  
                          setkvfromredis adakey $ show adacurbal 
                          setkvfromredis usdtkey $ show usdtcurbal 
@@ -350,7 +349,7 @@ opclHandler channel  msg = do
          when (eventname == "executionReport" ) $ do 
                --for this event come before outbound ,so need to add price first,after outbound come ,correct quanty
                --pexpandordertorediszset
-              liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
+             -- liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
               let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
               --liftIO $ print (curorderstate)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
@@ -372,11 +371,11 @@ opclHandler channel  msg = do
                   --liftIO $ print ("6++++++++++++++++++++++++++++++++++++++++++++")
                   --still need to  judge buy or sell
                   when (curside == "BUY" && curcoin == "ADA") $ do 
-                       liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
+                       --liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
                        runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
 
                   when (curside == "SELL" && curcoin == "ADA") $ do 
-                       liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
+                       --liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
                        runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
          
          --executionReport and outboundAccountPosition
@@ -411,7 +410,7 @@ addklinetoredis msg  = do
 sklineHandler :: RedisChannel -> ByteString -> IO ()
 sklineHandler channel msg = do 
       conn <- connect defaultConnectInfo
-      liftIO $ print ("start skline ++++++++++++++++++++++++++++++++++++++++++++")
+      --liftIO $ print ("start skline ++++++++++++++++++++++++++++++++++++++++++++")
       runRedis conn (addklinetoredis msg )
       debugtime
 
@@ -419,14 +418,14 @@ sklineHandler channel msg = do
 analysisHandler :: RedisChannel -> ByteString -> IO ()
 analysisHandler channel msg = do 
       --conn <- connect defaultConnectInfo
-      liftIO $ print ("start analysis ++++++++++++++++++++++++++++++++++++++++++++")
+      --liftIO $ print ("start analysis ++++++++++++++++++++++++++++++++++++++++++++")
       generatehlsheet msg
       debugtime
-      liftIO $ print ("end analysis ++++++++++++++++++++++++++++++++++++++++++++")
+      --liftIO $ print ("end analysis ++++++++++++++++++++++++++++++++++++++++++++")
 
 cacheHandler :: RedisChannel -> ByteString -> IO ()
 cacheHandler channel msg = do 
-      liftIO $ print ("start cache ++++++++++++++++++++++++++++++++++++++++++++")
+      --liftIO $ print ("start cache ++++++++++++++++++++++++++++++++++++++++++++")
       conn <- connect defaultConnectInfo
       getSticksToCache conn
       debugtime
@@ -451,7 +450,7 @@ listenkeyHandler channel msg = do
 showChannels :: R.Connection -> IO ()
 showChannels c = do
   resp :: Either Reply [ByteString] <- runRedis c $ sendRequest ["PUBSUB", "CHANNELS"]
-  liftIO $ SI.hPutStrLn stderr $ "Current redis channels: " ++ show resp
+  --liftIO $ SI.hPutStrLn stderr $ "Current redis channels: " ++ show resp
   debugtime
 
 

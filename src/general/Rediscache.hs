@@ -218,7 +218,7 @@ getdiffintervalflow = do
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
 mseriesFromredis conn msg = do
      res <- runRedis conn (getdiffintervalflow)
-     liftIO $ print ("mseiries")
+     --liftIO $ print ("mseiries")
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
      --liftIO $ print ("start analysis min --------------------------------------")
@@ -230,7 +230,7 @@ mseriesFromredis conn msg = do
      timecur <- getcurtimestamp
      secondnum <- secondrule sndinterval
      --liftIO $ print ("start pre or cpre --------------------------------------")
-     liftIO $  print ("++--",timecur,biginterval,secondnum)
+     --liftIO $  print ("++--",timecur,biginterval,secondnum)
      let sumres = biginterval + secondnum
      curtimestampi <- getcurtimestamp
      runRedis conn $ do
