@@ -124,6 +124,7 @@ sendbye  :: R.Connection -> NC.Connection -> IO ()
 sendbye rconn wconn = do
       liftIO $ print ("it is loop in sendbye")
       beftimee <- runRedis rconn gettimefromredis  
+      liftIO $ print (beftimee)
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
       liftIO $ print (beftime ,curtime)
