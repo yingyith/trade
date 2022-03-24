@@ -115,7 +115,9 @@ main =
 retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
   `catch` (\e ->
       if e == ConnectionClosed 
-      then retryOnFailure ws
+      then do
+             liftIO $ print ("it is closed!")
+             retryOnFailure ws
       else return ())
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  :: R.Connection -> NC.Connection -> IO ()
