@@ -152,7 +152,7 @@ msgsklinetoredis msg stamp = do
       let abykeystr = BLU.fromString secondkey
       let stamptime = fromInteger stamp :: Double
       void $ zadd abykeystr [(-stamptime,abyvaluestr)]
-      void $ zremrangebyrank abykeystr 121 1000
+      void $ zremrangebyrank abykeystr 150 1000
       --add kline to redis zset for 1second
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       --liftIO $ print (test)
@@ -169,9 +169,9 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
 publishThread rc wc tvar =  
     forever $ do
       liftIO $ print ("loop is ---+++++")
-      msgg <- NC.receive wc 
+      --msgg <- NC.receive wc 
       message <- NC.receiveData wc 
-      datamsg <- NC.receiveDataMessage wc 
+      --datamsg <- NC.receiveDataMessage wc 
       --liftIO $ print ("date is ---",message)
       --liftIO $ print ("date is ---",msgg)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
@@ -403,14 +403,14 @@ addklinetoredis msg  = do
     let abyvaluestr =  BLU.fromString $ DL.intercalate "|" [dst,dop,dcp,dhp,dlp]
                     
     void $ zadd abykeystr [(-kt,abyvaluestr)]
-    void $ zremrangebyrank abykeystr 121 1000
+    void $ zremrangebyrank abykeystr 150 1000
       --let msg = BL.fromStrict message
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       
 sklineHandler :: RedisChannel -> ByteString -> IO ()
 sklineHandler channel msg = do 
       conn <- connect defaultConnectInfo
-      --liftIO $ print ("start skline ++++++++++++++++++++++++++++++++++++++++++++")
+      liftIO $ print (msg)
       runRedis conn (addklinetoredis msg )
       debugtime
 
