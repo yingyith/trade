@@ -109,18 +109,18 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
-   -- runSecureClient "fstream.binance.com" 443 aimss  ws
-    retryOnFailure ws
+    runSecureClient "fstream.binance.com" 443 aimss  ws
+    --retryOnFailure ws
 
-retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
-  `catch` (\e ->
-      if e == ConnectionClosed 
-      then do
-             liftIO $ print ("it is closed!")
-             retryOnFailure ws
-      else do 
-             liftIO $ print ("it isi2 closed!")
-             return ())
+--retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
+--  `catch` (\e ->
+--      if e == ConnectionClosed 
+--      then do
+--             liftIO $ print ("it is closed!")
+--             retryOnFailure ws
+--      else do 
+--             liftIO $ print ("it isi2 closed!")
+--             return ())
 
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  :: R.Connection -> NC.Connection -> IO ()
@@ -149,12 +149,12 @@ ws connection = do
     let orderVar = newTVarIO ordervari-- newTVarIO Int
 
     withAsync (publishThread conn connection orderVar) $ \_pubT -> do
-                      withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                         void $ addChannels ctrl [] [("order:*", opclHandler)]
-                         void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+       withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+          void $ addChannels ctrl [] [("order:*", opclHandler)]
+          void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+          void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+          void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+          void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
     --void.forkIO $ forever (sendbye conn connection)
 

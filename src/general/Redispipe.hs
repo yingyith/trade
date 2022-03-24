@@ -214,6 +214,15 @@ publishThread rc wc tvar =
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
+    `catch` (\e ->
+      if e == ConnectionClosed 
+      then do
+             liftIO $ print ("it is closed!")
+             liftIO $ print (e)
+      else do 
+             liftIO $ print (e)
+             liftIO $ print ("it isi2 closed!")
+             return ())
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
