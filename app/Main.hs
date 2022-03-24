@@ -121,6 +121,7 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
       else do 
              liftIO $ print ("it isi2 closed!")
              return ())
+
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  :: R.Connection -> NC.Connection -> IO ()
 sendbye rconn wconn = do

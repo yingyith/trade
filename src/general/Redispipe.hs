@@ -171,7 +171,6 @@ publishThread rc wc tvar =
       liftIO $ print ("loop is ---+++++")
       msgg <- NC.receive wc 
       message <- NC.receiveData wc 
-      msg <- NC.receive wc 
       datamsg <- NC.receiveDataMessage wc 
       liftIO $ print ("date is ---",message)
       liftIO $ print ("date is ---",msgg)
