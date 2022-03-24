@@ -118,7 +118,9 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
       then do
              liftIO $ print ("it is closed!")
              retryOnFailure ws
-      else return ())
+      else do 
+             liftIO $ print ("it isi2 closed!")
+             return ())
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  :: R.Connection -> NC.Connection -> IO ()
 sendbye rconn wconn = do
@@ -128,7 +130,7 @@ sendbye rconn wconn = do
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
       liftIO $ print (beftime ,curtime)
-      unless ((curtime-60000) > beftime) $ do
+      unless ((curtime-30000) > beftime) $ do
           liftIO $ print ("bef sendbye")
           sendbye rconn wconn
       sendClose wconn (B.pack "Bye!")
