@@ -198,7 +198,7 @@ getsndkline aim  = do
      let res = fromRight []  aim  
      liftIO $ print (aim)
      klines <- mapM parsetokline res
-     liftIO $ print (klines)
+     --liftIO $ print (klines)
      return klines
      
 
