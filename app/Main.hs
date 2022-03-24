@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveAnyClass #-}
 import Network.Wuss
-import Database.Redis
+import Database.Redis as R
 import Control.Concurrent (forkIO)
 import Control.Concurrent.Async
 import Control.Concurrent.STM
@@ -11,6 +11,7 @@ import Control.Monad (forever, unless, void)
 import Control.Exception (catch)
 import Data.Text (Text, pack)
 import Network.WebSockets as NW (ClientApp, receiveData, sendClose, sendTextData,ConnectionException( ConnectionClosed ))
+import Network.WebSockets.Connection as NC
 import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
@@ -117,6 +118,15 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
       then retryOnFailure ws
       else return ())
 --issue streams = <listenKey> -- add user Data Stream
+sendbye  :: R.Connection -> NC.Connection -> IO ()
+sendbye rconn wconn = do
+      beftimee <- runRedis rconn gettimefromredis  
+      let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
+      curtime <- getcurtimestamp
+      unless ((curtime-60000) > beftime) $ do
+          sendbye rconn wconn
+      sendClose wconn (B.pack "Bye!")
+          
 ws :: ClientApp ()
 ws connection = do
     B.putStrLn "Connected!"
@@ -136,12 +146,6 @@ ws connection = do
                          void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                          void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
-    let loop = do
-            beftimee <- runRedis conn gettimefromredis  
-            let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
-            curtime <- getcurtimestamp
-            unless ((curtime-60000) > beftime) $ do
-                loop
-    loop
 
-    sendClose connection (B.pack "Bye!")
+    void . forkIO $ forever (sendbye conn connection)
+
