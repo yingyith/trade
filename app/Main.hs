@@ -148,7 +148,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
 
-    void.forkIO . withAsync (publishThread conn connection orderVar) $ \_pubT -> do
+    withAsync (publishThread conn connection orderVar) $ \_pubT -> do
                       withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                          void $ addChannels ctrl [] [("order:*", opclHandler)]
                          void $ addChannels ctrl [] [("cache:*", cacheHandler)]
