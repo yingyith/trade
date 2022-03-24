@@ -156,7 +156,7 @@ ws connection = do
           void $ addChannels ctrl [] [("skline:*", sklineHandler)]
           void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
-    --void.forkIO $ forever (sendbye conn connection)
+    void.forkIO $ forever (sendbye conn connection)
 
     --void . forkIO $ forever (sendbye conn connection)
     --liftIO $ print ("it is ----!!!!")
