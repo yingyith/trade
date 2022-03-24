@@ -196,8 +196,9 @@ getmsgfromstr msg = do
 
 getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
 getsndkline aim  = do 
-     let res = fromRight []  aim  
-     liftIO $ print (length aim)
+     let res = take 10  $ fromRight []  aim  
+
+     liftIO $ print ("length is --------",length aim)
      klines <- mapM parsetokline res
      --liftIO $ print (klines)
      return klines
