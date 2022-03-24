@@ -108,7 +108,7 @@ main =
     --stream?streams=ethusdt@kline_1m/listenKey
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
-    liftIO $ print ("connect to websocket------")
+    --liftIO $ print ("connect to websocket------")
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     retryOnFailure ws
 
@@ -147,9 +147,8 @@ ws connection = do
     --
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
-    _ <- forkIO $ forever (sendbye conn connection)
 
-    withAsync (publishThread conn connection orderVar) $ \_pubT -> do
+    _ <- forkIO . withAsync (publishThread conn connection orderVar) $ \_pubT -> do
                       withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                          void $ addChannels ctrl [] [("order:*", opclHandler)]
                          void $ addChannels ctrl [] [("cache:*", cacheHandler)]
@@ -157,6 +156,7 @@ ws connection = do
                          void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                          void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
+    void.forkIO $ forever (sendbye conn connection)
 
     --void . forkIO $ forever (sendbye conn connection)
 
