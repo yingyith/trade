@@ -172,10 +172,10 @@ publishThread rc wc tvar =
       msgg <- NC.receive wc 
       message <- NC.receiveData wc 
       datamsg <- NC.receiveDataMessage wc 
-      liftIO $ print ("date is ---",message)
-      liftIO $ print ("date is ---",msgg)
+      --liftIO $ print ("date is ---",message)
+      --liftIO $ print ("date is ---",msgg)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
-      liftIO $ print ("control is ---",datamsg)
+      --liftIO $ print ("control is ---",datamsg)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo curtimestamp ) 
       let orderitem = snd res

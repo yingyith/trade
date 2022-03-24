@@ -167,6 +167,7 @@ analysistrdo aa bb = do
 parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
      let mmsg = BLL.fromStrict msg
+     --liftIO $ print (msg)
      
      let test = A.decode mmsg :: Maybe Klinedata --Klinedata
      case test of 
@@ -195,6 +196,7 @@ getmsgfromstr msg = do
 getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
 getsndkline aim  = do 
      let res = fromRight []  aim  
+     liftIO $ print (aim)
      klines <- mapM parsetokline res
      liftIO $ print (klines)
      return klines
