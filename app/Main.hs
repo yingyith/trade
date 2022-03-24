@@ -109,8 +109,8 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
-    runSecureClient "fstream.binance.com" 443 aimss  ws
-    --retryOnFailure ws
+   -- runSecureClient "fstream.binance.com" 443 aimss  ws
+    retryOnFailure ws
 
 retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
   `catch` (\e ->
