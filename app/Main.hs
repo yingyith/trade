@@ -144,7 +144,7 @@ ws connection = do
     --
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
-    void . forkIO $ forever (sendbye conn connection)
+    _ <- forkIO $ forever (sendbye conn connection)
 
     withAsync (publishThread conn connection orderVar) $ \_pubT -> do
                       withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
