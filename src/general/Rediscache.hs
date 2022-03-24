@@ -213,7 +213,7 @@ getdiffintervalflow = do
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
 mseriesFromredis conn msg = do
      res <- runRedis conn (getdiffintervalflow)
-     --liftIO $ print res
+     liftIO $ print res
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
      --liftIO $ print ("start analysis min --------------------------------------")
