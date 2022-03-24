@@ -167,7 +167,11 @@ analysistrdo aa bb = do
 parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
      let mmsg = BLL.fromStrict msg
+     
      let test = A.decode mmsg :: Maybe Klinedata --Klinedata
+     case test of 
+         Nothing -> do liftIO $ print (msg)
+         
      let kline = fromJust test
      return kline
 
