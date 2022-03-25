@@ -68,10 +68,10 @@ preorcpreordertorediszset sumres pr  stamp  = do
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let recordstate = last recorditem
-   liftIO $ print ("++++bef preorcpre record is -------------------------")
-   liftIO $ print (recorditem)
+   --liftIO $ print ("++++bef preorcpre record is -------------------------")
+   --liftIO $ print (recorditem)
    let lastprr = recorditem !! 5
-   liftIO $ print (lastprr)
+   --liftIO $ print (lastprr)
    let lastpr = read (recorditem !! 5) :: Double
    let lastquan = read (recorditem !! 4) :: Integer
    when (recordstate == (show $ fromEnum Done)) $ do
@@ -199,9 +199,9 @@ hlfendordertorediszset quan  stamp  = do
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
    let pr = recorditem !! 5
-   liftIO $ print ("bef haldend record is -------------------------")
-   liftIO $ print (recorditem)
-   liftIO $ print (pr)
+   --liftIO $ print ("bef haldend record is -------------------------")
+   --liftIO $ print (recorditem)
+   --liftIO $ print (pr)
    let recordstate = last recorditem
    let orderid =  lastorderid
    let shprice =  pr
@@ -247,8 +247,8 @@ cproordertorediszset quan pr stamp  = do
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
-   liftIO $ print ("bef cpro record is -------------------------")
-   liftIO $ print (recorditem)
+   --liftIO $ print ("bef cpro record is -------------------------")
+   --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let recordstate = last recorditem
    let orderid =  show lastorderid ::String
@@ -270,8 +270,8 @@ cendordertorediszset quan  stamp = do
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
-   liftIO $ print ("bef end record is -------------------------")
-   liftIO $ print (recorditem)
+   --liftIO $ print ("bef end record is -------------------------")
+   --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let pr = recorditem !! 5
    let recordstate = last recorditem
@@ -294,8 +294,8 @@ ctestendordertorediszset quan pr  stamp = do
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
-   liftIO $ print ("bef end record is -------------------------")
-   liftIO $ print (recorditem)
+   --liftIO $ print ("bef end record is -------------------------")
+   --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let pr = recorditem !! 5
    let recordstate = last recorditem
