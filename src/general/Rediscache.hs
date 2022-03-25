@@ -190,16 +190,16 @@ analysismindo aim curpr = do
 getmsgfromstr :: String -> IO Klinedata
 getmsgfromstr msg = do 
     let mmsg = BL.fromString msg
-    liftIO $ print ("----------++++++++----------")
+    --liftIO $ print ("----------++++++++----------")
     res <- parsetokline mmsg
     return res
 
 getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
 getsndkline aim  = do 
      let resl = fromRight [] aim
-     let res = take 10  resl 
+     let res = take 20  resl 
 
-     liftIO $ print ("length is --------",length resl)
+     --liftIO $ print ("length is --------",length resl)
      klines <- mapM parsetokline res
      --liftIO $ print (klines)
      return klines

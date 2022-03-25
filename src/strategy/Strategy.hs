@@ -97,7 +97,7 @@ crossminstra  abc = do
     -- if itemindex > 3.not open ,must include 15m ,
     --              <= 3.but ,no double
     --let closepr = 
-    liftIO $ print ("min risk is ------",abc)
+    --liftIO $ print ("min risk is ------",abc)
     --below 4h  the longer interval the low rsi ,the close price  should accroding to 4h diff
     let itempredi = (itemlen <= 1)
     let itemipredi = (itemindex>3)
@@ -239,7 +239,7 @@ gethlsheetsec index kll =  do
 secondrule :: [Klinedata] -> IO Int
 secondrule records = do 
                         let slenrecord = length records
-                        liftIO $ print (slenrecord)
+                        --liftIO $ print (slenrecord)
                         case compare slenrecord (fromIntegral secondstick)  of 
                              GT -> do  
                                         rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..9] :: IO [AS.Hlnode]
@@ -257,7 +257,7 @@ secondrule records = do
                                         let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
                                         let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
                                         let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.005 
-                                        liftIO $ print ("rsi is----",highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi,rsiindexx)
+                                        --liftIO $ print ("rsi is----",highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi,rsiindexx)
                                         --rsiindexres <-  getrsi rehllist 64
                                         case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
                                             (True,_,_,_)-> return (-15) 
