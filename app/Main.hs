@@ -134,9 +134,10 @@ sendbye wconn = do
       curtime <- getcurtimestamp
       liftIO $ print (beftime ,curtime)
       threadDelay 1000000
-      case (curtime-beftime) of 
-        x|x>50000 -> void $ NW.sendClose wconn (B.pack "Bye!")
-        _         -> return ()
+     -- case (curtime-beftime) of 
+     --   x|x>50000 -> void $ NW.sendClose wconn (B.pack "Bye!")
+     --   _         -> return ()
+      void $ NW.sendClose wconn (B.pack "Bye!")
                
       --unless ((curtime-400) > beftime) $ do
       --    liftIO $ print ("bef sendbye")
