@@ -134,7 +134,6 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> IO ()
 sendbye wconn = do
-    threadDelay 1000000
     liftIO $ print ("it is in sendbye bef redis")
     conn <- connect defaultConnectInfo
     beftimee <- runRedis conn gettimefromredis  
