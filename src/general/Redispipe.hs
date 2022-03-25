@@ -100,7 +100,7 @@ msgcacheandpingtempdo a msg wc = do
 
 sendpongdo :: Integer -> NC.Connection -> IO ()
 sendpongdo a conn = do
-        liftIO $ print ("send Pong")
+        --liftIO $ print ("send Pong")
         case compare a 60000 of -- 300000= 5min
             GT -> do 
                   sendPong conn (T.pack $ show "")
@@ -139,7 +139,7 @@ generatehlsheet :: ByteString -> IO ()
 generatehlsheet msg = do 
     conn <- connect defaultConnectInfo
     mseriesFromredis conn msg--get all mseries from redis 
-    liftIO $ print "stop highlowsheet"
+    --liftIO $ print "stop highlowsheet"
     ---generate high low point spreet
     ---quant analysis under high low (risk spreed) 
     ---return open/close event to redis 

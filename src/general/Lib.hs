@@ -27,6 +27,6 @@ getrsi hl hllen = do
                   _     -> (abs $ sum downdiff)
   --liftIO $ print (updiff,downdiff,gain,loss)
   let rs = gain/loss 
-  liftIO $ print (rs)
+  --liftIO $ print (rs)
   let rsi  = (100 - (100 /(1+rs)))
   return (round rsi,"")

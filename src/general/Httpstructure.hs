@@ -317,7 +317,7 @@ instance FromJSON Klinedata where
 --  parseJSON _ = mzero
 --
 --instance FromJSON Stickwebsocketdata where 
---  parseJSON (Object o) = 
+----  parseJSON (Object o) = 
 --    Stickwebsocketdata <$> (o .: "stream")
 --                       <*> (o .: "data")
 --  parseJSON _ = mzero
