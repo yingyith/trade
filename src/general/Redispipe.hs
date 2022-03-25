@@ -165,8 +165,8 @@ msganalysistoredis msg = do
 getliskeyfromredis :: Redis ()
 getliskeyfromredis =  return ()
 
-publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> IO ()
-publishThread rc wc tvar =  
+publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
+publishThread rc wc tvar ptid =  
     forever $ do
       liftIO $ print ("loop is ---+++++")
       --msgg <- NC.receive wc 
@@ -221,6 +221,7 @@ publishThread rc wc tvar =
              liftIO $ print (e)
       else do 
              liftIO $ print (e)
+             throwTo ptid e
              liftIO $ print ("it isi2 closed!")
              return ())
 

@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 import Network.Wuss
 import Database.Redis as R
-import Control.Concurrent
+import Control.Concurrent (myThreadId ,forkIO ,threadDelay )
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
@@ -109,18 +109,18 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
-    runSecureClient "fstream.binance.com" 443 aimss  ws
-    --retryOnFailure ws
+    --runSecureClient "fstream.binance.com" 443 aimss  ws
+    retryOnFailure ws
+    
 
---retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
---  `catch` (\e ->
---      if e == ConnectionClosed 
---      then do
---             liftIO $ print ("it is closed!")
---             retryOnFailure ws
---      else do 
---             liftIO $ print ("it isi2 closed!")
---             return ())
+retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
+  `catch` (\e ->
+      if e == ConnectionClosed 
+      then do
+             liftIO $ print ("it is retry!")
+             retryOnFailure ws
+      else do 
+             return ())
 
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> IO ()
@@ -156,10 +156,11 @@ ws connection = do
     --
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
+    nowthreadid <- myThreadId 
 
     _ <- forkIO $ forever (sendbye connection)
 
-    withAsync (publishThread conn connection orderVar) $ \_pubT -> do
+    withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                        void $ addChannels ctrl [] [("order:*", opclHandler)]
                        void $ addChannels ctrl [] [("cache:*", cacheHandler)]
@@ -167,8 +168,8 @@ ws connection = do
                        void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
-    threadDelay 5000000
+    --threadDelay 5000000
     liftIO $ print ("??????")
-    void . forkIO  $ (sendbye connection)
+    --void . forkIO  $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
