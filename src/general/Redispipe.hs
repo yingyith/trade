@@ -188,7 +188,7 @@ publishThread rc wc tvar ptid =
             Left _ ->  "some error"
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-      --liftIO $ print ("-----------------------cachetime---------------------")
+      liftIO $ print ("-----------------------cachetime---------------------")
       --liftIO $ print (replydomarray)
       let replydores = (read (replydomarray !! 0)) :: Integer
       --liftIO $ print (replydores)
