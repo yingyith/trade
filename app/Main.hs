@@ -168,6 +168,6 @@ ws connection = do
 
 
     liftIO $ print ("it is ----!!!!")
-    void . forkIO $ (sendbye connection)
+   -- void . forkIO $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
