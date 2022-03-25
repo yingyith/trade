@@ -125,7 +125,7 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> IO ()
 sendbye wconn = do
-      threadDelay 5000000
+      --threadDelay 5000000
       liftIO $ print ("it is in sendbye bef redis")
       conn <- connect defaultConnectInfo
       beftimee <- runRedis conn gettimefromredis  
@@ -158,7 +158,7 @@ ws connection = do
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     nowthreadid <- myThreadId 
 
-    --_ <- forkIO $ forever (sendbye connection)
+    _ <- forkIO $ forever (sendbye connection)
 
     withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
