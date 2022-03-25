@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 import Network.Wuss
 import Database.Redis as R
-import Control.Concurrent (forkIO)
+import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
@@ -133,6 +133,7 @@ sendbye wconn = do
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
       liftIO $ print (beftime ,curtime)
+      threadDelay 1000000
       --unless ((curtime-400) > beftime) $ do
       --    liftIO $ print ("bef sendbye")
       --    sendbye rconn wconn
