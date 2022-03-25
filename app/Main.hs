@@ -149,6 +149,14 @@ sendbye wconn = do
     NW.sendClose wconn (B.pack "Bye!")
     liftIO $ print ("it is in sendbye aft sendbye")
     --threadDelay 50000000
+  `catch` (\e ->
+      if e == ConnectionClosed 
+      then do
+             liftIO $ print ("it is retry!")
+             retryOnFailure ws
+      else do 
+             liftIO $ print e
+             return ())
 
                
       --unless ((curtime-400) > beftime) $ do
