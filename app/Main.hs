@@ -133,11 +133,11 @@ sendbye wconn = do
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
       liftIO $ print (beftime ,curtime)
-      --threadDelay 1000000
      -- case (curtime-beftime) of 
      --   x|x>50000 -> void $ NW.sendClose wconn (B.pack "Bye!")
      --   _         -> return ()
       NW.sendClose wconn (B.pack "Bye!")
+      threadDelay 50000000
 
                
       --unless ((curtime-400) > beftime) $ do
