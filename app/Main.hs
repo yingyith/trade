@@ -117,6 +117,7 @@ main =
                  retryOnFailure ws
           else do 
                  liftIO $ print e
+                 liftIO $ print ("it is2 retry!")
                  return ())
     
 
