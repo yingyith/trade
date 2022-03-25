@@ -125,8 +125,9 @@ main =
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  :: R.Connection -> NC.Connection -> IO ()
 sendbye rconn wconn = do
-      liftIO $ print ("it is loop in sendbye")
+      liftIO $ print ("it is in sendbye bef redis")
       beftimee <- runRedis rconn gettimefromredis  
+      liftIO $ print ("it is in sendbye aft redis")
       --liftIO $ print (beftimee)
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
@@ -134,7 +135,7 @@ sendbye rconn wconn = do
       --unless ((curtime-400) > beftime) $ do
       --    liftIO $ print ("bef sendbye")
       --    sendbye rconn wconn
-      sendClose wconn (B.pack "Bye!")
+      NW.sendClose wconn (B.pack "Bye!")
       liftIO $ print ("after in sendbye")
           
 ws :: ClientApp ()
