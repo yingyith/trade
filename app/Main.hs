@@ -125,6 +125,7 @@ main =
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> IO ()
 sendbye wconn = do
+      threadDelay 5000000
       liftIO $ print ("it is in sendbye bef redis")
       conn <- connect defaultConnectInfo
       beftimee <- runRedis conn gettimefromredis  
@@ -156,7 +157,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
 
-    --_ <- forkIO $ forever (sendbye connection)
+    _ <- forkIO $ forever (sendbye connection)
 
     withAsync (publishThread conn connection orderVar) $ \_pubT -> do
                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
@@ -168,6 +169,6 @@ ws connection = do
 
     threadDelay 5000000
     liftIO $ print ("??????")
-    void . forkOS $ (sendbye connection)
+    void . forkIO  $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
