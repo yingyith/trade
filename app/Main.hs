@@ -120,26 +120,27 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
              liftIO $ print ("it is retry!")
              retryOnFailure ws
       else do 
+             liftIO $ print e
              return ())
 
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> IO ()
 sendbye wconn = do
       --threadDelay 5000000
-      liftIO $ print ("it is in sendbye bef redis")
-      conn <- connect defaultConnectInfo
-      beftimee <- runRedis conn gettimefromredis  
-      liftIO $ print ("it is in sendbye aft redis")
-      --liftIO $ print (beftimee)
-      let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
-      curtime <- getcurtimestamp
-      liftIO $ print (beftime ,curtime)
-     -- case (curtime-beftime) of 
-     --   x|x>50000 -> void $ NW.sendClose wconn (B.pack "Bye!")
-     --   _         -> return ()
-      NW.sendClose wconn (B.pack "Bye!")
-      liftIO $ print ("it is in sendbye aft sendbye")
-      threadDelay 50000000
+    liftIO $ print ("it is in sendbye bef redis")
+    conn <- connect defaultConnectInfo
+    beftimee <- runRedis conn gettimefromredis  
+    liftIO $ print ("it is in sendbye aft redis")
+    --liftIO $ print (beftimee)
+    let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
+    curtime <- getcurtimestamp
+    liftIO $ print (beftime ,curtime)
+    -- case (curtime-beftime) of 
+    --   x|x>50000 -> void $ NW.sendClose wconn (B.pack "Bye!")
+    --   _         -> return ()
+    NW.sendClose wconn (B.pack "Bye!")
+    liftIO $ print ("it is in sendbye aft sendbye")
+    --threadDelay 50000000
 
                
       --unless ((curtime-400) > beftime) $ do
@@ -158,7 +159,7 @@ ws connection = do
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     nowthreadid <- myThreadId 
 
-    _ <- forkIO $ forever (sendbye connection)
+    --_ <- forkIO $ forever (sendbye connection)
 
     withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
