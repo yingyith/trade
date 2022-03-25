@@ -188,6 +188,6 @@ ws connection = do
 
     --threadDelay 5000000
    -- liftIO $ print ("??????")
-    --void . forkIO  $ (sendbye connection)
+    void . forkIO  $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
