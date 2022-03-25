@@ -158,7 +158,7 @@ ws connection = do
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     nowthreadid <- myThreadId 
 
-    _ <- forkIO $ forever (sendbye connection)
+    --_ <- forkIO $ forever (sendbye connection)
 
     withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
@@ -170,6 +170,6 @@ ws connection = do
 
     --threadDelay 5000000
     liftIO $ print ("??????")
-    --void . forkIO  $ (sendbye connection)
+    void . forkIO  $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
