@@ -410,7 +410,7 @@ addklinetoredis msg  = do
 sklineHandler :: RedisChannel -> ByteString -> IO ()
 sklineHandler channel msg = do 
       conn <- connect defaultConnectInfo
-      liftIO $ print (msg)
+      --liftIO $ print (msg)
       runRedis conn (addklinetoredis msg )
       debugtime
 
