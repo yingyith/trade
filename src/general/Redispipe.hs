@@ -180,7 +180,7 @@ publishThread rc wc tvar =
       res <- runRedis rc (replydo curtimestamp ) 
       let orderitem = snd res
       let klineitem = fst res
-      liftIO $ print (klineitem)
+      --liftIO $ print (klineitem)
       let cachetime = case klineitem of
             Left _ ->  "some error"
             Right v ->   (v!!0)

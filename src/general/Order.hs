@@ -76,7 +76,7 @@ preorcpreordertorediszset sumres pr  stamp  = do
    let lastquan = read (recorditem !! 4) :: Integer
    when (recordstate == (show $ fromEnum Done)) $ do
 
-       liftIO $ print ("enter prepare is -------------------------")
+       --liftIO $ print ("enter prepare is -------------------------")
        let quanty = toInteger sumres
        let quantity = case compare quanty 100 of
                            LT -> quanty 
@@ -90,7 +90,7 @@ preorcpreordertorediszset sumres pr  stamp  = do
        let shquant =  case compare quantity minquan of
                            LT -> show minquan
                            _  -> show quantity
-       liftIO $ print (shquant)
+       --liftIO $ print (shquant)
        let shstate =  show $ fromEnum Prepare
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  intercalate "|" [coin,side,otype,orderid,shquant,shprice,shstate]
@@ -122,8 +122,8 @@ proordertorediszset quan pr stamp = do
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
-   liftIO $ print ("bef process record is -------------------------")
-   liftIO $ print (pr)
+   --liftIO $ print ("bef process record is -------------------------")
+   --liftIO $ print (pr)
    let recordstate = last recorditem
    let orderid =  show stamp 
    let shprice =  show pr
