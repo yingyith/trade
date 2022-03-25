@@ -131,9 +131,9 @@ sendbye rconn wconn = do
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
       curtime <- getcurtimestamp
       liftIO $ print (beftime ,curtime)
-      unless ((curtime-400) > beftime) $ do
-          liftIO $ print ("bef sendbye")
-          sendbye rconn wconn
+      --unless ((curtime-400) > beftime) $ do
+      --    liftIO $ print ("bef sendbye")
+      --    sendbye rconn wconn
       sendClose wconn (B.pack "Bye!")
       liftIO $ print ("after in sendbye")
           
