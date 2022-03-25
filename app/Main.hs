@@ -158,7 +158,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     nowthreadid <- myThreadId 
-    liftIO $ print (nowthreadid)
+    --liftIO $ print (nowthreadid)
 
     --void.forkIO $ forever (sendbye connection)
 
