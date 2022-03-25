@@ -166,7 +166,8 @@ ws connection = do
                        void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
-
-    void . forkIO $ (sendbye connection)
+    threadDelay 5000000
+    liftIO $ print ("??????")
+    void . forkOS $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
