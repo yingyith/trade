@@ -61,12 +61,12 @@ main =
         let astring = BLU.fromString "123"
         let signature = BLU.fromString "234"
         let ares = showDigest(hmacSha256 signature astring)
-        liftIO $ print ares
+        --liftIO $ print ares
         
         let ouri = "https://fapi.binance.com/fapi/v1/listenKey"  
         --let ouri = "https://api.binance.com/api/v3/userDataStream"  
         let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
-        liftIO $ print auri
+        --liftIO $ print auri
         --增加对astring的hmac的处理 
         uri <- URI.mkURI auri 
         let (url, options) = fromJust (useHttpsURI uri)
@@ -83,11 +83,11 @@ main =
         -----------------------
         --liftIO $ print (response)
         let result = responseBody response :: Object
-        liftIO $ print result
+        --liftIO $ print result
         --liftIO $ print (responseBody response :: Object)
         let ares = fromJust $  parseMaybe (.: "listenKey") result :: String
         pure ares
-    liftIO $ print (aas)
+    --liftIO $ print (aas)
     conn <- connect defaultConnectInfo
     nowtime <- getcurtimestamp
     runRedis conn (liskeytoredis aas nowtime)

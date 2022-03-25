@@ -56,7 +56,8 @@ getorderitem = runReq defaultHttpConfig $ do
           "symbol" =: ("ADAUSDT" :: Text)
     areq <- req GET ouri NoReqBody lbsResponse params
    -- let breq = responseBody areq
-    liftIO $ print ("ss")
+    --liftIO $ print ("ss")
+    return ()
     
 getcurtimestamp :: IO Integer
 getcurtimestamp = do
@@ -66,7 +67,7 @@ getcurtimestamp = do
 getspotbalance :: IO (Double,Double)
 getspotbalance = do 
    curtimestamp <- getcurtimestamp
-   liftIO $ print (curtimestamp)
+   --liftIO $ print (curtimestamp)
    runReq defaultHttpConfig $ do 
       let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
       let signature = BLU.fromString sk
@@ -102,7 +103,7 @@ getspotbalance = do
       --let usdtbal = usdtbal ^? key "free"
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
   --
-      liftIO $ print ("[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]")
+      --liftIO $ print ("[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]")
       return (adaball,usdtball)
       --liftIO $ print (response)
       --liftIO $ print (result)
@@ -212,7 +213,7 @@ pinghandledo a  =  runReq defaultHttpConfig $ do
     --      "listenKey" =: (T.pack aa :: Text)
           --("signature" =: (T.pack ares :: Text )) 
     areq <- req PUT ouri  NoReqBody  lbsResponse params
-    liftIO $ print (areq)
+    --liftIO $ print (areq)
     return ()
     --liftIO $ print (areq)
 
