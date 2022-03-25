@@ -160,7 +160,7 @@ ws connection = do
     nowthreadid <- myThreadId 
     liftIO $ print (nowthreadid)
 
-    void.forkIO $ forever (sendbye connection)
+    --void.forkIO $ forever (sendbye connection)
 
     withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
        withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
