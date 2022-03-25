@@ -158,16 +158,17 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     nowthreadid <- myThreadId 
+    liftIO $ print (nowthreadid)
 
-    --_ <- forkIO $ forever (sendbye connection)
+    _ <- forkIO $ forever (sendbye connection)
 
     withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
-                    withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                       void $ addChannels ctrl [] [("order:*", opclHandler)]
-                       void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                       void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+       withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+          void $ addChannels ctrl [] [("order:*", opclHandler)]
+          void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+          void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+          void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+          void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
     --threadDelay 5000000
     liftIO $ print ("??????")
