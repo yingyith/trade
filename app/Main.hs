@@ -167,7 +167,6 @@ ws connection = do
                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
 
-    liftIO $ print ("it is --????????--!!!!")
-   -- void . forkIO $ (sendbye connection)
+    void . forkIO $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
