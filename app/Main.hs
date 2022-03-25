@@ -137,6 +137,7 @@ sendbye wconn = do
      --   x|x>50000 -> void $ NW.sendClose wconn (B.pack "Bye!")
      --   _         -> return ()
       NW.sendClose wconn (B.pack "Bye!")
+      liftIO $ print ("it is in sendbye aft sendbye")
       threadDelay 50000000
 
                
@@ -155,7 +156,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
 
-    _ <- forkIO $ forever (sendbye connection)
+    --_ <- forkIO $ forever (sendbye connection)
 
     withAsync (publishThread conn connection orderVar) $ \_pubT -> do
                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
@@ -166,6 +167,7 @@ ws connection = do
                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
 
-    --void . forkIO $ (sendbye connection)
+    liftIO $ print ("it is ----!!!!")
+    void . forkIO $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
