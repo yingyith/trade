@@ -123,10 +123,11 @@ main =
 --             return ())
 
 --issue streams = <listenKey> -- add user Data Stream
-sendbye  :: R.Connection -> NC.Connection -> IO ()
-sendbye rconn wconn = do
+sendbye  ::  NC.Connection -> IO ()
+sendbye wconn = do
       liftIO $ print ("it is in sendbye bef redis")
-      beftimee <- runRedis rconn gettimefromredis  
+      conn <- connect defaultConnectInfo
+      beftimee <- runRedis conn gettimefromredis  
       liftIO $ print ("it is in sendbye aft redis")
       --liftIO $ print (beftimee)
       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
@@ -160,6 +161,6 @@ ws connection = do
                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
 
-    void . forkIO $ (sendbye conn connection)
+    void . forkIO $ (sendbye connection)
     --liftIO $ print ("it is ----!!!!")
 
