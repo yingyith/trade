@@ -175,7 +175,9 @@ ws connection = do
     nowthreadid <- myThreadId 
     --liftIO $ print (nowthreadid)
 
-    sendthid <- forkIO $ forever (sendbye connection)
+    sendthid <- forkIO $ do 
+                          threadDelay 1000000 
+                          forever (sendbye connection)
 
     catch (withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
