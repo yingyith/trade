@@ -131,30 +131,45 @@ main =
 --             return ())
 
 --issue streams = <listenKey> -- add user Data Stream
-sendbye  ::  NC.Connection -> IO ()
-sendbye wconn = do
+sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
+sendbye wconn conn ac ctrl = do
     --liftIO $ print ("it is in sendbye bef redis")
-                 conn <- connect defaultConnectInfo
-                 beftimee <- runRedis conn gettimefromredis  
-                 --liftIO $ print ("it is in sendbye aft redis")
-                 --liftIO $ print (beftimee)
-                 let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
-                 curtime <- getcurtimestamp
-                 --liftIO $ print (beftime ,curtime)
-                 case (curtime-beftime) of 
-                   x|x>1000 -> void $ NW.sendClose wconn (B.pack "Bye!")
-                   _         -> return ()
+          let ordervari = Ordervar True 0 0 0
+          let orderVar = newTVarIO ordervari-- newTVarIO Int
+          sendthid <- myThreadId 
+          case ac of 
+              0     -> do    
+                         withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
+                             withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+                                      void $ addChannels ctrl [] [("order:*", opclHandler)]
+                                      void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+                                      void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+                                      void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+                                      void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
-    `catch` (\e ->
-      if e == ConnectionClosed 
-      then do
-             liftIO $ print ("1s",e)
-             throwIO e
+              x|x>0 -> do 
+                                      conn <- connect defaultConnectInfo
+                                      beftimee <- runRedis conn gettimefromredis  
+                                      --liftIO $ print ("it is in sendbye aft redis")
+                                      --liftIO $ print (beftimee)
+                                      let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
+                                      curtime <- getcurtimestamp
+                                      --liftIO $ print (beftime ,curtime)
+                                      case (curtime-beftime) of 
+                                        y|y>1000 -> void $ NW.sendClose wconn (B.pack "Bye!")
+                                        _         -> return ()
 
-      else do 
-             liftIO $ print ("2s",e)
-             throwIO e
-             )
+                         `catch` (\e ->
+                           if e == ConnectionClosed 
+                           then do
+                                  liftIO $ print ("1s",e)
+                                  throwIO e
+
+                           else do 
+                                  liftIO $ print ("2s",e)
+                                  throwIO e
+                                  )
+          sendbye wconn conn (ac+1) ctrl
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
     --threadDelay 50000000
@@ -168,45 +183,45 @@ ws :: ClientApp ()
 ws connection = do
     B.putStrLn "Connected!"
     --ctrl <- newPubSubController [("order:*",opclHandler)][]
-    ctrl <- newPubSubController [][]
+    ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
     --liftIO $ T.putStrLn 
     --
-    let ordervari = Ordervar True 0 0 0
-    let orderVar = newTVarIO ordervari-- newTVarIO Int
-    nowthreadid <- myThreadId 
+    --let ordervari = Ordervar True 0 0 0
+    --let orderVar = newTVarIO ordervari-- newTVarIO Int
     --liftIO $ print (nowthreadid)
+    sendbye connection conn 0 ctrll 
 
-    sendthid <- catch (forkIO $ do 
-                           threadDelay 1000000 
-                           forever (sendbye connection)) (\e ->
-                                                              if e == ConnectionClosed 
-                                                              then do
-                                                                     liftIO $ print ("11s",e)
-                                                                     throwIO e
-                                                                     return nowthreadid
+ --   sendthid <- catch (forkIO $ do 
+ --                          threadDelay 1000000 
+ --                          forever (sendbye connection)) (\e ->
+ --                                                             if e == ConnectionClosed 
+ --                                                             then do
+ --                                                                    liftIO $ print ("11s",e)
+ --                                                                    throwIO e
+ --                                                                    return nowthreadid
 
-                                                              else do 
-                                                                     liftIO $ print ("21s",e)
-                                                                     throwIO e
-                                                                     return nowthreadid
-                                                                     )
+ --                                                             else do 
+ --                                                                    liftIO $ print ("21s",e)
+ --                                                                    throwIO e
+ --                                                                    return nowthreadid
+ --                                                                    )
 
-    catch (withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
-             withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                 void $ addChannels ctrl [] [("order:*", opclHandler)]
-                 void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                 void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                 void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                 void $ addChannels ctrl [] [("analysis:*", analysisHandler)]) (\e ->
-                                                                                     if e == ConnectionClosed 
-                                                                                     then do
-                                                                                            liftIO $ print ("it is retry!")
-                                                                                            liftIO $ print e
-                                                                                     else do 
-                                                                                            liftIO $ print e
-                                                                                            liftIO $ print ("it is2 retry!")
-                                                                                )
+ --   catch (withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
+ --            withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+ --                void $ addChannels ctrl [] [("order:*", opclHandler)]
+ --                void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+ --                void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+ --                void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+ --                void $ addChannels ctrl [] [("analysis:*", analysisHandler)]) (\e ->
+ --                                                                                    if e == ConnectionClosed 
+ --                                                                                    then do
+ --                                                                                           liftIO $ print ("it is retry!")
+ --                                                                                           liftIO $ print e
+ --                                                                                    else do 
+ --                                                                                           liftIO $ print e
+ --                                                                                           liftIO $ print ("it is2 retry!")
+ --                                                                               )
     --threadDelay 5000000
    -- liftIO $ print ("??????")
    -- void . forkIO  $ forever (sendbye connection)
