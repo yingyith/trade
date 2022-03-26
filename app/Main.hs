@@ -164,6 +164,7 @@ sendbye wconn conn ac ctrl = do
                                          x|x>4 -> do 
                                                        void $ NW.sendClose wconn (B.pack "Bye!")
                                                        return ()
+                                         _     -> return ()
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
