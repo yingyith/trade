@@ -149,7 +149,7 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
                                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
-                          threadDelay 40000000
+                          threadDelay 60000000
                           conn <- connect defaultConnectInfo
                           liftIO $ print ("aft threadDelay ")
 
