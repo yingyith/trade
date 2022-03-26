@@ -170,7 +170,14 @@ publishThread rc wc tvar ptid =
     forever $ do
       liftIO $ print ("loop is ---+++++")
       --msgg <- NC.receive wc 
-      message <- NC.receiveData wc 
+      message <- catch (NC.receiveData wc) (\e ->
+                                                 if e == ConnectionClosed 
+                                                 then do
+                                                        liftIO $ print ("1",e)
+                                                        throwIO e
+                                                 else do 
+                                                        liftIO $ print ("2",e)
+                                                        throwIO e)
       --datamsg <- NC.receiveDataMessage wc 
       --liftIO $ print ("date is ---",message)
       --liftIO $ print ("date is ---",msgg)
