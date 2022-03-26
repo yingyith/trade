@@ -164,6 +164,7 @@ sendbye wconn conn ac ctrl = do
                                          x|x==5 -> do 
                                                        void $ NW.sendClose wconn (B.pack "Bye!")
                                                        liftIO $ print (beftime ,curtime,ac)
+                                                       throwIO ConnectionClosed
                                                        return ()
                                          _     -> return ()
                         `catch` (\e ->
