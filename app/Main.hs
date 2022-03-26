@@ -109,16 +109,16 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
-   -- runSecureClient "fstream.binance.com" 443 aimss  ws
-   --   `catch` (\e ->
-   --       if e == ConnectionClosed 
-   --       then do
-   --              liftIO $ print ("it is retry run!")
-   --       else do 
-   --              liftIO $ print e
-   --              liftIO $ print ("it is2 retry run!")
-   --       )
-    retryOnFailure 
+    runSecureClient "fstream.binance.com" 443 aimss  ws
+      `catch` (\e ->
+          if e == ConnectionClosed 
+          then do
+                 liftIO $ print ("it is retry run!")
+          else do 
+                 liftIO $ print e
+                 liftIO $ print ("it is2 retry run!")
+          )
+    --retryOnFailure 
     
 
 retryOnFailure  = (runSecureClient "fstream.binance.com" 443 "/" ws)
