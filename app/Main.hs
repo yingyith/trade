@@ -156,13 +156,14 @@ sendbye wconn conn ac ctrl = do
                                       --liftIO $ print (beftimee)
                                       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
                                       curtime <- getcurtimestamp
-                                      liftIO $ print (beftime ,curtime,ac)
+                                      --liftIO $ print (beftime ,curtime,ac)
                                       --case (curtime-beftime) of 
                                       --  y|y>4000 -> void $ NW.sendClose wconn (B.pack "Bye!")
                                       --  _         -> return ()
                                       case ac of 
-                                         x|x>2 -> do 
+                                         x|x==5 -> do 
                                                        void $ NW.sendClose wconn (B.pack "Bye!")
+                                                       liftIO $ print (beftime ,curtime,ac)
                                                        return ()
                                          _     -> return ()
                         `catch` (\e ->
