@@ -107,7 +107,7 @@ main =
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
     --runSecureClient "stream.binance.com" 9443 aimss  ws
-    --runSecureClient "fstream.binance.com" 443 aimss  ws
+    runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
 --    runSecureClient "fstream.binance.com" 443 aimss  ws
 --      `catch` (\e ->
@@ -118,7 +118,7 @@ main =
 --                 liftIO $ print e
 --                 liftIO $ print ("it is2 retry run!")
 --          )
-    retryOnFailure
+    --retryOnFailure
     
 
 retryOnFailure  = runSecureClient "fstream.binance.com" 443 "/" ws
