@@ -138,7 +138,7 @@ sendbye wconn conn ac ctrl = do
           let orderVar = newTVarIO ordervari-- newTVarIO Int
           sendthid <- myThreadId 
           case ac of 
-              x|x==1 -> do    
+              x|x==0 -> do    
                           withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
                              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                                       void $ addChannels ctrl [] [("order:*", opclHandler)]
@@ -146,19 +146,11 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
                                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+                          conn <- connect defaultConnectInfo
+                          threadDelay 5000000
 
-              x|x<=0 -> do 
-                                      conn <- connect defaultConnectInfo
-                                      beftimee <- runRedis conn gettimefromredis  
-                                      --liftIO $ print ("it is in sendbye aft redis")
-                                      --liftIO $ print (beftimee)
-                                      let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
-                                      curtime <- getcurtimestamp
-                                      liftIO $ print (beftime ,curtime)
-                                      threadDelay 1000000
 
-              x|x>1  -> do 
-                                      conn <- connect defaultConnectInfo
+              x|x>0  -> do 
                                       beftimee <- runRedis conn gettimefromredis  
                                       --liftIO $ print ("it is in sendbye aft redis")
                                       --liftIO $ print (beftimee)
@@ -166,7 +158,7 @@ sendbye wconn conn ac ctrl = do
                                       curtime <- getcurtimestamp
                                       liftIO $ print (beftime ,curtime)
                                       case (curtime-beftime) of 
-                                        y|y>1200 -> void $ NW.sendClose wconn (B.pack "Bye!")
+                                        y|y>12000 -> void $ NW.sendClose wconn (B.pack "Bye!")
                                         _         -> return ()
                         `catch` (\e ->
                            if e == ConnectionClosed 
