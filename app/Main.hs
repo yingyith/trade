@@ -182,12 +182,12 @@ ws connection = do
                            forever (sendbye connection)) (\e ->
                                                               if e == ConnectionClosed 
                                                               then do
-                                                                     liftIO $ print ("1s",e)
+                                                                     liftIO $ print ("11s",e)
                                                                      throwIO e
                                                                      return nowthreadid
 
                                                               else do 
-                                                                     liftIO $ print ("2s",e)
+                                                                     liftIO $ print ("21s",e)
                                                                      throwIO e
                                                                      return nowthreadid
                                                                      )
