@@ -173,10 +173,10 @@ publishThread rc wc tvar ptid =
       message <- catch (NC.receiveData wc) (\e ->
                                                  if e == ConnectionClosed 
                                                  then do
-                                                        liftIO $ print ("1",e)
+                                                        --liftIO $ print ("1",e)
                                                         throwIO e
                                                  else do 
-                                                        liftIO $ print ("2",e)
+                                                        --liftIO $ print ("2",e)
                                                         throwIO e)
       --datamsg <- NC.receiveDataMessage wc 
       --liftIO $ print ("date is ---",message)
@@ -224,11 +224,11 @@ publishThread rc wc tvar ptid =
     `catch` (\e ->
       if e == ConnectionClosed 
       then do
-             liftIO $ print ("1",e)
+             --liftIO $ print ("1",e)
              --throwIO e
              throwTo ptid e 
       else do 
-             liftIO $ print ("2",e)
+             --liftIO $ print ("2",e)
              --throwIO e
              throwTo ptid e 
              )
