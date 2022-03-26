@@ -168,6 +168,7 @@ getliskeyfromredis =  return ()
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid =  
     forever $ do
+      liftIO $ print ("loop is ---")
       message <- NC.receiveData wc
                                    
                                    
