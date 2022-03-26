@@ -127,7 +127,7 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
       then do
              retryOnFailure ws
       else do 
-             liftIO $ print e
+             --liftIO $ print e
              return ())
 
 --issue streams = <listenKey> -- add user Data Stream
@@ -172,11 +172,11 @@ sendbye wconn conn ac ctrl = do
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
-                                  liftIO $ print ("1s",e)
+                                  --liftIO $ print ("1s",e)
                                   throwIO e
 
                            else do 
-                                  liftIO $ print ("2s",e)
+                                  --liftIO $ print ("2s",e)
                                   throwIO e
                                   )
           sendbye wconn conn (ac+1) ctrl
@@ -191,7 +191,7 @@ sendbye wconn conn ac ctrl = do
           
 ws :: ClientApp ()
 ws connection = do
-    B.putStrLn "Connected!"
+    --B.putStrLn "Connected!"
     --ctrl <- newPubSubController [("order:*",opclHandler)][]
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo

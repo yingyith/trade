@@ -197,7 +197,7 @@ getmsgfromstr msg = do
 getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
 getsndkline aim  = do 
      let resl = fromRight [] aim
-     let res = take 30  resl 
+     let res = take 40  resl 
 
      --liftIO $ print ("length is --------",length resl)
      klines <- mapM parsetokline res
@@ -235,7 +235,7 @@ mseriesFromredis conn msg = do
      timecur <- getcurtimestamp
      secondnum <- secondrule sndinterval
      --liftIO $ print ("start pre or cpre --------------------------------------")
-     --liftIO $  print ("++--",timecur,biginterval,secondnum)
+     liftIO $  print ("++--",timecur,biginterval,secondnum)
      let sumres = biginterval + secondnum
      curtimestampi <- getcurtimestamp
      runRedis conn $ do
