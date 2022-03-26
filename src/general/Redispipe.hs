@@ -217,9 +217,12 @@ publishThread rc wc tvar ptid =
     `catch` (\e ->
       if e == ConnectionClosed 
       then do
+             liftIO $ print ("1",e)
              throwTo ptid e
       else do 
-             throwTo ptid e)
+             liftIO $ print ("2",e)
+             throwTo ptid e
+             )
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
