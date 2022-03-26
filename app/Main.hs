@@ -140,6 +140,7 @@ sendbye wconn conn ac ctrl = do
           sendthid <- myThreadId 
           case ac of 
               x|x==0 -> do    
+                          liftIO $ print ("bef withAsync ")
                           withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
                              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                                       void $ addChannels ctrl [] [("order:*", opclHandler)]
@@ -147,8 +148,10 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
                                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+                          liftIO $ print ("aft withAsync ")
                           conn <- connect defaultConnectInfo
                           threadDelay 1000000
+                          liftIO $ print ("aft threadDelay ")
 
 
               x|x>0  -> do 
