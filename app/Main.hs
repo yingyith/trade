@@ -135,16 +135,24 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
 sendbye  ::  NC.Connection -> IO ()
 sendbye wconn = do
     --liftIO $ print ("it is in sendbye bef redis")
-    conn <- connect defaultConnectInfo
-    beftimee <- runRedis conn gettimefromredis  
-    --liftIO $ print ("it is in sendbye aft redis")
-    --liftIO $ print (beftimee)
-    let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
-    curtime <- getcurtimestamp
-    --liftIO $ print (beftime ,curtime)
-    case (curtime-beftime) of 
-      x|x>1000 -> void $ NW.sendClose wconn (B.pack "Bye!")
-      _         -> return ()
+                 conn <- connect defaultConnectInfo
+                 beftimee <- runRedis conn gettimefromredis  
+                 --liftIO $ print ("it is in sendbye aft redis")
+                 --liftIO $ print (beftimee)
+                 let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
+                 curtime <- getcurtimestamp
+                 --liftIO $ print (beftime ,curtime)
+                 case (curtime-beftime) of 
+                   x|x>1000 -> void $ NW.sendClose wconn (B.pack "Bye!")
+                   _         -> return ()
+
+    `catch` (\e ->
+      if e == ConnectionClosed 
+      then do
+             liftIO $ print ("1s",e)
+      else do 
+             liftIO $ print ("2s",e)
+             )
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
     --threadDelay 50000000
