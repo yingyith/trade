@@ -138,8 +138,8 @@ sendbye wconn conn ac ctrl = do
           let orderVar = newTVarIO ordervari-- newTVarIO Int
           sendthid <- myThreadId 
           case ac of 
-              0     -> do    
-                         withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
+              x|x>0  -> do    
+                          withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
                              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                                       void $ addChannels ctrl [] [("order:*", opclHandler)]
                                       void $ addChannels ctrl [] [("cache:*", cacheHandler)]
@@ -147,7 +147,7 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
 
-              x|x>0 -> do 
+              x|x<=0 -> do 
                                       conn <- connect defaultConnectInfo
                                       beftimee <- runRedis conn gettimefromredis  
                                       --liftIO $ print ("it is in sendbye aft redis")
@@ -158,8 +158,9 @@ sendbye wconn conn ac ctrl = do
                                       case (curtime-beftime) of 
                                         y|y>1000 -> void $ NW.sendClose wconn (B.pack "Bye!")
                                         _         -> return ()
+                                      threadDelay 100000
 
-                         `catch` (\e ->
+                        `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
                                   liftIO $ print ("1s",e)
