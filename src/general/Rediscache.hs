@@ -170,9 +170,9 @@ parsetokline msg = do
     -- liftIO $ print (msg)
      
      let test = A.decode mmsg :: Maybe Klinedata --Klinedata
-     case test of 
-         Nothing -> do liftIO $ print (msg)
-         _ -> return ()
+     --case test of 
+     --    Nothing -> do liftIO $ print (msg)
+     --    _ -> return ()
          
      let kline = fromJust test
      return kline
