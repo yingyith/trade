@@ -125,7 +125,6 @@ retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
   `catch` (\e ->
       if e == ConnectionClosed 
       then do
-             liftIO $ print ("it is retry!")
              retryOnFailure ws
       else do 
              liftIO $ print e
@@ -158,16 +157,18 @@ sendbye wconn conn ac ctrl = do
                                       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
                                       curtime <- getcurtimestamp
                                       --liftIO $ print (beftime ,curtime,ac)
-                                      --case (curtime-beftime) of 
-                                      --  y|y>4000 -> void $ NW.sendClose wconn (B.pack "Bye!")
-                                      --  _         -> return ()
-                                      case ac of 
-                                         x|x==5 -> do 
+                                      case (curtime-beftime) of 
+                                        y|y>60000 -> do
                                                        void $ NW.sendClose wconn (B.pack "Bye!")
-                                                       liftIO $ print (beftime ,curtime,ac)
                                                        throwIO ConnectionClosed
-                                                       return ()
-                                         _     -> return ()
+                                        _         -> return ()
+                                     -- case ac of 
+                                     --    x|x==5 -> do 
+                                     --                  void $ NW.sendClose wconn (B.pack "Bye!")
+                                     --                  liftIO $ print (beftime ,curtime,ac)
+                                     --                  throwIO ConnectionClosed
+                                     --                  return ()
+                                     --    _     -> return ()
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
