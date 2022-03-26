@@ -218,10 +218,10 @@ publishThread rc wc tvar ptid =
       if e == ConnectionClosed 
       then do
              liftIO $ print ("1",e)
-             throwTo ptid e
+             throwIO e
       else do 
              liftIO $ print ("2",e)
-             throwTo ptid e
+             throwIO e
              )
 
 onInitialComplete :: IO ()
