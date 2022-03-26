@@ -143,7 +143,7 @@ sendbye wconn = do
     curtime <- getcurtimestamp
     --liftIO $ print (beftime ,curtime)
     case (curtime-beftime) of 
-      x|x>14000 -> void $ NW.sendClose wconn (B.pack "Bye!")
+      x|x>1000 -> void $ NW.sendClose wconn (B.pack "Bye!")
       _         -> return ()
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
