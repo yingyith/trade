@@ -125,9 +125,10 @@ retryOnFailure  = runSecureClient "fstream.binance.com" 443 "/" ws
   `catch` (\e ->
       if e == ConnectionClosed 
       then do
+             liftIO $ print ("rerun",e)
              retryOnFailure 
       else do 
-             --liftIO $ print e
+             liftIO $ print e
              return ())
 
 --issue streams = <listenKey> -- add user Data Stream
@@ -160,6 +161,7 @@ sendbye wconn conn ac ctrl = do
                                       case (curtime-beftime) of 
                                         y|y>60000 -> do
                                                        void $ NW.sendClose wconn (B.pack "Bye!")
+                                                       liftIO $ print (beftime ,curtime,ac)
                                                        throwIO ConnectionClosed
                                         _         -> return ()
                                      -- case ac of 
@@ -172,11 +174,11 @@ sendbye wconn conn ac ctrl = do
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
-                                  --liftIO $ print ("1s",e)
+                                  liftIO $ print ("1s",e)
                                   throwIO e
 
                            else do 
-                                  --liftIO $ print ("2s",e)
+                                  liftIO $ print ("2s",e)
                                   throwIO e
                                   )
           sendbye wconn conn (ac+1) ctrl
