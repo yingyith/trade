@@ -168,7 +168,7 @@ getliskeyfromredis =  return ()
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid =  
     forever $ do
-      liftIO $ print ("loop is ---+++++")
+      --liftIO $ print ("loop is ---+++++")
       --msgg <- NC.receive wc 
       message <- catch (NC.receiveData wc) (\e ->
                                                  if e == ConnectionClosed 
@@ -195,7 +195,7 @@ publishThread rc wc tvar ptid =
             Left _ ->  "some error"
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-      liftIO $ print ("-----------------------cachetime---------------------")
+      --liftIO $ print ("-----------------------cachetime---------------------")
       --liftIO $ print (replydomarray)
       let replydores = (read (replydomarray !! 0)) :: Integer
       --liftIO $ print (replydores)
