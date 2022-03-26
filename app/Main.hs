@@ -138,7 +138,7 @@ sendbye wconn conn ac ctrl = do
           let orderVar = newTVarIO ordervari-- newTVarIO Int
           sendthid <- myThreadId 
           case ac of 
-              x|x>0  -> do    
+              x|x==1 -> do    
                           withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
                              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                                       void $ addChannels ctrl [] [("order:*", opclHandler)]
@@ -154,12 +154,20 @@ sendbye wconn conn ac ctrl = do
                                       --liftIO $ print (beftimee)
                                       let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
                                       curtime <- getcurtimestamp
-                                      --liftIO $ print (beftime ,curtime)
-                                      case (curtime-beftime) of 
-                                        y|y>1000 -> void $ NW.sendClose wconn (B.pack "Bye!")
-                                        _         -> return ()
-                                      threadDelay 100000
+                                      liftIO $ print (beftime ,curtime)
+                                      threadDelay 1000000
 
+              x|x>1  -> do 
+                                      conn <- connect defaultConnectInfo
+                                      beftimee <- runRedis conn gettimefromredis  
+                                      --liftIO $ print ("it is in sendbye aft redis")
+                                      --liftIO $ print (beftimee)
+                                      let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
+                                      curtime <- getcurtimestamp
+                                      liftIO $ print (beftime ,curtime)
+                                      case (curtime-beftime) of 
+                                        y|y>1200 -> void $ NW.sendClose wconn (B.pack "Bye!")
+                                        _         -> return ()
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
