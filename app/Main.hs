@@ -134,12 +134,13 @@ retryOnFailure  = runSecureClient "fstream.binance.com" 443 "/" ws
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
 sendbye wconn conn ac ctrl = do
-          liftIO $ print ("it is in sendbye ")
-          let ordervari = Ordervar True 0 0 0
-          let orderVar = newTVarIO ordervari-- newTVarIO Int
-          sendthid <- myThreadId 
+          --liftIO $ print ("it is in sendbye ")
           case ac of 
               x|x==0 -> do    
+                          liftIO $ print ("it is in sendbye ")
+                          let ordervari = Ordervar True 0 0 0
+                          let orderVar = newTVarIO ordervari-- newTVarIO Int
+                          sendthid <- myThreadId 
                           liftIO $ print ("bef withAsync ")
                           withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
                              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
