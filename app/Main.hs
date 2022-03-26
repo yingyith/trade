@@ -118,14 +118,14 @@ main =
 --                 liftIO $ print e
 --                 liftIO $ print ("it is2 retry run!")
 --          )
-    retryOnFailure ws
+    retryOnFailure
     
 
-retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
+retryOnFailure  = runSecureClient "fstream.binance.com" 443 "/" ws
   `catch` (\e ->
       if e == ConnectionClosed 
       then do
-             retryOnFailure ws
+             retryOnFailure 
       else do 
              --liftIO $ print e
              return ())
@@ -147,7 +147,7 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                           conn <- connect defaultConnectInfo
-                          threadDelay 5000000
+                          threadDelay 1000000
 
 
               x|x>0  -> do 

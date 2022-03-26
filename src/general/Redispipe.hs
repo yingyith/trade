@@ -177,7 +177,7 @@ publishThread rc wc tvar ptid =
                                    
                                     
       --datamsg <- NC.receiveDataMessage wc 
-      --liftIO $ print ("date is ---",message)
+      liftIO $ print ("date is ---",message)
       --liftIO $ print ("date is ---",msgg)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       --liftIO $ print ("control is ---",datamsg)
@@ -194,7 +194,7 @@ publishThread rc wc tvar ptid =
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
       --liftIO $ print ("-----------------------cachetime---------------------")
-      --liftIO $ print (replydomarray)
+      liftIO $ print (replydomarray)
       let replydores = (read (replydomarray !! 0)) :: Integer
       --liftIO $ print (replydores)
       let timediff = curtimestamp-replydores
@@ -219,17 +219,17 @@ publishThread rc wc tvar ptid =
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
-    `catch` (\e ->
-      if e == ConnectionClosed 
-      then do
-             --liftIO $ print ("1",e)
-             --throwIO e
-             throwTo ptid e 
-      else do 
-             --liftIO $ print ("2",e)
-             --throwIO e
-             throwTo ptid e 
-             )
+--    `catch` (\e ->
+--      if e == ConnectionClosed 
+--      then do
+--             --liftIO $ print ("1",e)
+--             --throwIO e
+--             throwTo ptid e 
+--      else do 
+--             --liftIO $ print ("2",e)
+--             --throwIO e
+--             throwTo ptid e 
+--             )
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
