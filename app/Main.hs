@@ -169,14 +169,21 @@ ws connection = do
 
     void.forkIO $ forever (sendbye connection)
 
-    withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
-       withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-          void $ addChannels ctrl [] [("order:*", opclHandler)]
-          void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-          void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-          void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-          void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
-
+    catch (withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
+             withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+                 void $ addChannels ctrl [] [("order:*", opclHandler)]
+                 void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+                 void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+                 void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+                 void $ addChannels ctrl [] [("analysis:*", analysisHandler)]) (\e ->
+                                                                                     if e == ConnectionClosed 
+                                                                                     then do
+                                                                                            liftIO $ print ("it is retry!")
+                                                                                            liftIO $ print e
+                                                                                     else do 
+                                                                                            liftIO $ print e
+                                                                                            liftIO $ print ("it is2 retry!")
+                                                                                )
     --threadDelay 5000000
    -- liftIO $ print ("??????")
    -- void . forkIO  $ forever (sendbye connection)
