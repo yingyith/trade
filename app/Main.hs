@@ -161,7 +161,7 @@ sendbye wconn conn ac ctrl = do
                                       --  y|y>4000 -> void $ NW.sendClose wconn (B.pack "Bye!")
                                       --  _         -> return ()
                                       case ac of 
-                                         x|x>4 -> do 
+                                         x|x>2 -> do 
                                                        void $ NW.sendClose wconn (B.pack "Bye!")
                                                        return ()
                                          _     -> return ()
