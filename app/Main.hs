@@ -167,9 +167,9 @@ ws connection = do
     nowthreadid <- myThreadId 
     --liftIO $ print (nowthreadid)
 
-    void.forkIO $ forever (sendbye connection)
+    sendthid <- forkIO $ forever (sendbye connection)
 
-    catch (withAsync (publishThread conn connection orderVar nowthreadid) $ \_pubT -> do
+    catch (withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                  void $ addChannels ctrl [] [("order:*", opclHandler)]
                  void $ addChannels ctrl [] [("cache:*", cacheHandler)]
