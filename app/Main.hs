@@ -151,7 +151,7 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                           liftIO $ print ("aft withAsync ")
                           conn <- connect defaultConnectInfo
-                          threadDelay 1000000
+                          threadDelay 4000000
                           liftIO $ print ("aft threadDelay ")
 
 
