@@ -113,23 +113,22 @@ main =
       `catch` (\e ->
           if e == ConnectionClosed 
           then do
-                 liftIO $ print ("it is retry!")
-                 retryOnFailure ws
+                 liftIO $ print ("it is retry run!")
           else do 
                  liftIO $ print e
-                 liftIO $ print ("it is2 retry!")
-                 return ())
+                 liftIO $ print ("it is2 retry run!")
+          )
     
 
-retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
-  `catch` (\e ->
-      if e == ConnectionClosed 
-      then do
-             liftIO $ print ("it is retry!")
-             retryOnFailure ws
-      else do 
-             liftIO $ print e
-             return ())
+--retryOnFailure ws = runSecureClient "fstream.binance.com" 443 "/" ws
+--  `catch` (\e ->
+--      if e == ConnectionClosed 
+--      then do
+--             liftIO $ print ("it is retry!")
+--             retryOnFailure ws
+--      else do 
+--             liftIO $ print e
+--             return ())
 
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> IO ()
@@ -150,6 +149,7 @@ sendbye wconn = do
       if e == ConnectionClosed 
       then do
              liftIO $ print ("1s",e)
+
       else do 
              liftIO $ print ("2s",e)
              )
@@ -175,9 +175,18 @@ ws connection = do
     nowthreadid <- myThreadId 
     --liftIO $ print (nowthreadid)
 
-    sendthid <- forkIO $ do 
-                          threadDelay 1000000 
-                          forever (sendbye connection)
+    sendthid <- catch (forkIO $ do 
+                           threadDelay 1000000 
+                           forever (sendbye connection)) (\e ->
+                                                              if e == ConnectionClosed 
+                                                              then do
+                                                                     liftIO $ print ("1s",e)
+                                                                     return nowthreadid
+
+                                                              else do 
+                                                                     liftIO $ print ("2s",e)
+                                                                     return nowthreadid
+                                                                     )
 
     catch (withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
