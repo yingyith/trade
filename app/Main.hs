@@ -8,7 +8,7 @@ import Control.Concurrent (myThreadId ,forkIO ,threadDelay )
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
-import Control.Exception (catch)
+import Control.Exception (catch,throwIO)
 import Data.Text (Text, pack)
 import Network.WebSockets as NW (ClientApp, receiveData, sendClose, sendTextData,ConnectionException( ConnectionClosed ))
 import Network.WebSockets.Connection as NC
@@ -149,9 +149,11 @@ sendbye wconn = do
       if e == ConnectionClosed 
       then do
              liftIO $ print ("1s",e)
+             throwIO e
 
       else do 
              liftIO $ print ("2s",e)
+             throwIO e
              )
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
@@ -181,10 +183,12 @@ ws connection = do
                                                               if e == ConnectionClosed 
                                                               then do
                                                                      liftIO $ print ("1s",e)
+                                                                     throwIO e
                                                                      return nowthreadid
 
                                                               else do 
                                                                      liftIO $ print ("2s",e)
+                                                                     throwIO e
                                                                      return nowthreadid
                                                                      )
 
