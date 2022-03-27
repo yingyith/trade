@@ -120,7 +120,7 @@ main =
     retryOnFailure 
     
 retryOnFailure :: IO ()
-retryOnFailure  = catch (runSecureClient "fstream.binance.com" 443 "/" ws)(\e -> 
+retryOnFailure  = (runSecureClient "fstream.binance.com" 443 "/" ws) `catch`   (\e -> 
                                                                                if e == ConnectionClosed 
                                                                                then retryOnFailure 
                                                                                else return() ) 
