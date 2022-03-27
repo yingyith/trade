@@ -118,19 +118,19 @@ main =
 
           )
     
-expirepredi :: R.Connection -> IO Bool
-expirepredi conn = do 
+expirepredi :: R.Connection -> Integer -> IO Bool
+expirepredi conn min = do 
                  beftimee <- runRedis conn gettimefromredis  
                  let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
                  curtime <- getcurtimestamp
                  case (curtime-beftime) of 
-                      y|y>60000 -> return True
+                      y|y> mins -> return True
                       _         -> return False
-
+                     where mins = min
 
 retryOnFailure :: R.Connection ->  IO ()
 retryOnFailure conn  = forever $ do
-                      preres <- expirepredi conn 
+                      preres <- expirepredi conn 70000
                       case preres of 
                          True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
                                                                                      if e == ConnectionClosed 
@@ -138,10 +138,8 @@ retryOnFailure conn  = forever $ do
                                                                                      else return ())
                          False -> return ()                                                            
 
---issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
 sendbye wconn conn ac ctrl = do
-          --liftIO $ print ("it is in sendbye ")
           case ac of 
               x|x==0 -> do    
                           liftIO $ print ("it is in sendbye ")
@@ -162,7 +160,7 @@ sendbye wconn conn ac ctrl = do
 
 
               x|x>0  -> do 
-                          preres <- expirepredi conn 
+                          preres <- expirepredi conn 50000
                           case preres of 
                             True   -> do
                                            void $ NW.sendClose wconn (B.pack "Bye!")
