@@ -123,7 +123,7 @@ retryOnFailure :: IO ()
 retryOnFailure  = catch (runSecureClient "fstream.binance.com" 443 "/" ws)(\e -> 
                                                                                if e == ConnectionClosed 
                                                                                then retryOnFailure 
-                                                                               else retryOnFailure ) 
+                                                                               else return() ) 
 
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
