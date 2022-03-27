@@ -120,14 +120,10 @@ main =
     retryOnFailure 
     
 retryOnFailure :: IO ()
-retryOnFailure  = catch (runSecureClient "fstream.binance.com" 443 "/" ws)(\e ->
-                             if e == ConnectionClosed 
-                             then do
-                                    liftIO $ print ("rerun",e)
-                                    retryOnFailure 
-                             else do 
-                                    liftIO $ print e
-                                    retryOnFailure ) 
+retryOnFailure  = catch (runSecureClient "fstream.binance.com" 443 "/" ws)(\e -> 
+                                                                               if e == ConnectionClosed 
+                                                                               then retryOnFailure 
+                                                                               else retryOnFailure ) 
 
 --issue streams = <listenKey> -- add user Data Stream
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
