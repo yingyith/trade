@@ -109,6 +109,9 @@ main =
     -- loop every 30mins
     getSticksToCache conn
     getspotbaltoredis conn
+    h <- fileHandler "debug.log" DEBUG >>= \lh -> return $
+                setFormatter lh (simpleLogFormatter "[$time : $loggername : $prio] $msg")
+    updateGlobalLogger "myapp" (addHandler h)
    -- takeorder
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
@@ -213,9 +216,6 @@ ws connection = do
    -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-    h <- fileHandler "debug.log" DEBUG >>= \lh -> return $
-                setFormatter lh (simpleLogFormatter "[$time : $loggername : $prio] $msg")
-    updateGlobalLogger "myapp" (addHandler h)
     infoM "myapp" "Hello info."
     --liftIO $ T.putStrLn 
     --
