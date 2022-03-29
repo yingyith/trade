@@ -40,12 +40,14 @@ import Redispipe
 import Rediscache
 import Data.Text.Encoding
 import System.IO
-import System.Log.Logger (rootLoggerName, setHandlers, updateGlobalLogger,
-                          Priority(INFO), Priority(WARNING), infoM, debugM,
-                          warningM, errorM, setLevel)
-import System.Log.Handler.Simple (fileHandler, streamHandler, GenericHandler)
+import System.Log.Logger 
+                         
+                         
 import System.Log.Handler (setFormatter)
+import System.Log.Handler.Syslog
+import System.Log.Handler.Simple
 import System.Log.Formatter
+
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
 --     if 22 == 22-- ConnectionClosed
@@ -148,11 +150,13 @@ sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
 sendbye wconn conn ac ctrl = do
           case ac of 
               x|x==0 -> do    
-                          liftIO $ print ("it is in sendbye ")
+                         -- liftIO $ print ("it is in sendbye ")
+                          infoM "myapp" "It is in sendbye."
                           let ordervari = Ordervar True 0 0 0
                           let orderVar = newTVarIO ordervari-- newTVarIO Int
                           sendthid <- myThreadId 
-                          liftIO $ print ("bef withAsync ")
+
+                          infoM "myapp" ".bef withAsync "
                           withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
                              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                                       void $ addChannels ctrl [] [("order:*", opclHandler)]
@@ -162,7 +166,8 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                           threadDelay 60000000
                           conn <- connect defaultConnectInfo
-                          liftIO $ print ("aft threadDelay ")
+
+                          infoM "myapp" ".aft threadDelay "
 
 
               x|x>0  -> do 
@@ -182,11 +187,11 @@ sendbye wconn conn ac ctrl = do
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
-                                  liftIO $ print ("1s",e)
+                                  infoM "myapp" "connection close e"
                                   throwIO e
 
                            else do 
-                                  liftIO $ print ("2s",e)
+                                  infoM "myapp" " not connection close e"
                                   throwIO e
                                   )
           sendbye wconn conn (ac+1) ctrl
@@ -210,19 +215,10 @@ ws connection = do
    -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-    let logPath = "/tmp/foo.log"
-    myStreamHandler <- streamHandler stderr INFO
-    myFileHandler <- fileHandler logPath WARNING
-    let myFileHandler' = withFormatter myFileHandler
-    let myStreamHandler' = withFormatter myStreamHandler
-    let log = rootLoggerName
-    updateGlobalLogger log (setLevel INFO)
-    updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
-    infoM log $ "Logging to " ++ logPath
-    debugM log "Hello debug."
-    infoM log "Hello info."
-    warningM log "Hello warning."
-    errorM log "Hello error."
+    h <- fileHandler "debug.log" DEBUG >>= \lh -> return $
+                setFormatter lh (simpleLogFormatter "[$time : $loggername : $prio] $msg")
+    updateGlobalLogger "myapp" (addHandler h)
+    infoM "myapp" "Hello info."
     --liftIO $ T.putStrLn 
     --
     --let ordervari = Ordervar True 0 0 0

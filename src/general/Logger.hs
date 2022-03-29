@@ -31,7 +31,15 @@ import Colog (HasLog (..), LogAction, Message, Msg (..), PureLogger, RichMsg (..
               logWarning, pattern D, runPureLog, upgradeMessageAction, usingLoggerT, withLog,
               withLogTextFile, (*<), (<&), (>$), (>$<), (>*), (>*<), (>|<))
 
+import System.IO
+import System.Log.Logger (rootLoggerName, setHandlers, updateGlobalLogger,
+                          Priority(INFO), Priority(WARNING), infoM, debugM,
+                          warningM, errorM, setLevel)
+import System.Log.Handler.Simple (fileHandler, streamHandler, GenericHandler)
+import System.Log.Handler (setFormatter)
+import System.Log.Formatter
 import qualified Data.TypeRepMap as TM
+
 
 showany :: Show a => a -> Text
 showany a = T.pack $ show  a
