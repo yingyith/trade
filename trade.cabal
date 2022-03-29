@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a94d2d4649bde1c182d217b5977a76e7862dc9eeb66b3b7827ce398b841b96fe
+-- hash: 82beaaa3ac5de45d49529aa265fd7b3ba06062f02fe735d00dd79462eaabb21d
 
 name:           trade
 version:        0.1.0.0
@@ -49,6 +49,7 @@ library
       Globalvar
       Httpstructure
       Lib
+      Logger
       Myutils
       Order
       Passwd
@@ -74,12 +75,14 @@ library
     , bytestring
     , case-insensitive
     , clock
+    , co-log
     , conduit
     , connection
     , containers
     , entropy
     , eventful-core
     , hedis
+    , hslogger
     , lens
     , lens-aeson
     , modern-uri
@@ -94,6 +97,7 @@ library
     , string-class
     , text
     , time
+    , typerep-map
     , unordered-containers
     , utf8-string
     , vector
@@ -119,12 +123,14 @@ executable trade-exe
     , bytestring
     , case-insensitive
     , clock
+    , co-log
     , conduit
     , connection
     , containers
     , entropy
     , eventful-core
     , hedis
+    , hslogger
     , lens
     , lens-aeson
     , modern-uri
@@ -140,6 +146,7 @@ executable trade-exe
     , text
     , time
     , trade
+    , typerep-map
     , unordered-containers
     , utf8-string
     , vector
@@ -166,12 +173,14 @@ test-suite trade-test
     , bytestring
     , case-insensitive
     , clock
+    , co-log
     , conduit
     , connection
     , containers
     , entropy
     , eventful-core
     , hedis
+    , hslogger
     , lens
     , lens-aeson
     , modern-uri
@@ -187,6 +196,7 @@ test-suite trade-test
     , text
     , time
     , trade
+    , typerep-map
     , unordered-containers
     , utf8-string
     , vector

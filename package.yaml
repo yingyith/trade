@@ -57,6 +57,9 @@ dependencies:
 - case-insensitive 
 - HTTP
 - stm
+- hslogger
+- co-log
+- typerep-map
 library:
   source-dirs: [src,src/general,src/strategy]
 
