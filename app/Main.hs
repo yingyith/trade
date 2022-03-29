@@ -109,9 +109,6 @@ main =
     -- loop every 30mins
     getSticksToCache conn
     getspotbaltoredis conn
-    h <- fileHandler "debug.log" DEBUG >>= \lh -> return $
-                setFormatter lh (simpleLogFormatter "[$time : $loggername : $prio] $msg")
-    updateGlobalLogger "myapp" (addHandler h)
    -- takeorder
     --personal account
     --stream?streams=ethusdt@kline_1m/listenKey
@@ -152,12 +149,11 @@ sendbye wconn conn ac ctrl = do
           case ac of 
               x|x==0 -> do    
                          -- liftIO $ print ("it is in sendbye ")
-                          infoM "myapp" "It is in sendbye."
+                          warningM "myapp" "bef withasync" 
                           let ordervari = Ordervar True 0 0 0
                           let orderVar = newTVarIO ordervari-- newTVarIO Int
                           sendthid <- myThreadId 
 
-                          infoM "myapp" ".bef withAsync "
                           withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
                              withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
                                       void $ addChannels ctrl [] [("order:*", opclHandler)]
@@ -167,8 +163,8 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                           threadDelay 60000000
                           conn <- connect defaultConnectInfo
+                          warningM "myapp" "aft withasync" 
 
-                          infoM "myapp" ".aft threadDelay "
 
 
               x|x>0  -> do 
@@ -188,11 +184,11 @@ sendbye wconn conn ac ctrl = do
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
-                                  infoM "myapp" "connection close e"
+                                  warningM "myapp" "it is closed!" 
                                   throwIO e
 
                            else do 
-                                  infoM "myapp" " not connection close e"
+                                  warningM "myapp" "other excep!" 
                                   throwIO e
                                   )
           sendbye wconn conn (ac+1) ctrl
@@ -212,11 +208,22 @@ withFormatter handler = setFormatter handler formatter
 ws :: ClientApp ()
 ws connection = do
     --B.putStrLn "Connected!"
-    --ctrl <- newPubSubController [("order:*",opclHandler)][]
    -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-    infoM "myapp" "Hello info."
+    let logPath = "/root/trade/1.log"
+    myStreamHandler <- streamHandler stderr INFO
+    myFileHandler <- fileHandler logPath WARNING
+    let myFileHandler' = withFormatter myFileHandler
+    let myStreamHandler' = withFormatter myStreamHandler
+    let log = "myapp"
+    updateGlobalLogger log (setLevel INFO)
+    updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
+    infoM log $ "Logging to " ++ logPath
+    debugM log "Hello debug."
+    infoM log "Hello info."
+    warningM log "Hello warning."
+    errorM log "Hello error."
     --liftIO $ T.putStrLn 
     --
     --let ordervari = Ordervar True 0 0 0
