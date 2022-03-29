@@ -9,6 +9,7 @@ import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
 import Control.Exception (catch,throwIO)
+import Colog (usingLoggerT,cmap,fmtMessage,logTextStdout,logTextHandle,logInfo)
 import Data.Text (Text, pack)
 import Network.WebSockets as NW (ClientApp, receiveData, sendClose, sendTextData,ConnectionException( ConnectionClosed ))
 import Network.WebSockets.Connection as NC
@@ -39,7 +40,12 @@ import Redispipe
 import Rediscache
 import Data.Text.Encoding
 import System.IO
-
+import System.Log.Logger (rootLoggerName, setHandlers, updateGlobalLogger,
+                          Priority(INFO), Priority(WARNING), infoM, debugM,
+                          warningM, errorM, setLevel)
+import System.Log.Handler.Simple (fileHandler, streamHandler, GenericHandler)
+import System.Log.Handler (setFormatter)
+import System.Log.Formatter
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
 --     if 22 == 22-- ConnectionClosed
@@ -130,13 +136,13 @@ expirepredi conn min = do
 
 retryOnFailure :: R.Connection ->  IO ()
 retryOnFailure conn  = forever $ do
-                      preres <- expirepredi conn 70000
-                      case preres of 
-                         True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
-                                                                                     if e == ConnectionClosed 
-                                                                                     then retryOnFailure conn 
-                                                                                     else return ())
-                         False -> return ()                                                            
+                                    preres <- expirepredi conn 70000
+                                    case preres of 
+                                       True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
+                                                                                                             if e == ConnectionClosed 
+                                                                                                             then retryOnFailure conn 
+                                                                                                             else return ())
+                                       False -> return ()                                                            
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
 sendbye wconn conn ac ctrl = do
@@ -192,18 +198,40 @@ sendbye wconn conn ac ctrl = do
       --unless ((curtime-400) > beftime) $ do
       --    liftIO $ print ("bef sendbye")
       --    sendbye rconn wconn
+withFormatter :: GenericHandler Handle -> GenericHandler Handle
+withFormatter handler = setFormatter handler formatter
+    -- http://hackage.haskell.org/packages/archive/hslogger/1.1.4/doc/html/System-Log-Formatter.html
+    where formatter = simpleLogFormatter "[$time $loggername $prio] $msg"
           
 ws :: ClientApp ()
 ws connection = do
     --B.putStrLn "Connected!"
     --ctrl <- newPubSubController [("order:*",opclHandler)][]
+   -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
+    let logPath = "/tmp/foo.log"
+    myStreamHandler <- streamHandler stderr INFO
+    myFileHandler <- fileHandler logPath WARNING
+    let myFileHandler' = withFormatter myFileHandler
+    let myStreamHandler' = withFormatter myStreamHandler
+    let log = rootLoggerName
+    updateGlobalLogger log (setLevel INFO)
+    updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
+    infoM log $ "Logging to " ++ logPath
+    debugM log "Hello debug."
+    infoM log "Hello info."
+    warningM log "Hello warning."
+    errorM log "Hello error."
     --liftIO $ T.putStrLn 
     --
     --let ordervari = Ordervar True 0 0 0
     --let orderVar = newTVarIO ordervari-- newTVarIO Int
-    liftIO $ print ("it is in ws ")
+   -- usingLoggerT 
+   --   (cmap
+   --     fmtMessage
+   --     (logTextHandle logFileHandle )) $ do 
+   --   logInfo "bef sendbye"
     sendbye connection conn 0 ctrll 
 
  --   sendthid <- catch (forkIO $ do 
