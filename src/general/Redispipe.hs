@@ -59,6 +59,7 @@ import Rediscache
 import Globalvar
 import Order
 import Myutils
+import System.Log.Logger 
 
 
 
@@ -168,7 +169,7 @@ getliskeyfromredis =  return ()
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid =  
     forever $ do
-      liftIO $ print ("loop is ---")
+      infoM "myapp" "loop is ----"
       message <- NC.receiveData wc
                                    
                                    
@@ -178,7 +179,7 @@ publishThread rc wc tvar ptid =
                                    
                                     
       --datamsg <- NC.receiveDataMessage wc 
-      liftIO $ print ("date is ---",message)
+      infoM "myapp" $ show message
       --liftIO $ print ("date is ---",msgg)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       --liftIO $ print ("control is ---",datamsg)
@@ -195,7 +196,7 @@ publishThread rc wc tvar ptid =
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
       --liftIO $ print ("-----------------------cachetime---------------------")
-      liftIO $ print (replydomarray)
+      --liftIO $ print (replydomarray)
       let replydores = (read (replydomarray !! 0)) :: Integer
       --liftIO $ print (replydores)
       let timediff = curtimestamp-replydores

@@ -41,8 +41,6 @@ import Rediscache
 import Data.Text.Encoding
 import System.IO
 import System.Log.Logger 
-                         
-                         
 import System.Log.Handler (setFormatter)
 import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
