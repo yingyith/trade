@@ -218,7 +218,8 @@ ws connection = do
                              infoM tlog $ "using log " 
                              sendbye connection conn 0 ctrll piid 
     forever $ do 
-          infoM flog $ "looping " 
+          --infoM flog $ "looping " 
+          sleep 100
 
                
 
