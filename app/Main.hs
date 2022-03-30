@@ -164,6 +164,7 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                           conn <- connect defaultConnectInfo
                           liftIO $ print ("it is aft async ")
+                          threadDelay 1000000
        --                   warningM "myapp" "aft withasync" 
 
 
