@@ -174,7 +174,7 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO 
 publishThread rc wc tvar ptid = do 
     let logPath = "/root/trade/2.log"
     pubStreamHandler <- streamHandler stderr INFO
-    pubFileHandler <- fileHandler logPath WARNING
+    pubFileHandler <- fileHandler logPath INFO
     let pubFileHandler' = withFormatter pubFileHandler
     let pubStreamHandler' = withFormatter pubStreamHandler
     let log = "pub"
@@ -260,7 +260,7 @@ handlerThread :: R.Connection -> PubSubController -> IO (TVar a) -> IO ()
 handlerThread conn ctrl tvar = do 
     let logPath = "/root/trade/3.log"
     conStreamHandler <- streamHandler stderr INFO
-    conFileHandler <- fileHandler logPath WARNING
+    conFileHandler <- fileHandler logPath INFO
     let myFileHandler' = withFormatter conFileHandler
     let myStreamHandler' = withFormatter conStreamHandler
     let log = "con"

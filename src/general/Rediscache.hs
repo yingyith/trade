@@ -234,7 +234,7 @@ mseriesFromredis conn msg = do
      let dcp = read $ kclose kline :: Double
      --liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
-     warningM "con" $ show bigintervall
+     infoM "con" $ show bigintervall
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall
      --liftIO $ print ("start analysis snd --------------------------------------")
@@ -243,7 +243,7 @@ mseriesFromredis conn msg = do
      secondnum <- secondrule sndinterval
      --liftIO $ print ("start pre or cpre --------------------------------------")
      let sumres = biginterval + secondnum
-     warningM "con" $ show ("++--",timecur,biginterval,secondnum,sumres)
+     infoM "con" $ show ("++--",timecur,biginterval,secondnum,sumres)
      curtimestampi <- getcurtimestamp
      runRedis conn $ do
         preorcpreordertorediszset sumres dcp  curtimestampi
