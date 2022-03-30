@@ -47,6 +47,9 @@ import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
 import System.Log.Formatter
 import System.Posix.Process
+import System.Posix.Types
+import System.Process
+import System.Posix.Signals
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
@@ -146,8 +149,8 @@ retryOnFailure conn  = forever $ do
                                                                                                              else return ())
                                        False -> return ()                                                            
 
-sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
-sendbye wconn conn ac ctrl = do
+sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> Maybe (System.Posix.Types.ProcessID)  -> IO ()
+sendbye wconn conn ac ctrl mpid = do
           case ac of 
               x|x==0 -> do    
                           liftIO $ print ("it is in sendbye ")
@@ -156,17 +159,19 @@ sendbye wconn conn ac ctrl = do
                           let orderVar = newTVarIO ordervari-- newTVarIO Int
                           sendthid <- myThreadId 
 
-                          forkProcess $ withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
-                                           withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                                              void $ addChannels ctrl [] [("order:*", opclHandler)]
-                                              void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                                              void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                                              void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                                              void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+                          piid <- forkProcess $ withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
+                                                  withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+                                                     void $ addChannels ctrl [] [("order:*", opclHandler)]
+                                                     void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+                                                     void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+                                                     void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+                                                     void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+                          let nmpid = Just piid
                           threadDelay 1000000
                           conn <- connect defaultConnectInfo
                           liftIO $ print ("it is aft async ")
        --                   warningM "myapp" "aft withasync" 
+                          sendbye wconn conn (ac+1) ctrl nmpid
 
 
 
@@ -175,6 +180,7 @@ sendbye wconn conn ac ctrl = do
                           case preres of 
                             True   -> do
                                            void $ NW.sendClose wconn (B.pack "Bye!")
+                                           signalProcess sigKILL $ fromJust mpid
                                            throwIO ConnectionClosed
                             False  -> return ()
                                      -- case ac of 
@@ -184,6 +190,7 @@ sendbye wconn conn ac ctrl = do
                                      --                  throwIO ConnectionClosed
                                      --                  return ()
                                      --    _     -> return ()
+                          sendbye wconn conn (ac+1) ctrl mpid
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
@@ -198,7 +205,6 @@ sendbye wconn conn ac ctrl = do
                                   liftIO $ print ("it is other ep! ")
                                   throwIO e
                                   )
-          sendbye wconn conn (ac+1) ctrl
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
     --threadDelay 50000000
@@ -231,7 +237,7 @@ ws connection = do
    --     fmtMessage
    --     (logTextHandle logFileHandle )) $ do 
    --   logInfo "bef sendbye"
-    sendbye connection conn 0 ctrll 
+    sendbye connection conn 0 ctrll Nothing 
 
  --   sendthid <- catch (forkIO $ do 
  --                          threadDelay 1000000 

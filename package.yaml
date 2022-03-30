@@ -58,6 +58,7 @@ dependencies:
 - HTTP
 - stm
 - unix
+- process 
 - hslogger
 - co-log
 - typerep-map
