@@ -182,7 +182,7 @@ publishThread rc wc tvar ptid = do
     updateGlobalLogger log (setHandlers [pubFileHandler', pubStreamHandler'])
     forever $ do
       infoM "pub" "loop is ----"
-      message <- CA.wait (NC.receiveData wc)
+      message <- (NC.receiveData wc)
                                    
                                    
                                    
