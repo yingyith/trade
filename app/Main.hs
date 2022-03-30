@@ -167,7 +167,7 @@ sendbye wconn conn ac ctrl mpid = do
                                                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                              let nmpid = Just piid
-                             threadDelay 1000000
+                             threadDelay 3000000
                              conn <- connect defaultConnectInfo
                              liftIO $ print ("it is aft async ")
                              return nmpid
