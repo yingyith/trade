@@ -4,7 +4,7 @@
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
 -- I execute this with `stack runghc ManualPubSub.hs`
 module Rediscache (
-   getSticksToCache,
+   minSticksToCache,
    defintervallist,
    mseriesFromredis,
    parsetokline,
@@ -136,8 +136,8 @@ getspotbaltoredis conn = do
               void $ set akey adavalue
               void $ set ukey usdtvalue
 
-getSticksToCache :: R.Connection -> IO ()
-getSticksToCache conn = do 
+minSticksToCache :: R.Connection -> IO ()
+minSticksToCache conn = do 
     tt <- mapM parsekline defintervallist
     initdict tt conn
 

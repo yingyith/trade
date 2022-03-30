@@ -113,7 +113,7 @@ main =
     --"send ping every 30mins"
     -- pass listen key to getSticksToCache and set key ,then do detail on sub handler ,update
     -- loop every 30mins
-    getSticksToCache conn
+    minSticksToCache conn
     getspotbaltoredis conn
    -- takeorder
     --personal account
@@ -191,11 +191,11 @@ ws connection = do
 
     piid <- forkProcess $ withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
                             withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do
-                               void $ addChannels ctrll [] [("order:*", opclHandler)]
-                               void $ addChannels ctrll [] [("cache:*", cacheHandler)]
-                               void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler)]
-                               void $ addChannels ctrll [] [("skline:*", sklineHandler)]
+                               void $ addChannels ctrll [] [("sndc:*", sndtocacheHandler)]
+                               void $ addChannels ctrll [] [("minc:*", mintocacheHandler)]
                                void $ addChannels ctrll [] [("analysis:*", analysisHandler)]
+                               void $ addChannels ctrll [] [("order:*", opclHandler)]
+                               void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler)]
                             threadDelay 6000000
     --liftIO $ print (piid)
     --

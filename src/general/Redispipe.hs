@@ -12,9 +12,9 @@ module Redispipe
       handlerThread,
       opclHandler,
       listenkeyHandler,
-      cacheHandler,
+      mintocacheHandler,
       showChannels,
-      sklineHandler,
+      sndtocacheHandler,
       analysisHandler
 
     ) where
@@ -96,7 +96,7 @@ msgcacheandpingtempdo a msg wc = do
         case compare a 60000 of -- 300000= 5min
         --case compare a 300000 of -- 300000= 5min
             GT -> do 
-              void $ publish "cache:1" ("cache" <> msg)
+              void $ publish "minc:1" ("cache" <> msg)
               void $ publish "listenkey:1" ("listenkey" <> msg)
              -- NC.sendPong wc
             EQ ->
@@ -154,7 +154,7 @@ generatehlsheet msg = do
 msgsklinetoredis :: ByteString -> Integer -> Redis ()
 msgsklinetoredis msg stamp = do
     when (matchmsgfun msg == True ) $ do 
-      void $ publish "skline:1" ( msg)
+      void $ publish "sndc:1" ( msg)
       let abyvaluestr = msg
       let abykeystr = BLU.fromString secondkey
       let stamptime = fromInteger stamp :: Double
@@ -174,6 +174,7 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
+    threadDelay 100000
     forever $ do
       --liftIO $ print ("loop is ---")
       --infoM "pub" "loop is ----"
@@ -425,8 +426,8 @@ addklinetoredis msg  = do
       --let msg = BL.fromStrict message
       --let test = A.decode msg :: Maybe Klinedata --Klinedata
       
-sklineHandler :: RedisChannel -> ByteString -> IO ()
-sklineHandler channel msg = do 
+sndtocacheHandler :: RedisChannel -> ByteString -> IO ()
+sndtocacheHandler channel msg = do 
       conn <- connect defaultConnectInfo
       --liftIO $ print (msg)
       runRedis conn (addklinetoredis msg )
@@ -441,11 +442,11 @@ analysisHandler channel msg = do
       debugtime
       --liftIO $ print ("end analysis ++++++++++++++++++++++++++++++++++++++++++++")
 
-cacheHandler :: RedisChannel -> ByteString -> IO ()
-cacheHandler channel msg = do 
+mintocacheHandler :: RedisChannel -> ByteString -> IO ()
+mintocacheHandler channel msg = do 
       --liftIO $ print ("start cache ++++++++++++++++++++++++++++++++++++++++++++")
       conn <- connect defaultConnectInfo
-      getSticksToCache conn
+      minSticksToCache conn
       debugtime
       --SI.hPutStrLn stderr $ "Saw pmsg: " ++ unpack (decodeUtf8 channel) ++ unpack (decodeUtf8 msg)
 
