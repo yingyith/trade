@@ -172,7 +172,7 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
-    let logPath = "/root/trade/2.log"
+    let logPath = "/root/trade/3.log"
     pubStreamHandler <- streamHandler stderr INFO
     pubFileHandler <- fileHandler logPath INFO
     let pubFileHandler' = withFormatter pubFileHandler
@@ -258,7 +258,7 @@ debugtime = do
 
 handlerThread :: R.Connection -> PubSubController -> IO (TVar a) -> IO ()
 handlerThread conn ctrl tvar = do 
-    let logPath = "/root/trade/3.log"
+    let logPath = "/root/trade/4.log"
     conStreamHandler <- streamHandler stderr INFO
     conFileHandler <- fileHandler logPath INFO
     let myFileHandler' = withFormatter conFileHandler

@@ -150,66 +150,17 @@ retryOnFailure conn  = forever $ do
                                                                                                              else return ())
                                        False -> return ()                                                            
 
-sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> Maybe (System.Posix.Types.ProcessID)  -> IO ()
+sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
 sendbye wconn conn ac ctrl mpid = do
-      ares <- case ac of 
-                 x|x==0 -> do    
-                             --liftIO $ print ("it is in sendbye ")
-        --                     warningM "myapp" "bef withasync" 
-                             let ordervari = Ordervar True 0 0 0
-                             let orderVar = newTVarIO ordervari-- newTVarIO Int
-                             sendthid <- myThreadId 
+    preres <- expirepredi conn 300000
+    case preres of 
+      True   -> do
+                     void $ NW.sendClose wconn (B.pack "Bye!")
+                     signalProcess sigKILL mpid
+                     throwIO ConnectionClosed
+      False  -> return ()
 
-                             piid <- forkProcess $ withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
-                                                     withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                                                        void $ addChannels ctrl [] [("order:*", opclHandler)]
-                                                        void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                                                        void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                                                        void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                                                        void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
-                                                     threadDelay 6000000
-                             --liftIO $ print (piid)
-                             let nmpid = Just piid
-                             conn <- connect defaultConnectInfo
-                             --liftIO $ print ("it is aft async ")
-                             --warningM "myapp" "aft withasync" 
-                             return nmpid
-       --                      warningM "myapp" "aft withasync" 
-                             --sendbye wconn conn (ac+1) ctrl nmpid
-
-
-
-                 x|x>0  -> do 
-                             preres <- expirepredi conn 300000
-                             case preres of 
-                               True   -> do
-                                              void $ NW.sendClose wconn (B.pack "Bye!")
-                                              signalProcess sigKILL $ fromJust mpid
-                                              throwIO ConnectionClosed
-                               False  -> return ()
-                                        -- case ac of 
-                                        --    x|x==5 -> do 
-                                        --                  void $ NW.sendClose wconn (B.pack "Bye!")
-                                        --                  liftIO $ print (beftime ,curtime,ac)
-                                        --                  throwIO ConnectionClosed
-                                        --                  return ()
-                                        --    _     -> return ()
-                             return mpid
-                           `catch` (\e ->
-                              if e == ConnectionClosed 
-                              then do
-   --                                  warningM "myapp" "it is closed!" 
-                                     warningM "myapp" $ show e
-                                     --liftIO $ print ("it is closed! ")
-                                     throwIO e
-
-                              else do 
-     --                                warningM "myapp" "other excep!" 
-                                     warningM "myapp" $ show e
-                                     throwIO e
-                                     )
-
-      sendbye wconn conn (ac+1) ctrl ares
+    sendbye wconn conn (ac+1) ctrl mpid
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
     --threadDelay 50000000
@@ -234,6 +185,20 @@ ws connection = do
     updateGlobalLogger log (setLevel INFO)
     updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
     infoM log $ "Logging to " ++ logPath
+
+    let ordervari = Ordervar True 0 0 0
+    let orderVar = newTVarIO ordervari-- newTVarIO Int
+    sendthid <- myThreadId 
+
+    piid <- forkProcess $ withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
+                            withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do
+                               void $ addChannels ctrll [] [("order:*", opclHandler)]
+                               void $ addChannels ctrll [] [("cache:*", cacheHandler)]
+                               void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler)]
+                               void $ addChannels ctrll [] [("skline:*", sklineHandler)]
+                               void $ addChannels ctrll [] [("analysis:*", analysisHandler)]
+                            threadDelay 6000000
+    --liftIO $ print (piid)
     --
     --let ordervari = Ordervar True 0 0 0
     --let orderVar = newTVarIO ordervari-- newTVarIO Int
@@ -242,7 +207,17 @@ ws connection = do
    --     fmtMessage
    --     (logTextHandle logFileHandle )) $ do 
    --   logInfo "bef sendbye"
-    sendbye connection conn 0 ctrll Nothing 
+    spidf <- forkProcess $ do  
+                             let logPath = "/root/trade/2.log"
+                             myStreamHandler <- streamHandler stderr INFO
+                             myFileHandler <- fileHandler logPath INFO
+                             let myFileHandler' = withFormatter myFileHandler
+                             let myStreamHandler' = withFormatter myStreamHandler
+                             let log = "time"
+                             updateGlobalLogger log (setLevel INFO)
+                             updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
+                             sendbye connection conn 0 ctrll piid 
+    return ()
 
  --   sendthid <- catch (forkIO $ do 
  --                          threadDelay 1000000 
