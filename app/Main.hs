@@ -162,14 +162,13 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
                                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
-                          threadDelay 60000000
                           conn <- connect defaultConnectInfo
                           warningM "myapp" "aft withasync" 
 
 
 
               x|x>0  -> do 
-                          preres <- expirepredi conn 50000
+                          preres <- expirepredi conn 150000
                           case preres of 
                             True   -> do
                                            void $ NW.sendClose wconn (B.pack "Bye!")

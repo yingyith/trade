@@ -34,7 +34,7 @@ import Control.Lens
 import Network.WebSockets as NW --(ClientApp, receiveData, sendClose, sendTextData,send,WebSocketsData)
 import Network.WebSockets (sendPong)
 import Network.WebSockets.Connection as NC
-import Control.Concurrent.Async
+import Control.Concurrent.Async as CA
 import Control.Concurrent.STM
 import Control.Concurrent 
 import Data.Text as T
@@ -182,7 +182,7 @@ publishThread rc wc tvar ptid = do
     updateGlobalLogger log (setHandlers [pubFileHandler', pubStreamHandler'])
     forever $ do
       infoM "pub" "loop is ----"
-      message <- NC.receiveData wc
+      message <- CA.wait (NC.receiveData wc)
                                    
                                    
                                    
