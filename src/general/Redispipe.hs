@@ -59,8 +59,12 @@ import Rediscache
 import Globalvar
 import Order
 import Myutils
+import Logger
 import System.Log.Logger 
-
+import System.Log.Handler (setFormatter)
+import System.Log.Handler.Syslog
+import System.Log.Handler.Simple
+import System.Log.Formatter
 
 
 replydo :: Integer -> Redis (Either Reply [ByteString], Either Reply [ByteString])
@@ -167,9 +171,17 @@ getliskeyfromredis :: Redis ()
 getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
-publishThread rc wc tvar ptid =  
+publishThread rc wc tvar ptid = do 
+    let logPath = "/root/trade/2.log"
+    pubStreamHandler <- streamHandler stderr INFO
+    pubFileHandler <- fileHandler logPath WARNING
+    let pubFileHandler' = withFormatter pubFileHandler
+    let pubStreamHandler' = withFormatter pubStreamHandler
+    let log = "pub"
+    updateGlobalLogger log (setLevel INFO)
+    updateGlobalLogger log (setHandlers [pubFileHandler', pubStreamHandler'])
     forever $ do
-      infoM "myapp" "loop is ----"
+      infoM "pub" "loop is ----"
       message <- NC.receiveData wc
                                    
                                    
@@ -179,7 +191,7 @@ publishThread rc wc tvar ptid =
                                    
                                     
       --datamsg <- NC.receiveDataMessage wc 
-      infoM "myapp" $ show message
+      infoM "pub" $ show message
       --liftIO $ print ("date is ---",msgg)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       --liftIO $ print ("control is ---",datamsg)
@@ -243,7 +255,15 @@ debugtime = do
     return ()
 
 handlerThread :: R.Connection -> PubSubController -> IO (TVar a) -> IO ()
-handlerThread conn ctrl tvar = forever $
+handlerThread conn ctrl tvar = do 
+    let logPath = "/root/trade/3.log"
+    conStreamHandler <- streamHandler stderr INFO
+    conFileHandler <- fileHandler logPath WARNING
+    let myFileHandler' = withFormatter conFileHandler
+    let myStreamHandler' = withFormatter conStreamHandler
+    let log = "con"
+    updateGlobalLogger log (setLevel INFO)
+    forever $
        pubSubForever conn ctrl onInitialComplete
          `catch` (\(e :: SomeException) -> do
            SI.hPutStrLn stderr $ "Got error: " ++ show e

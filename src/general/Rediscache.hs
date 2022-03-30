@@ -48,7 +48,12 @@ import Order
 import Globalvar
 import Strategy
 import Sndsrule
+import Logger
 import System.Log.Logger 
+import System.Log.Handler (setFormatter)
+import System.Log.Handler.Syslog
+import System.Log.Handler.Simple
+import System.Log.Formatter
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -229,7 +234,7 @@ mseriesFromredis conn msg = do
      let dcp = read $ kclose kline :: Double
      --liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
-     warningM "myapp" $ show bigintervall
+     warningM "con" $ show bigintervall
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall
      --liftIO $ print ("start analysis snd --------------------------------------")
@@ -238,7 +243,7 @@ mseriesFromredis conn msg = do
      secondnum <- secondrule sndinterval
      --liftIO $ print ("start pre or cpre --------------------------------------")
      let sumres = biginterval + secondnum
-     warningM "myapp" $ show ("++--",timecur,biginterval,secondnum,sumres)
+     warningM "con" $ show ("++--",timecur,biginterval,secondnum,sumres)
      curtimestampi <- getcurtimestamp
      runRedis conn $ do
         preorcpreordertorediszset sumres dcp  curtimestampi

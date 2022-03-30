@@ -12,7 +12,8 @@
 {-# LANGUAGE TypeApplications           #-}
 module Logger
     ( 
-     logd
+     logd,
+     withFormatter
     ) where
 
 import Prelude hiding (log)
@@ -40,6 +41,11 @@ import System.Log.Handler (setFormatter)
 import System.Log.Formatter
 import qualified Data.TypeRepMap as TM
 
+
+withFormatter :: GenericHandler Handle -> GenericHandler Handle
+withFormatter handler = setFormatter handler formatter
+    -- http://hackage.haskell.org/packages/archive/hslogger/1.1.4/doc/html/System-Log-Formatter.html
+    where formatter = simpleLogFormatter "[$time $loggername $prio] $msg"
 
 showany :: Show a => a -> Text
 showany a = T.pack $ show  a

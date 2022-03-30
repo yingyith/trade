@@ -39,6 +39,7 @@ import Passwd
 import Redispipe
 import Rediscache
 import Data.Text.Encoding
+import Logger
 import System.IO
 import System.Log.Logger 
 import System.Log.Handler (setFormatter)
@@ -200,10 +201,6 @@ sendbye wconn conn ac ctrl = do
       --unless ((curtime-400) > beftime) $ do
       --    liftIO $ print ("bef sendbye")
       --    sendbye rconn wconn
-withFormatter :: GenericHandler Handle -> GenericHandler Handle
-withFormatter handler = setFormatter handler formatter
-    -- http://hackage.haskell.org/packages/archive/hslogger/1.1.4/doc/html/System-Log-Formatter.html
-    where formatter = simpleLogFormatter "[$time $loggername $prio] $msg"
           
 ws :: ClientApp ()
 ws connection = do
@@ -212,7 +209,7 @@ ws connection = do
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
     let logPath = "/root/trade/1.log"
-    myStreamHandler <- streamHandler stderr INFO
+    myStreamHandler <- streamHandler stderr WARNING
     myFileHandler <- fileHandler logPath WARNING
     let myFileHandler' = withFormatter myFileHandler
     let myStreamHandler' = withFormatter myStreamHandler
