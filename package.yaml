@@ -57,6 +57,7 @@ dependencies:
 - case-insensitive 
 - HTTP
 - stm
+- unix
 - hslogger
 - co-log
 - typerep-map

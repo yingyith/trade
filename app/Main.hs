@@ -46,6 +46,7 @@ import System.Log.Handler (setFormatter)
 import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
 import System.Log.Formatter
+import System.Posix.Process
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
@@ -155,14 +156,13 @@ sendbye wconn conn ac ctrl = do
                           let orderVar = newTVarIO ordervari-- newTVarIO Int
                           sendthid <- myThreadId 
 
-                          withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
-                             withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
-                                      void $ addChannels ctrl [] [("order:*", opclHandler)]
-                                      void $ addChannels ctrl [] [("cache:*", cacheHandler)]
-                                      void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
-                                      void $ addChannels ctrl [] [("skline:*", sklineHandler)]
-                                      void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
-                             threadDelay 1000000
+                          forkProcess $ withAsync (publishThread conn wconn orderVar sendthid) $ \_pubT -> do
+                                           withAsync (handlerThread conn ctrl orderVar) $ \_handlerT -> do
+                                              void $ addChannels ctrl [] [("order:*", opclHandler)]
+                                              void $ addChannels ctrl [] [("cache:*", cacheHandler)]
+                                              void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
+                                              void $ addChannels ctrl [] [("skline:*", sklineHandler)]
+                                              void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                           threadDelay 1000000
                           conn <- connect defaultConnectInfo
                           liftIO $ print ("it is aft async ")

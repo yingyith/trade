@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 82beaaa3ac5de45d49529aa265fd7b3ba06062f02fe735d00dd79462eaabb21d
+-- hash: 249af91f91125452151a30c7a4d0bb7e8d7b4592385fce789e6b642ea558e6df
 
 name:           trade
 version:        0.1.0.0
@@ -98,6 +98,7 @@ library
     , text
     , time
     , typerep-map
+    , unix
     , unordered-containers
     , utf8-string
     , vector
@@ -147,6 +148,7 @@ executable trade-exe
     , time
     , trade
     , typerep-map
+    , unix
     , unordered-containers
     , utf8-string
     , vector
@@ -197,6 +199,7 @@ test-suite trade-test
     , time
     , trade
     , typerep-map
+    , unix
     , unordered-containers
     , utf8-string
     , vector
