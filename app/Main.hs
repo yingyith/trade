@@ -171,7 +171,7 @@ sendbye wconn conn ac ctrl = do
 
 
               x|x>0  -> do 
-                          preres <- expirepredi conn 150000
+                          preres <- expirepredi conn 300000
                           case preres of 
                             True   -> do
                                            void $ NW.sendClose wconn (B.pack "Bye!")
