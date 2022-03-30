@@ -13,6 +13,7 @@
 module Logger
     ( 
      logd,
+     logact,
      withFormatter
     ) where
 
@@ -24,6 +25,7 @@ import Control.Monad.IO.Class (MonadIO (..))
 import Control.Monad.Reader (MonadReader, ReaderT (..))
 import Data.Text.Internal as DTI
 import Data.Text as T
+import Data.ByteString (ByteString)
 
 import Colog (HasLog (..), LogAction, Message, Msg (..), PureLogger, RichMsg (..), SimpleMsg (..),
               WithLog, cmap, cmapM, defaultFieldMap, fmtMessage, fmtRichMessageDefault,
@@ -53,6 +55,9 @@ showany a = T.pack $ show  a
 logd :: (WithLog env Message m,Show a) => a ->m ()
 logd exa = do
     logInfo $ showany exa
+
+logact :: LogAction IO ByteString -> ByteString -> IO ()
+logact log msg = log <& msg
 
 simpleApp :: (MonadIO m, WithLog env SimpleMsg m) => m ()
 simpleApp = do

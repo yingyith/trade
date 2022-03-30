@@ -65,6 +65,8 @@ import System.Log.Handler (setFormatter)
 import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
 import System.Log.Formatter
+import Logger
+import Colog (LogAction,logByteStringStdout)
 
 
 replydo :: Integer -> Redis (Either Reply [ByteString], Either Reply [ByteString])
@@ -184,7 +186,7 @@ publishThread rc wc tvar ptid = do
       --liftIO $ print ("loop is ---")
       --infoM "pub" "loop is ----"
       message <- (NC.receiveData wc)
-                                   
+      logact logByteStringStdout $ message                              
                                    
                                    
                                    
@@ -263,8 +265,8 @@ handlerThread conn ctrl tvar = do
     conFileHandler <- fileHandler logPath INFO
     let myFileHandler' = withFormatter conFileHandler
     let myStreamHandler' = withFormatter conStreamHandler
-    let log = "con"
-    updateGlobalLogger log (setLevel INFO)
+    let logg = "con"
+    updateGlobalLogger logg (setLevel INFO)
     forever $
        pubSubForever conn ctrl onInitialComplete
          `catch` (\(e :: SomeException) -> do

@@ -25,8 +25,10 @@ import Database.Redis as R
 import Data.String
 import Data.List as DL
 import qualified Data.ByteString as B
+import Data.ByteString.Char8 as  BC
 import qualified Data.ByteString.UTF8 as BL
 import qualified Data.ByteString.Lazy as BLL
+import qualified Data.ByteString.Lazy.UTF8 as BLU
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Text (Text)
 import Data.Either
@@ -54,6 +56,7 @@ import System.Log.Handler (setFormatter)
 import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
 import System.Log.Formatter
+import Colog (LogAction,logByteStringStdout)
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -109,7 +112,7 @@ liskeytoredis a b = do
    void $ set key value
    void $ zremrangebyrank (BL.fromString orderkey) 0 2000
    void $ zremrangebyrank (BL.fromString secondkey) 0 2000
-   let abyvaluestr = BL.fromString  $ intercalate "|" ["start","Buy","0","0","20","1","5"]
+   let abyvaluestr = BL.fromString  $ DL.intercalate "|" ["start","Buy","0","0","20","1","5"]
    void $ zadd (BL.fromString orderkey) [(0,abyvaluestr)]
    ---delete other key
 
@@ -155,7 +158,7 @@ analysistrdo aa bb = do
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
     -- liftIO $ print ("tdata is ---------------------")
      --liftIO $ print (tdata)
-     let lentdata = length tdata
+     let lentdata = DL.length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
      --liftIO $ print (rehllist)
      --liftIO $ print ("hlsheet 1--------------------------")
@@ -203,7 +206,7 @@ getmsgfromstr msg = do
 getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
 getsndkline aim  = do 
      let resl = fromRight [] aim
-     let res = take 40  resl 
+     let res = DL.take 40  resl 
 
      --liftIO $ print ("length is --------",length resl)
      klines <- mapM parsetokline res
@@ -232,8 +235,9 @@ mseriesFromredis conn msg = do
      --liftIO $ print ("mseiries")
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
-     liftIO $ print ("start analysis min --------------------------------------")
+     --liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
+     logact logByteStringStdout $ BC.pack  (show bigintervall)
      infoM "con" $ show bigintervall
      infoM "pub" $ show bigintervall
      --liftIO $ print bigintervall
@@ -244,6 +248,7 @@ mseriesFromredis conn msg = do
      secondnum <- secondrule sndinterval
      --liftIO $ print ("start pre or cpre --------------------------------------")
      let sumres = biginterval + secondnum
+     logact logByteStringStdout $ BC.pack $ (show ("++--",timecur,biginterval,secondnum,sumres))
      infoM "con" $ show ("++--",timecur,biginterval,secondnum,sumres)
      infoM "pub" $ show ("++--",timecur,biginterval,secondnum,sumres)
      curtimestampi <- getcurtimestamp
@@ -275,7 +280,7 @@ hsticklistToredis hst  akey   = do
     let scp = BL.fromString dcp
     let shp = BL.fromString dhp
     let slp = BL.fromString dlp
-    let abyvaluestr = BL.fromString  $ intercalate "|" [show dst,dop,dcp,dhp,dlp]
+    let abyvaluestr = BL.fromString  $ DL.intercalate "|" [show dst,dop,dcp,dhp,dlp]
     void $ zadd abykeystr [(-ddst,abyvaluestr)]
     
 
