@@ -137,7 +137,7 @@ expirepredi conn min = do
 
 retryOnFailure :: R.Connection ->  IO ()
 retryOnFailure conn  = forever $ do
-                                    preres <- expirepredi conn 70000
+                                    preres <- expirepredi conn 150000
                                     case preres of 
                                        True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
                                                                                                              if e == ConnectionClosed 
@@ -214,20 +214,15 @@ ws connection = do
    -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-   -- let logPath = "/root/trade/1.log"
-   -- myStreamHandler <- streamHandler stderr WARNING
-   -- myFileHandler <- fileHandler logPath WARNING
-   -- let myFileHandler' = withFormatter myFileHandler
-   -- let myStreamHandler' = withFormatter myStreamHandler
-   -- let log = "myapp"
-   -- updateGlobalLogger log (setLevel INFO)
-   -- updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
-   -- infoM log $ "Logging to " ++ logPath
-   -- debugM log "Hello debug."
-   -- infoM log "Hello info."
-   -- warningM log "Hello warning."
-   -- errorM log "Hello error."
-    --liftIO $ T.putStrLn 
+    let logPath = "/root/trade/1.log"
+    myStreamHandler <- streamHandler stderr INFO
+    myFileHandler <- fileHandler logPath INFO
+    let myFileHandler' = withFormatter myFileHandler
+    let myStreamHandler' = withFormatter myStreamHandler
+    let log = "myapp"
+    updateGlobalLogger log (setLevel INFO)
+    updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
+    infoM log $ "Logging to " ++ logPath
     --
     --let ordervari = Ordervar True 0 0 0
     --let orderVar = newTVarIO ordervari-- newTVarIO Int
