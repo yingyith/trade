@@ -256,7 +256,7 @@ handlerThread conn ctrl tvar = do
        pubSubForever conn ctrl onInitialComplete
          `catch` (\(e :: SomeException) -> do
            SI.hPutStrLn stderr $ "Got error: " ++ show e
-           threadDelay $ 1*1000)
+           )
 --- do command detail operation here
   -- multi command operation now
 --listenkeyHandler :: ByteString -> IO ()

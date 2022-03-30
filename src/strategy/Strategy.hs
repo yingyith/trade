@@ -187,10 +187,10 @@ minrule ahll pr interval  = do
 
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
 
-   rsiindexf <- getrsi ahl 7
+   rsiindexf <- getrsi ahl 8
    let indexlentwo = case (fst rsiindexf) of 
                            x| x<2 -> 9
-                           _      -> 7
+                           _      -> 8
    rsiindexx <- getrsi ahl indexlentwo
    let rsiindex = fst rsiindexx
    let openrsipos       = case rsiindex of 
@@ -202,7 +202,7 @@ minrule ahll pr interval  = do
                              x| x>28 && x<=40                                                         -> 20
                              x| x>18 && x<=28                                                         -> 60
                              x| x>12 && x<=18                                                         -> 120
-                             x| x>5 && x<=12                                                          -> 240
+                             x| x>5  && x<=12                                                          -> 240
                              x| x<=5                                                                  -> 360
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
