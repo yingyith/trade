@@ -149,8 +149,8 @@ sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO ()
 sendbye wconn conn ac ctrl = do
           case ac of 
               x|x==0 -> do    
-                         -- liftIO $ print ("it is in sendbye ")
-                          warningM "myapp" "bef withasync" 
+                          liftIO $ print ("it is in sendbye ")
+        --                  warningM "myapp" "bef withasync" 
                           let ordervari = Ordervar True 0 0 0
                           let orderVar = newTVarIO ordervari-- newTVarIO Int
                           sendthid <- myThreadId 
@@ -163,7 +163,8 @@ sendbye wconn conn ac ctrl = do
                                       void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                       void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                           conn <- connect defaultConnectInfo
-                          warningM "myapp" "aft withasync" 
+                          liftIO $ print ("it is aft async ")
+       --                   warningM "myapp" "aft withasync" 
 
 
 
@@ -184,13 +185,15 @@ sendbye wconn conn ac ctrl = do
                         `catch` (\e ->
                            if e == ConnectionClosed 
                            then do
-                                  warningM "myapp" "it is closed!" 
-                                  warningM "myapp" $ show e
+   --                               warningM "myapp" "it is closed!" 
+    --                              warningM "myapp" $ show e
                                   throwIO e
+                                  liftIO $ print ("it is closed! ")
 
                            else do 
-                                  warningM "myapp" "other excep!" 
-                                  warningM "myapp" $ show e
+     --                             warningM "myapp" "other excep!" 
+      --                            warningM "myapp" $ show e
+                                  liftIO $ print ("it is other ep! ")
                                   throwIO e
                                   )
           sendbye wconn conn (ac+1) ctrl
@@ -209,19 +212,19 @@ ws connection = do
    -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-    let logPath = "/root/trade/1.log"
-    myStreamHandler <- streamHandler stderr WARNING
-    myFileHandler <- fileHandler logPath WARNING
-    let myFileHandler' = withFormatter myFileHandler
-    let myStreamHandler' = withFormatter myStreamHandler
-    let log = "myapp"
-    updateGlobalLogger log (setLevel INFO)
-    updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
-    infoM log $ "Logging to " ++ logPath
-    debugM log "Hello debug."
-    infoM log "Hello info."
-    warningM log "Hello warning."
-    errorM log "Hello error."
+   -- let logPath = "/root/trade/1.log"
+   -- myStreamHandler <- streamHandler stderr WARNING
+   -- myFileHandler <- fileHandler logPath WARNING
+   -- let myFileHandler' = withFormatter myFileHandler
+   -- let myStreamHandler' = withFormatter myStreamHandler
+   -- let log = "myapp"
+   -- updateGlobalLogger log (setLevel INFO)
+   -- updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
+   -- infoM log $ "Logging to " ++ logPath
+   -- debugM log "Hello debug."
+   -- infoM log "Hello info."
+   -- warningM log "Hello warning."
+   -- errorM log "Hello error."
     --liftIO $ T.putStrLn 
     --
     --let ordervari = Ordervar True 0 0 0
