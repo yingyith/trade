@@ -154,7 +154,7 @@ sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> Maybe 
 sendbye wconn conn ac ctrl mpid = do
       ares <- case ac of 
                  x|x==0 -> do    
-                             liftIO $ print ("it is in sendbye ")
+                             --liftIO $ print ("it is in sendbye ")
         --                     warningM "myapp" "bef withasync" 
                              let ordervari = Ordervar True 0 0 0
                              let orderVar = newTVarIO ordervari-- newTVarIO Int
@@ -167,12 +167,13 @@ sendbye wconn conn ac ctrl mpid = do
                                                         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
                                                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
-                                                     threadDelay 1000000
-                             liftIO $ print (piid)
+                                                     threadDelay 3000000
+                             --liftIO $ print (piid)
                              let nmpid = Just piid
                              sleep 5
                              conn <- connect defaultConnectInfo
-                             liftIO $ print ("it is aft async ")
+                             --liftIO $ print ("it is aft async ")
+                             warningM "myapp" "aft withasync" 
                              return nmpid
        --                      warningM "myapp" "aft withasync" 
                              --sendbye wconn conn (ac+1) ctrl nmpid
