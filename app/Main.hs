@@ -167,6 +167,7 @@ sendbye wconn conn ac ctrl mpid = do
                                                         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
                                                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
+                             liftIO $ print (piid)
                              let nmpid = Just piid
                              sleep 5
                              conn <- connect defaultConnectInfo
