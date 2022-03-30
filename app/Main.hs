@@ -180,10 +180,10 @@ ws connection = do
     myFileHandler <- fileHandler logPath INFO
     let myFileHandler' = withFormatter myFileHandler
     let myStreamHandler' = withFormatter myStreamHandler
-    let log = "myapp"
-    updateGlobalLogger log (setLevel INFO)
-    updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
-    infoM log $ "Logging to " ++ logPath
+    let flog = "myapp"
+    updateGlobalLogger flog (setLevel INFO)
+    updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
+    infoM flog $ "Logging to " ++ logPath
 
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
@@ -212,12 +212,14 @@ ws connection = do
                              myFileHandler <- fileHandler logPath INFO
                              let myFileHandler' = withFormatter myFileHandler
                              let myStreamHandler' = withFormatter myStreamHandler
-                             let log = "time"
-                             updateGlobalLogger log (setLevel INFO)
-                             updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
-                             infoM log $ "using log " 
+                             let tlog = "time"
+                             updateGlobalLogger tlog (setLevel INFO)
+                             updateGlobalLogger tlog (setHandlers [myFileHandler', myStreamHandler'])
+                             infoM tlog $ "using log " 
                              sendbye connection conn 0 ctrll piid 
-    return ()
+    forever $ do 
+          infoM flog $ "looping " 
+               
 
  --   sendthid <- catch (forkIO $ do 
  --                          threadDelay 1000000 
