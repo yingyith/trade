@@ -174,14 +174,6 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
-    let logPath = "/root/trade/3.log"
-    pubStreamHandler <- streamHandler stderr INFO
-    pubFileHandler <- fileHandler logPath INFO
-    let pubFileHandler' = withFormatter pubFileHandler
-    let pubStreamHandler' = withFormatter pubStreamHandler
-    let log = "pub"
-    updateGlobalLogger log (setLevel INFO)
-    updateGlobalLogger log (setHandlers [pubFileHandler', pubStreamHandler'])
     forever $ do
       --liftIO $ print ("loop is ---")
       --infoM "pub" "loop is ----"
@@ -260,13 +252,6 @@ debugtime = do
 
 handlerThread :: R.Connection -> PubSubController -> IO (TVar a) -> IO ()
 handlerThread conn ctrl tvar = do 
-    let logPath = "/root/trade/4.log"
-    conStreamHandler <- streamHandler stderr INFO
-    conFileHandler <- fileHandler logPath INFO
-    let myFileHandler' = withFormatter conFileHandler
-    let myStreamHandler' = withFormatter conStreamHandler
-    let logg = "con"
-    updateGlobalLogger logg (setLevel INFO)
     forever $
        pubSubForever conn ctrl onInitialComplete
          `catch` (\(e :: SomeException) -> do
