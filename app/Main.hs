@@ -159,7 +159,6 @@ sendbye wconn conn ac ctrl mpid = do
                      signalProcess sigKILL mpid
                      throwIO ConnectionClosed
       False  -> return ()
-
     sendbye wconn conn (ac+1) ctrl mpid
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
@@ -216,6 +215,7 @@ ws connection = do
                              let log = "time"
                              updateGlobalLogger log (setLevel INFO)
                              updateGlobalLogger log (setHandlers [myFileHandler', myStreamHandler'])
+                             infoM log $ "using log " 
                              sendbye connection conn 0 ctrll piid 
     return ()
 
