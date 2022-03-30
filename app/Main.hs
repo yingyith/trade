@@ -50,6 +50,7 @@ import System.Posix.Process
 import System.Posix.Types
 import System.Process
 import System.Posix.Signals
+import System.Posix
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
@@ -167,7 +168,7 @@ sendbye wconn conn ac ctrl mpid = do
                                                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
                              let nmpid = Just piid
-                             threadDelay 5000000
+                             sleep 5
                              conn <- connect defaultConnectInfo
                              liftIO $ print ("it is aft async ")
                              return nmpid
