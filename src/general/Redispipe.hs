@@ -192,7 +192,7 @@ publishThread rc wc tvar ptid = do
                                    
                                     
       --datamsg <- NC.receiveDataMessage wc 
-      infoM "pub" $ show message
+      --infoM "pub" $ show message
       --liftIO $ print ("date is ---",msgg)
       --liftIO $ print ("date is ---",message)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
