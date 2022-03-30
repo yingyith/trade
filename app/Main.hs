@@ -186,10 +186,12 @@ sendbye wconn conn ac ctrl = do
                            if e == ConnectionClosed 
                            then do
                                   warningM "myapp" "it is closed!" 
+                                  warningM "myapp" $ show e
                                   throwIO e
 
                            else do 
                                   warningM "myapp" "other excep!" 
+                                  warningM "myapp" $ show e
                                   throwIO e
                                   )
           sendbye wconn conn (ac+1) ctrl
