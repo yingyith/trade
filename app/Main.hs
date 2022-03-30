@@ -167,13 +167,12 @@ sendbye wconn conn ac ctrl mpid = do
                                                         void $ addChannels ctrl [] [("listenkey:*", listenkeyHandler)]
                                                         void $ addChannels ctrl [] [("skline:*", sklineHandler)]
                                                         void $ addChannels ctrl [] [("analysis:*", analysisHandler)]
-                                                     threadDelay 3000000
+                                                     threadDelay 6000000
                              --liftIO $ print (piid)
                              let nmpid = Just piid
-                             sleep 5
                              conn <- connect defaultConnectInfo
                              --liftIO $ print ("it is aft async ")
-                             warningM "myapp" "aft withasync" 
+                             --warningM "myapp" "aft withasync" 
                              return nmpid
        --                      warningM "myapp" "aft withasync" 
                              --sendbye wconn conn (ac+1) ctrl nmpid
@@ -200,14 +199,13 @@ sendbye wconn conn ac ctrl mpid = do
                               if e == ConnectionClosed 
                               then do
    --                                  warningM "myapp" "it is closed!" 
-    --                                 warningM "myapp" $ show e
-                                     liftIO $ print ("it is closed! ")
+                                     warningM "myapp" $ show e
+                                     --liftIO $ print ("it is closed! ")
                                      throwIO e
 
                               else do 
      --                                warningM "myapp" "other excep!" 
-      --                               warningM "myapp" $ show e
-                                     liftIO $ print ("it is other ep! ")
+                                     warningM "myapp" $ show e
                                      throwIO e
                                      )
 
