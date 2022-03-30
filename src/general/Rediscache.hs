@@ -232,7 +232,7 @@ mseriesFromredis conn msg = do
      --liftIO $ print ("mseiries")
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
-     --liftIO $ print ("start analysis min --------------------------------------")
+     liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp
      infoM "con" $ show bigintervall
      --liftIO $ print bigintervall

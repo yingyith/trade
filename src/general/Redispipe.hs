@@ -181,8 +181,8 @@ publishThread rc wc tvar ptid = do
     updateGlobalLogger log (setLevel INFO)
     updateGlobalLogger log (setHandlers [pubFileHandler', pubStreamHandler'])
     forever $ do
-      liftIO $ print ("loop is ---")
-      infoM "pub" "loop is ----"
+      --liftIO $ print ("loop is ---")
+      --infoM "pub" "loop is ----"
       message <- (NC.receiveData wc)
                                    
                                    
@@ -194,7 +194,7 @@ publishThread rc wc tvar ptid = do
       --datamsg <- NC.receiveDataMessage wc 
       infoM "pub" $ show message
       --liftIO $ print ("date is ---",msgg)
-      liftIO $ print ("date is ---",message)
+      --liftIO $ print ("date is ---",message)
       --liftIO $ T.putStrLn $ T.pack $ T.unpack message
       --liftIO $ print ("control is ---",datamsg)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
