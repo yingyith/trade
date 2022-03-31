@@ -207,7 +207,7 @@ getmsgfromstr msg = do
 getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
 getsndkline aim  = do 
      let resl = fromRight [] aim
-     let res = DL.take 40  resl 
+     let res = DL.take 30  resl 
      --logact logByteStringStdout $ BC.pack  (show res)
 
      --liftIO $ print ("length is --------",length resl)
