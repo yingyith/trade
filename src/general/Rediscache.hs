@@ -244,7 +244,7 @@ mseriesFromredis conn msg = do
      biginterval <- crossminstra bigintervall
      --liftIO $ print ("start analysis snd --------------------------------------")
      case (toInteger $ DL.length $ snd res ) of 
-        x|x< (secondstick) -> return ()
+        x|x< (secondstick-2) -> return ()
         _                    -> do
                                 sndinterval <- getsndkline (snd res) 
                                 timecur <- getcurtimestamp
