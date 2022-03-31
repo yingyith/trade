@@ -174,7 +174,7 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
-    threadDelay 1000000
+    threadDelay 1300000
     forever $ do
       --liftIO $ print ("loop is ---")
       --infoM "pub" "loop is ----"
