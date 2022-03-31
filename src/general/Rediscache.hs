@@ -207,13 +207,13 @@ getmsgfromstr msg = do
 getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata] 
 getsndkline aim  = do 
      let resl = fromRight [] aim
-     let res = DL.take 30  resl 
-     --logact logByteStringStdout $ BC.pack  (show res)
-
-     --liftIO $ print ("length is --------",length resl)
-     klines <- mapM parsetokline res
-     --liftIO $ print (klines)
-     return klines
+     logact logByteStringStdout $ BC.pack  (show $ DL.length resl )
+     case (toInteger $ DL.length $ resl) of 
+         x|x < secondstick -> return []
+         _                 -> do 
+                                 let res = DL.take 30  resl 
+                                 klines <- mapM parsetokline res
+                                 return klines
      
 
 mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
@@ -243,19 +243,19 @@ mseriesFromredis conn msg = do
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall
      --liftIO $ print ("start analysis snd --------------------------------------")
-     logact logByteStringStdout $ BC.pack  (show $ DL.length $ snd res)
-     case (toInteger $ DL.length $ snd res ) of 
-        x|x< (secondstick-2) -> return ()
-        _                    -> do
-                                sndinterval <- getsndkline (snd res) 
-                                timecur <- getcurtimestamp
-                                secondnum <- secondrule sndinterval
-                                --liftIO $ print ("start pre or cpre --------------------------------------")
-                                let sumres = biginterval + secondnum
-                                logact logByteStringStdout $ BC.pack $ (show ("++--",timecur,biginterval,secondnum,sumres))
-                                curtimestampi <- getcurtimestamp
-                                runRedis conn $ do
-                                   preorcpreordertorediszset sumres dcp  curtimestampi
+     --logact logByteStringStdout $ BC.pack  (show $ DL.length $ snd res)
+     sndinterval <- getsndkline (snd res) 
+     case sndinterval of 
+        [] -> return ()
+        _  -> do 
+                  timecur <- getcurtimestamp
+                  secondnum <- secondrule sndinterval
+                  --liftIO $ print ("start pre or cpre --------------------------------------")
+                  let sumres = biginterval + secondnum
+                  logact logByteStringStdout $ BC.pack $ (show ("++--",timecur,biginterval,secondnum,sumres))
+                  curtimestampi <- getcurtimestamp
+                  runRedis conn $ do
+                     preorcpreordertorediszset sumres dcp  curtimestampi
      --genposgrid hlsheet dcp
   --write order command to zset
      
