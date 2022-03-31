@@ -177,12 +177,15 @@ parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
      let mmsg = BLL.fromStrict msg
     -- liftIO $ print (msg)
-     logact logByteStringStdout $ BC.pack  (show msg)
      
      let test = A.decode mmsg :: Maybe Klinedata --Klinedata
      --case test of 
      --    Nothing -> do liftIO $ print (msg)
      --    _ -> return ()
+     case test of 
+        Nothing -> do
+                      logact logByteStringStdout $ BC.pack  (show msg)
+        _       -> return ()
          
      let kline = fromJust test
      return kline
