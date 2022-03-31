@@ -156,8 +156,6 @@ analysistrdo aa bb = do
      let curpr = snd bb
      let hllist = [] :: [AS.Hlnode]
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
-    -- liftIO $ print ("tdata is ---------------------")
-     --liftIO $ print (tdata)
      let lentdata = DL.length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
      --liftIO $ print (rehllist)

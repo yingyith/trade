@@ -155,6 +155,7 @@ msgsklinetoredis :: ByteString -> Integer -> Redis ()
 msgsklinetoredis msg stamp = do
     when (matchmsgfun msg == True ) $ do 
       void $ publish "sndc:1" ( msg)
+      --logact logByteStringStdout $ msg                              
       let abyvaluestr = msg
       let abykeystr = BLU.fromString secondkey
       let stamptime = fromInteger stamp :: Double
@@ -419,7 +420,8 @@ addklinetoredis msg  = do
     let dcp = kclose kline
     let dhp = khigh kline 
     let dlp = klow kline 
-    let abyvaluestr =  BLU.fromString $ DL.intercalate "|" [dst,dop,dcp,dhp,dlp]
+    --let abyvaluestr =  BLU.fromString $ DL.intercalate "|" [dst,dop,dcp,dhp,dlp]
+    let abyvaluestr = msg 
                     
     void $ zadd abykeystr [(-kt,abyvaluestr)]
     void $ zremrangebyrank abykeystr 150 1000
