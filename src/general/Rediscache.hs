@@ -177,6 +177,7 @@ parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
      let mmsg = BLL.fromStrict msg
     -- liftIO $ print (msg)
+     logact logByteStringStdout $ BC.pack  (show msg)
      
      let test = A.decode mmsg :: Maybe Klinedata --Klinedata
      --case test of 
@@ -207,6 +208,7 @@ getsndkline :: Either Reply [BL.ByteString] -> IO [Klinedata]
 getsndkline aim  = do 
      let resl = fromRight [] aim
      let res = DL.take 40  resl 
+     --logact logByteStringStdout $ BC.pack  (show res)
 
      --liftIO $ print ("length is --------",length resl)
      klines <- mapM parsetokline res
@@ -225,7 +227,7 @@ getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],
                             Either Reply [BL.ByteString]) 
 getdiffintervalflow = do 
      fisar <- mapM mserieFromredis defintervallist 
-     sndar <- zrange (BL.fromString secondkey)  0 secondstick  
+     sndar <- zrange (BL.fromString secondkey)  0 50  
      return (fisar,sndar)
      
 
