@@ -147,7 +147,7 @@ retryOnFailure conn  = forever $ do
                                        True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
                                                                                                              if e == ConnectionClosed 
                                                                                                              then retryOnFailure conn 
-                                                                                                             else return ())
+                                                                                                             else retryOnFailure conn)
                                        False -> return ()                                                            
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
