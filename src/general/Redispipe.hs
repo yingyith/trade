@@ -174,7 +174,7 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
-    threadDelay 600000
+    threadDelay 1000000
     forever $ do
       --liftIO $ print ("loop is ---")
       --infoM "pub" "loop is ----"
@@ -259,7 +259,7 @@ handlerThread conn ctrl tvar = do
            SI.hPutStrLn stderr $ "Got error: " ++ show e
            )
 --- do command detail operation here
-  -- multi command operation now
+-- multi command operation now
 --listenkeyHandler :: ByteString -> IO ()
 --listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
