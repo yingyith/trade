@@ -191,11 +191,11 @@ ws connection = do
 
     piid <- forkProcess $ withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
                             withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do
-                               void $ addChannels ctrll [] [("sndc:*", sndtocacheHandler)]
-                               void $ addChannels ctrll [] [("minc:*", mintocacheHandler)]
-                               void $ addChannels ctrll [] [("analysis:*", analysisHandler)]
-                               void $ addChannels ctrll [] [("order:*", opclHandler)]
-                               void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler)]
+                               void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler )]
+                               void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
+                               void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
+                               void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
+                               void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
                             threadDelay 6000000
     --liftIO $ print (piid)
     --
