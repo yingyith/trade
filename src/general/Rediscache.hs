@@ -243,6 +243,7 @@ mseriesFromredis conn msg = do
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall
      --liftIO $ print ("start analysis snd --------------------------------------")
+     logact logByteStringStdout $ BC.pack  (show $ DL.length $ snd res)
      case (toInteger $ DL.length $ snd res ) of 
         x|x< (secondstick-2) -> return ()
         _                    -> do
