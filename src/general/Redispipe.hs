@@ -181,18 +181,6 @@ publishThread rc wc tvar ptid = do
       --infoM "pub" "loop is ----"
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
-                                   
-                                   
-                                   
-                                   
-                                   
-                                    
-      --datamsg <- NC.receiveDataMessage wc 
-      --infoM "pub" $ show message
-      --liftIO $ print ("date is ---",msgg)
-      --liftIO $ print ("date is ---",message)
-      --liftIO $ T.putStrLn $ T.pack $ T.unpack message
-      --liftIO $ print ("control is ---",datamsg)
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo curtimestamp ) 
       let orderitem = snd res
@@ -406,8 +394,8 @@ opclHandler channel  msg = do
     --if type      = websocket account change/order token, release lock
 
 
-addklinetoredis :: ByteString -> Redis ()
-addklinetoredis msg  = do 
+sndklinetoredis :: ByteString -> Redis ()
+sndklinetoredis msg  = do 
     let mmsg = BL.fromStrict msg
     let test = A.decode mmsg :: Maybe Klinedata --Klinedata
     let abykeystr = BLU.fromString secondkey 
@@ -431,8 +419,7 @@ addklinetoredis msg  = do
 sndtocacheHandler :: RedisChannel -> ByteString -> IO ()
 sndtocacheHandler channel msg = do 
       conn <- connect defaultConnectInfo
-      --liftIO $ print (msg)
-      runRedis conn (addklinetoredis msg )
+      runRedis conn (sndklinetoredis msg )
       debugtime
 
       

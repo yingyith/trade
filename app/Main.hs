@@ -197,15 +197,7 @@ ws connection = do
                                void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
                                void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
                             threadDelay 6000000
-    --liftIO $ print (piid)
-    --
-    --let ordervari = Ordervar True 0 0 0
-    --let orderVar = newTVarIO ordervari-- newTVarIO Int
-   -- usingLoggerT 
-   --   (cmap
-   --     fmtMessage
-   --     (logTextHandle logFileHandle )) $ do 
-   --   logInfo "bef sendbye"
+
     spidf <- forkProcess $ do  
                              let logPath = "/root/trade/2.log"
                              myStreamHandler <- streamHandler stderr INFO
