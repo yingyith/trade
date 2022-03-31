@@ -227,7 +227,7 @@ getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],
                             Either Reply [BL.ByteString]) 
 getdiffintervalflow = do 
      fisar <- mapM mserieFromredis defintervallist 
-     sndar <- zrange (BL.fromString secondkey)  0 50  
+     sndar <- zrange (BL.fromString secondkey)  0 secondstick  
      return (fisar,sndar)
      
 
@@ -243,15 +243,18 @@ mseriesFromredis conn msg = do
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall
      --liftIO $ print ("start analysis snd --------------------------------------")
-     sndinterval <- getsndkline (snd res) 
-     timecur <- getcurtimestamp
-     secondnum <- secondrule sndinterval
-     --liftIO $ print ("start pre or cpre --------------------------------------")
-     let sumres = biginterval + secondnum
-     logact logByteStringStdout $ BC.pack $ (show ("++--",timecur,biginterval,secondnum,sumres))
-     curtimestampi <- getcurtimestamp
-     runRedis conn $ do
-        preorcpreordertorediszset sumres dcp  curtimestampi
+     case (toInteger $ DL.length $ snd res ) of 
+        x|x< (secondstick) -> return ()
+        _                    -> do
+                                sndinterval <- getsndkline (snd res) 
+                                timecur <- getcurtimestamp
+                                secondnum <- secondrule sndinterval
+                                --liftIO $ print ("start pre or cpre --------------------------------------")
+                                let sumres = biginterval + secondnum
+                                logact logByteStringStdout $ BC.pack $ (show ("++--",timecur,biginterval,secondnum,sumres))
+                                curtimestampi <- getcurtimestamp
+                                runRedis conn $ do
+                                   preorcpreordertorediszset sumres dcp  curtimestampi
      --genposgrid hlsheet dcp
   --write order command to zset
      
