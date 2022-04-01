@@ -211,7 +211,13 @@ ws connection = do
                              sendbye connection conn 0 ctrll piid 
     forever $ do 
           --infoM flog $ "looping " 
-          sleep 100
+          preres <- expirepredi conn 100000
+          case preres of 
+               True   -> do
+                     signalProcess sigKILL spidf
+                     throwIO ConnectionClosed
+               False  -> return ()
+          threadDelay 1000000
 
                
 
