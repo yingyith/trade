@@ -16,6 +16,7 @@ module Httpstructure
       getmsfrpair,
       Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime),
       getcurtimestamp,
+      getsectimestamp,
       WSevent (wsdata,wstream)
     ) where
 import Control.Applicative
@@ -62,6 +63,11 @@ getorderitem = runReq defaultHttpConfig $ do
 getcurtimestamp :: IO Integer
 getcurtimestamp = do
    curtimestamp <- round . (* 1000) <$> getPOSIXTime
+   return curtimestamp
+
+getsectimestamp :: IO Integer
+getsectimestamp = do
+   curtimestamp <- round  <$> getPOSIXTime
    return curtimestamp
 
 getspotbalance :: IO (Double,Double)

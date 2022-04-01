@@ -57,6 +57,8 @@ import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
 import System.Log.Formatter
 import Colog (LogAction,logByteStringStdout)
+import Data.Time.Format.ISO8601
+import Data.Time.Clock.POSIX
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -249,11 +251,12 @@ mseriesFromredis conn msg = do
      case sndinterval of 
         [] -> return ()
         _  -> do 
-                  timecur <- getcurtimestamp
+                  timecur <- getsectimestamp
+                  let timecurtime = iso8601Show $ posixSecondsToUTCTime $ 100
                   secondnum <- secondrule sndinterval
                   --liftIO $ print ("start pre or cpre --------------------------------------")
                   let sumres = biginterval + secondnum
-                  logact logByteStringStdout $ BC.pack $ (show ("++--",timecur,biginterval,secondnum,sumres))
+                  logact logByteStringStdout $ BC.pack $ (show ("++--",timecurtime,biginterval,secondnum,sumres))
                   curtimestampi <- getcurtimestamp
                   runRedis conn $ do
                      preorcpreordertorediszset sumres dcp  curtimestampi
