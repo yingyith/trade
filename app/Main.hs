@@ -157,6 +157,7 @@ sendbye wconn conn ac ctrl mpid = do
       True   -> do
                      void $ NW.sendClose wconn (B.pack "Bye!")
                      signalProcess sigKILL mpid
+                     removeAllHandlers
                      throwIO ConnectionClosed
       False  -> return ()
     sendbye wconn conn (ac+1) ctrl mpid
@@ -215,6 +216,7 @@ ws connection = do
           case preres of 
                True   -> do
                      signalProcess sigKILL spidf
+                     removeAllHandlers
                      throwIO ConnectionClosed
                False  -> return ()
           threadDelay 1000000
