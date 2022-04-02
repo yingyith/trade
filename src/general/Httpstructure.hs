@@ -111,8 +111,11 @@ getspotbalance = do
   --
       --liftIO $ print ("[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]")
       return (adaball,usdtball)
-      --liftIO $ print (response)
-      --liftIO $ print (result)
+
+ucointakeorder :: String -> Integer -> Double -> IO ()
+ucointakeorder a  b c =do 
+   return () 
+
 
 takeorder :: String -> Integer -> Double -> IO ()
 takeorder a b c = do 

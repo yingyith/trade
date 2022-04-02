@@ -30,6 +30,8 @@ import qualified Data.ByteString.UTF8 as BL
 import qualified Data.ByteString.Lazy as BLL
 import qualified Data.ByteString.Lazy.UTF8 as BLU
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.Time.LocalTime
+import Data.Time.Format
 import Data.Text (Text)
 import Data.Either
 import Data.Maybe
@@ -251,10 +253,11 @@ mseriesFromredis conn msg = do
      case sndinterval of 
         [] -> return ()
         _  -> do 
-                  timecur <- getsectimestamp
-                  let timecurtime = iso8601Show $ posixSecondsToUTCTime $ 100
+                  --timecur <- getsectimestamp
+                  --let timecurtime = iso8601Show $ posixSecondsToUTCTime $ timecur
                   secondnum <- secondrule sndinterval
                   --liftIO $ print ("start pre or cpre --------------------------------------")
+                  timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
                   let sumres = biginterval + secondnum
                   logact logByteStringStdout $ BC.pack $ (show ("++--",timecurtime,biginterval,secondnum,sumres))
                   curtimestampi <- getcurtimestamp
