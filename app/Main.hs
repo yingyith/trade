@@ -126,7 +126,7 @@ main =
           then do
                  retryOnFailure conn
           else do 
-                 retryOnFailure conn
+                 return ()
 
           )
     
@@ -146,7 +146,9 @@ retryOnFailure conn  = do
                                     case preres of 
                                        True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
                                                                                                              if e == ConnectionClosed 
-                                                                                                             then retryOnFailure conn 
+                                                                                                             then do
+                                                                                                                    liftIO $ print ("it is snd!!") 
+                                                                                                                    retryOnFailure conn 
                                                                                                              else return ())
                                        False -> return ()                                                            
 
