@@ -112,10 +112,31 @@ getspotbalance = do
       --liftIO $ print ("[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]")
       return (adaball,usdtball)
 
-ucointakeorder :: String -> Integer -> Double -> IO ()
-ucointakeorder a  b c =do 
-   return () 
 
+ucoincancelorder ::  IO ()
+ucoincancelorder = do
+   curtimestamp <- getcurtimestamp
+   runReq defaultHttpConfig $ do 
+      let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
+      let signature = BLU.fromString sk
+      let ares = showDigest(hmacSha256 signature astring)
+      let ouri = "https://fapi.binance.com/fapi/v1/allOpenOrders"  
+      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      uri <- URI.mkURI auri 
+      let passwdtxt = BC.pack Passwd.passwd
+      let params = 
+            (header "X-MBX-APIKEY" passwdtxt ) <>
+            ("timestamp" =: (curtimestamp :: Integer ))<>
+            ("signature" =: (T.pack ares :: Text ))
+      --liftIO $ print uri
+      --liftIO $ print (useHttpsURI uri)
+
+      let (url, options) = fromJust (useHttpsURI uri)
+      let areq = req DELETE url NoReqBody lbsResponse  params
+      response <- areq
+      return ()
+    --cancel all the order ,if  any more need can use api cancel detail order
+   return () 
 
 takeorder :: String -> Integer -> Double -> IO ()
 takeorder a b c = do 

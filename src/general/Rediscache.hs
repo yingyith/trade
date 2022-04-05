@@ -239,6 +239,9 @@ getdiffintervalflow = do
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
 mseriesFromredis conn msg = do
      res <- runRedis conn (getdiffintervalflow)
+     -- need to add judge holding position match trend or not .if not  need to add position 
+     -- add position condition must more strict than first open
+     -- if curpr is lower big grid than openprice,then ,change status to add position 
      --liftIO $ print ("mseiries")
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
@@ -246,23 +249,20 @@ mseriesFromredis conn msg = do
      bigintervall <- analysismindo (fst res ) dcp
      logact logByteStringStdout $ BC.pack  (show bigintervall)
      --liftIO $ print bigintervall
-     biginterval <- crossminstra bigintervall
-     --liftIO $ print ("start analysis snd --------------------------------------")
-     --logact logByteStringStdout $ BC.pack  (show $ DL.length $ snd res)
+     biginterval <- crossminstra bigintervall dcp
+
      sndinterval <- getsndkline (snd res) 
      case sndinterval of 
         [] -> return ()
         _  -> do 
-                  --timecur <- getsectimestamp
-                  --let timecurtime = iso8601Show $ posixSecondsToUTCTime $ timecur
                   secondnum <- secondrule sndinterval
                   --liftIO $ print ("start pre or cpre --------------------------------------")
                   timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-                  let sumres = biginterval + secondnum
+                  let sumres = (fst biginterval) + secondnum
                   logact logByteStringStdout $ BC.pack $ (show ("++--",timecurtime,biginterval,secondnum,sumres))
                   curtimestampi <- getcurtimestamp
                   runRedis conn $ do
-                     preorcpreordertorediszset sumres dcp  curtimestampi
+                     preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval)
      --genposgrid hlsheet dcp
   --write order command to zset
      

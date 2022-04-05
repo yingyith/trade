@@ -71,42 +71,31 @@ minrisksheet = fromList [
                  ("3d" , [5  ,   0,  -30, -25  ])
                ]
 
-crossminstra :: [((Int,Double),(String,Int))]-> IO Int 
-crossminstra  abc = do 
+crossminstra :: [((Int,Double),(String,Int))] -> Double -> IO (Int,Double)
+crossminstra abc pr = do 
     --3m ,5m,15m,1h,4h  if all up ,then double up 
     --3m ,5m,15m,1h,4h  if all down ,then double down 
     --accroding to the continuous kline ,the largest interval go against others is the risk number(append rule)
   --find  the near "up" "uf" "do" "df"
-    let uppredi  = (== 'u').(!!0) . fst .snd  --up and down predi
-    --let itemtrend = fst $ snd $ item 
-    --let rsiindex = snd $ snd $ item
-    --get the positive item ,if rsi match low ,double
-    --get the first d start ,it is the list append position period 
-    --find  the first down interval,if  all up ,then pass
-    --                              if have ,the first down interval high low point ,decide th appand position 
-    --                                       the up one bef first down decide the profit distance,match the the holding position interval,if shorter ,do nothing .
-    --                                       if longer,appand/reduce position()  
-  --  if the 15min and 1hour both down or downfast,then not open,or open small,then do not open until the longer interval show up
-  --  rsi > 60 ,not allow to open
-  --  set the close price
-    let trueresl = DL.group $ DT.map uppredi abc --[true,false,true ,false]
+  --find the largest weight factor line ,use this line to set the benefit price 
+    let uppredi  = (== 'u').(!!0) . fst .snd  
+    -- get the continuous longest up interval ,
+    let lhsheet = DT.map uppredi abc
+    let trueresl = DL.group lhsheet --[true,false,true ,false]
     let grouplist = DT.map length trueresl
     let maxindex = snd $ maximumBy (comparing fst) (zip grouplist [0..]) 
     let item = trueresl  !! maxindex
     let itemindex = sum $ DT.take (maxindex-1) grouplist
     let itemlen = DT.length item
     let remainlist = (DT.drop (maxindex+itemlen) abc) ++ (DT.take maxindex abc ) 
-    -- if itemindex > 3.not open ,must include 15m ,
-    --              <= 3.but ,no double
-    --let closepr = 
-    --liftIO $ print ("min risk is ------",abc)
-    --below 4h  the longer interval the low rsi ,the close price  should accroding to 4h diff
     let itempredi = (itemlen <= 1)
     let itemipredi = (itemindex>3)
+
+    let grid = (* 0.17) $ fromIntegral  $ snd $ snd $ (!! maxindex) abc :: Double  --transfer this grid to the redis order record can be used as 
     case (itempredi,itemipredi) of 
-          (True , _   )   -> return (sum  [fst $ fst x|x<-abc]) 
-          (False,True )   -> return (sum  [fst $ fst x|x<-abc]) 
-          (False,False)   -> return ((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
+          (True , _   )   -> return ((sum  [fst $ fst x|x<-abc]),grid)
+          (False,True )   -> return ((sum  [fst $ fst x|x<-abc]),grid) 
+          (False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
                                           
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
