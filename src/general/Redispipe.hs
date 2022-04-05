@@ -181,7 +181,7 @@ publishThread rc wc tvar ptid = do
       logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo curtimestamp ) 
-      let aa = (1/0) 
+      --let aa = (1/0) 
       let orderitem = snd res
       let klineitem = fst res
       let cachetime = case klineitem of
@@ -212,6 +212,7 @@ publishThread rc wc tvar ptid = do
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
+      throwIO ConnectionClosed
 --    `catch` (\e ->
 --      if e == ConnectionClosed 
 --      then do
