@@ -144,6 +144,8 @@ retryOnFailure :: R.Connection -> Int  ->  IO ()
 retryOnFailure conn ac  = do
     --liftIO $ print ("is is ",ac)
     preres <- expirepredi conn 100000
+    let delaytime = ac*1000000
+    threadDelay delaytime
     case preres of 
        True -> do  
                    runSecureClient "fstream.binance.com" 443 "/" ws 
@@ -151,10 +153,9 @@ retryOnFailure conn ac  = do
                                if e == ConnectionClosed 
                                then do
                                       liftIO $ print ("it is snd!!") 
-                                      threadDelay 1000000
                                       retryOnFailure conn  (ac+1)
-                               else return ())
-       False -> return ()                                                            
+                               else retryOnFailure conn 0 )
+       False -> retryOnFailure conn 0                                                            
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
 sendbye wconn conn ac ctrl mpid = do
