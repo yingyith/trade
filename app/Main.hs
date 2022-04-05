@@ -132,29 +132,29 @@ main =
     
 expirepredi :: R.Connection -> Integer -> IO Bool
 expirepredi conn min = do 
-                 beftimee <- runRedis conn gettimefromredis  
-                 let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
-                 curtime <- getcurtimestamp
-                 case (curtime-beftime) of 
-                      y|y> mins -> return True
-                      _         -> return False
-                     where mins = min
+    beftimee <- runRedis conn gettimefromredis  
+    let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
+    curtime <- getcurtimestamp
+    case (curtime-beftime) of 
+         y|y> mins -> return True
+         _         -> return False
+        where mins = min
 
 retryOnFailure :: R.Connection -> Int  ->  IO ()
 retryOnFailure conn ac  = do
-                                    liftIO $ print ("is is ",ac)
-                                    preres <- expirepredi conn 60000
-                                    case preres of 
-                                       True -> do  
-                                                   runSecureClient "fstream.binance.com" 443 "/" ws 
-                                                   threadDelay 20000                               
-                                               `catch`   (\e -> 
-                                                               if e == ConnectionClosed 
-                                                               then do
-                                                                      liftIO $ print ("it is snd!!") 
-                                                                      retryOnFailure conn  (ac+1)
-                                                               else return ())
-                                       False -> return ()                                                            
+    --liftIO $ print ("is is ",ac)
+    preres <- expirepredi conn 100000
+    case preres of 
+       True -> do  
+                   runSecureClient "fstream.binance.com" 443 "/" ws 
+               `catch`   (\e -> 
+                               if e == ConnectionClosed 
+                               then do
+                                      liftIO $ print ("it is snd!!") 
+                                      threadDelay 10000
+                                      retryOnFailure conn  (ac+1)
+                               else return ())
+       False -> return ()                                                            
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
 sendbye wconn conn ac ctrl mpid = do
@@ -195,6 +195,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
+    liftIO $ print ("fork async now!")
 
     piid <- forkProcess $ withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
                             withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do

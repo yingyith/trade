@@ -175,7 +175,7 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
-    threadDelay 1300000
+    --threadDelay 1300000
     forever $ do
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
