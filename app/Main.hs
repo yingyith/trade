@@ -152,7 +152,7 @@ retryOnFailure conn  = forever $ do
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
 sendbye wconn conn ac ctrl mpid = do
-    preres <- expirepredi conn 100000
+    preres <- expirepredi conn 90000
     case preres of 
       True   -> do
                      void $ NW.sendClose wconn (B.pack "Bye!")

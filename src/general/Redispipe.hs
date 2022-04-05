@@ -177,26 +177,21 @@ publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO 
 publishThread rc wc tvar ptid = do 
     threadDelay 1300000
     forever $ do
-      --liftIO $ print ("loop is ---")
-      --infoM "pub" "loop is ----"
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo curtimestamp ) 
+      let aa = (1/0) 
       let orderitem = snd res
       let klineitem = fst res
-      --liftIO $ print (klineitem)
       let cachetime = case klineitem of
-            Left _ ->  "some error"
+            Left _  ->  "some error"
             Right v ->   (v!!0)
-      let orderdet = case orderitem of
-            Left _ ->  "some error"
+      let orderdet  = case orderitem of
+            Left _  ->  "some error"
             Right v ->   (v!!0)
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-      --liftIO $ print ("-----------------------cachetime---------------------")
-      --liftIO $ print (replydomarray)
       let replydores = (read (replydomarray !! 0)) :: Integer
-      --liftIO $ print (replydores)
       let timediff = curtimestamp-replydores
       
   -----------------------------
@@ -213,8 +208,6 @@ publishThread rc wc tvar ptid = do
       --dispatch event to detail command
       runRedis rc $ do 
          msgcacheandpingtempdo timediff message wc 
---         msgpingtempdo timediff message
-         --void $ publish "cache" ("cache" <> "aaaaaaa")
          msgsklinetoredis message curtimestamp
          msganalysistoredis message
          msgordertempdo message orderdet
