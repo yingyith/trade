@@ -151,7 +151,7 @@ retryOnFailure conn ac  = do
                                if e == ConnectionClosed 
                                then do
                                       liftIO $ print ("it is snd!!") 
-                                      threadDelay 100000
+                                      threadDelay 1000000
                                       retryOnFailure conn  (ac+1)
                                else return ())
        False -> return ()                                                            
