@@ -147,16 +147,19 @@ retryOnFailure conn ac  = do
     let delaytime = ac*10000000
     liftIO $ print ("thread delay!")
     threadDelay delaytime
-    case preres of 
-       True -> do  
-                   runSecureClient "fstream.binance.com" 443 "/" ws 
-               `catch`   (\e -> 
-                               if e == ConnectionClosed 
-                               then do
-                                      liftIO $ print ("it is snd!!") 
-                                      retryOnFailure conn  (ac+1)
-                               else retryOnFailure conn 0 )
-       False -> retryOnFailure conn 0                                                            
+    case ac of 
+       x|x>=1  -> do (retryOnFailure conn 0)
+       x|x==0 -> do 
+                    case preres of 
+                       True -> do  
+                                   runSecureClient "fstream.binance.com" 443 "/" ws 
+                               `catch`   (\e -> 
+                                               if e == ConnectionClosed 
+                                               then do
+                                                      liftIO $ print ("it is snd!!") 
+                                                      retryOnFailure conn  (ac+1)
+                                               else retryOnFailure conn 0 )
+                       False -> retryOnFailure conn 0                                                            
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
 sendbye wconn conn ac ctrl mpid = do
