@@ -124,7 +124,7 @@ main =
     catch (runSecureClient "fstream.binance.com" 443 aimss  ws)(\e ->
           if e == ConnectionClosed 
           then do
-                 retryOnFailure conn
+                 retryOnFailure conn 0
           else do 
                  return ()
 
@@ -140,16 +140,20 @@ expirepredi conn min = do
                       _         -> return False
                      where mins = min
 
-retryOnFailure :: R.Connection ->  IO ()
-retryOnFailure conn  = do
-                                    preres <- expirepredi conn 90000
+retryOnFailure :: R.Connection -> Int  ->  IO ()
+retryOnFailure conn ac  = do
+                                    liftIO $ print ("is is ",ac)
+                                    preres <- expirepredi conn 60000
                                     case preres of 
-                                       True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
-                                                                                                             if e == ConnectionClosed 
-                                                                                                             then do
-                                                                                                                    liftIO $ print ("it is snd!!") 
-                                                                                                                    retryOnFailure conn 
-                                                                                                             else return ())
+                                       True -> do  
+                                                   runSecureClient "fstream.binance.com" 443 "/" ws 
+                                                   threadDelay 20000                               
+                                               `catch`   (\e -> 
+                                                               if e == ConnectionClosed 
+                                                               then do
+                                                                      liftIO $ print ("it is snd!!") 
+                                                                      retryOnFailure conn  (ac+1)
+                                                               else return ())
                                        False -> return ()                                                            
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
