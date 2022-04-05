@@ -144,11 +144,11 @@ retryOnFailure :: R.Connection -> Int  ->  IO ()
 retryOnFailure conn ac  = do
     --liftIO $ print ("is is ",ac)
     preres <- expirepredi conn 100000
-    let delaytime = ac*10000000
+    let delaytime = ac*60000000
     liftIO $ print ("thread delay!")
     threadDelay delaytime
     case ac of 
-       x|x>=1  -> do (retryOnFailure conn 0)
+       x|x>=1 -> do (retryOnFailure conn 0)
        x|x==0 -> do 
                     case preres of 
                        True -> do  
