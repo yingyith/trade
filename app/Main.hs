@@ -141,7 +141,7 @@ expirepredi conn min = do
                      where mins = min
 
 retryOnFailure :: R.Connection ->  IO ()
-retryOnFailure conn  = forever $ do
+retryOnFailure conn  = do
                                     preres <- expirepredi conn 150000
                                     case preres of 
                                        True ->  runSecureClient "fstream.binance.com" 443 "/" ws `catch`   (\e -> 
