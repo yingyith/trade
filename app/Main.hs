@@ -126,7 +126,9 @@ main =
     forever $ do 
        preres <- expirepredi conn 100000
        case preres of 
-            True   -> runSecureClient "fstream.binance.com" 443 aimss  ws
+            True   -> do 
+                        removeAllHandlers
+                        runSecureClient "fstream.binance.com" 443 aimss  ws
             False  -> return ()
        threadDelay 60000000
     --retryOnFailure conn 0 0
