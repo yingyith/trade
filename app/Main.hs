@@ -150,12 +150,12 @@ retryOnFailure conn ac bc = do
                       case preres of 
                          True -> do  
                                    runSecureClient "fstream.binance.com" 443 "/" ws 
-                                 `catch`   (\e -> 
-                                               if e == ConnectionClosed 
-                                               then do
-                                                      liftIO $ print ("it is snd!!") 
-                                                      retryOnFailure conn  (ac+1) 0 
-                                               else retryOnFailure conn 0 0 )
+                          --       `catch`   (\e -> 
+                          --                     if e == ConnectionClosed 
+                          --                     then do
+                          --                            liftIO $ print ("it is snd!!") 
+                          --                            retryOnFailure conn  (ac+1) 0 
+                          --                     else retryOnFailure conn 0 0 )
                          False -> retryOnFailure conn 0 0                                                           
        x|x==(-1) -> do 
                     let delaytime = 120000000
