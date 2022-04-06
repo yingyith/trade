@@ -130,18 +130,29 @@ main =
     updateGlobalLogger flog (setLevel INFO)
     updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
     infoM flog $ "Logging to " ++ logPath
-    runSecureClient "fstream.binance.com" 443 aimss  ws
+    sid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("after ws----")
-    forever $ do 
-       res <- expirepredi conn 150000
-       let preres = fst res
-       case preres of 
-            True   -> do 
-                        removeAllHandlers
-                        runSecureClient "fstream.binance.com" 443 aimss  ws
-            False  -> return ()
-       threadDelay 60000000
-    --retryOnFailure conn 0 0
+   -- forever $ do 
+   --    res <- expirepredi conn 150000
+   --    let preres = fst res
+   --    let sid  = case preres of 
+   --                   True   -> do 
+   --                                sendbye connection conn 0 ctrll sid 
+   --                                removeAllHandlers
+   --                                sid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 aimss  ws
+   --                                return sid
+   --                   False  -> return sid
+   --    case preres of 
+   --        True   -> do 
+   --                     sendbye connection conn 0 ctrll sid 
+   --                     removeAllHandlers
+   --                     sid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 aimss  ws
+   --                     return sid
+   --        False  -> return sid
+
+   --    sendbye connection conn 0 ctrll sid 
+   --    threadDelay 60000000
+    retryOnFailure conn sid
     
 expirepredi :: R.Connection -> Integer -> IO (Bool,Integer)
 expirepredi conn min = do 
@@ -153,31 +164,24 @@ expirepredi conn min = do
          _         -> return (False, curtime-beftime)
         where mins = min
 
---retryOnFailure :: R.Connection -> Int -> Int  ->  IO ()
---retryOnFailure conn ac bc = do
---    --liftIO $ print ("is is ",ac)
---    preres <- expirepredi conn 120000
---    case ac of 
---       x|x>=1    -> (retryOnFailure conn (-1) 0)
---       x|x==0    -> do 
---                      case preres of 
---                         True -> do  
---                                   runSecureClient "fstream.binance.com" 443 "/" ws 
---                          --       `catch`   (\e -> 
---                          --                     if e == ConnectionClosed 
---                          --                     then do
---                          --                            liftIO $ print ("it is snd!!") 
---                          --                            retryOnFailure conn  (ac+1) 0 
---                          --                     else retryOnFailure conn 0 0 )
---                         False -> retryOnFailure conn 0 0                                                           
---       x|x==(-1) -> do 
---                    let delaytime = 120000000
---                    threadDelay delaytime
---                    retryOnFailure conn 0 0
+
+retryOnFailure :: R.Connection  -> (System.Posix.Types.ProcessID) ->  IO ()
+retryOnFailure conn  sid = do
+    threadDelay 40000000
+    res <- expirepredi conn 120000
+    let preres = fst res
+    case preres of 
+       True -> do  
+                 removeAllHandlers
+                 signalProcess sigKILL sid
+                 aid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 "/" ws 
+                 --threadDelay 120000
+                 retryOnFailure conn  aid 
+       False ->  threadDelay 60000                                                            
 
 
-sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
-sendbye wconn conn ac ctrl mpid = do
+sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO () -- -> (System.Posix.Types.ProcessID)  -> IO ()
+sendbye wconn conn ac ctrl  = do
     res <- expirepredi conn 120000
     let preres = fst res 
     let timediff = snd res
@@ -185,12 +189,12 @@ sendbye wconn conn ac ctrl mpid = do
     case preres of 
       True   -> do
                      void $ NW.sendClose wconn (B.pack "Bye!")
-                     signalProcess sigKILL mpid
+                     --signalProcess sigKILL mpid
                      removeAllHandlers
                      --throwIO ConnectionClosed
                      die "time to kill monitor process to async!"
       False  -> return ()
-    sendbye wconn conn (ac+1) ctrl mpid
+    sendbye wconn conn (ac+1) ctrl 
     --NW.sendClose wconn (B.pack "Bye!")
     --liftIO $ print ("it is in sendbye aft sendbye")
     --threadDelay 50000000
@@ -221,29 +225,31 @@ ws connection = do
     sendthid <- myThreadId 
     liftIO $ print ("fork async now!")
 
-    piid <- forkProcess $ withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
-                            withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do
-                               void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler )]
-                               void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
-                               void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
-                               void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
-                               void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
-                               threadDelay 4000000
-                            threadDelay 4000000
+    withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
+        withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do
+           void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler )]
+           void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
+           void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
+           void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
+           void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
+           threadDelay 4000000
+        threadDelay 4000000
+        sendbye connection conn 0 ctrll 
 
-    --threadDelay (5*60*1000000) -- 5min
-    threadDelay (3*1000000) -- 5min
-    forkProcess $ do  
-                             let logPath = "/root/trade/2.log"
-                          --   myStreamHandler <- streamHandler stderr INFO
-                             myFileHandler <- fileHandler logPath INFO
-                             let myFileHandler' = withFormatter myFileHandler
-                        --     let myStreamHandler' = withFormatter myStreamHandler
-                             let tlog = "time"
-                             updateGlobalLogger tlog (setLevel INFO)
-                             updateGlobalLogger tlog (setHandlers [myFileHandler'])--, myStreamHandler'])
-                            -- infoM tlog $ "using log " 
-                             sendbye connection conn 0 ctrll piid 
+    --sendbye
+    --threadDelay (5*60*60*1000000) -- 5min
+    --threadDelay (3*1000000) -- 5min
+   -- siid <- forkProcess $ do  
+   --                          let logPath = "/root/trade/2.log"
+   --                       --   myStreamHandler <- streamHandler stderr INFO
+   --                          myFileHandler <- fileHandler logPath INFO
+   --                          let myFileHandler' = withFormatter myFileHandler
+   --                     --     let myStreamHandler' = withFormatter myStreamHandler
+   --                          let tlog = "time"
+   --                          updateGlobalLogger tlog (setLevel INFO)
+   --                          updateGlobalLogger tlog (setHandlers [myFileHandler'])--, myStreamHandler'])
+   --                         -- infoM tlog $ "using log " 
+    --sendbye connection conn 0 ctrll piid 
     return ()
    -- forever $ do 
    --       --infoM flog $ "looping " 
