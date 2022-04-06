@@ -170,9 +170,11 @@ retryOnFailure conn  sid = do
     threadDelay 40000000
     res <- expirepredi conn 120000
     let preres = fst res
+    infoM "time" $ show $ snd res
     case preres of 
        True -> do  
                  removeAllHandlers
+                 infoM "time" "before kill!"
                  signalProcess sigKILL sid
                  aid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 "/" ws 
                  --threadDelay 120000
@@ -184,7 +186,7 @@ sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO () 
 sendbye wconn conn ac ctrl  = do
     res <- expirepredi conn 120000
     let preres = fst res 
-    let timediff = snd res
+    --let timediff = snd res
     --infoM "time" $ show timediff 
     case preres of 
       True   -> do
