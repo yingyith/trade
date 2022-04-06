@@ -233,7 +233,7 @@ ws connection = do
            void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            threadDelay 4000000
-        threadDelay 4000000
+        --threadDelay 4000000
         sendbye connection conn 0 ctrll 
 
     --sendbye
