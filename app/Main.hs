@@ -216,10 +216,10 @@ ws connection = do
                                void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
                                void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
                                void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
-                               threadDelay 40000
-                            threadDelay 40000
+                               threadDelay 4000000
+                            threadDelay 4000000
 
-    threadDelay 160000
+    threadDelay 8000000
     spidf <- forkProcess $ do  
                              let logPath = "/root/trade/2.log"
                              myStreamHandler <- streamHandler stderr INFO
