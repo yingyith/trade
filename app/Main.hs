@@ -41,6 +41,7 @@ import Rediscache
 import Data.Text.Encoding
 import Logger
 import System.IO
+import System.Exit
 import System.Log.Logger 
 import System.Log.Handler (setFormatter)
 import System.Log.Handler.Syslog
@@ -174,7 +175,8 @@ sendbye wconn conn ac ctrl mpid = do
                      void $ NW.sendClose wconn (B.pack "Bye!")
                      signalProcess sigKILL mpid
                      removeAllHandlers
-                     throwIO ConnectionClosed
+                     --throwIO ConnectionClosed
+                     die "time to kill monitor process to async!"
       False  -> return ()
     sendbye wconn conn (ac+1) ctrl mpid
     --NW.sendClose wconn (B.pack "Bye!")
