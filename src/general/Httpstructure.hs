@@ -6,6 +6,7 @@ module Httpstructure
       Mseries,
       Stick,
       takeorder,
+      cancelorder,
       HStick (op,cp,lp,hp,st),
       DpairMserie,
       sticks,
@@ -113,8 +114,8 @@ getspotbalance = do
       return (adaball,usdtball)
 
 
-ucoincancelorder ::  IO ()
-ucoincancelorder = do
+cancelorder ::  IO ()
+cancelorder = do
    curtimestamp <- getcurtimestamp
    runReq defaultHttpConfig $ do 
       let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))

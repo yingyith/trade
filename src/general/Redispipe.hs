@@ -272,7 +272,8 @@ opclHandler channel  msg = do
          --liftIO $ print (klinemsg)
          let orderquan = read (order !!4) :: Integer
          let orderpr = read (order !!5) :: Double
-         let orderstate = order !!6
+         let ordergrid = read (order !!6) :: Double
+         let orderstate = DL.last order
          --liftIO $ print (orderquan)
          -- check need to close at what a price or need to open
          kline <- getmsgfromstr  klinemsg 
@@ -286,17 +287,17 @@ opclHandler channel  msg = do
               let fpr =  curpr
               let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               runRedis conn (proordertorediszset orderquan pr curtime)
-              --takeorder "BUY" orderquan pr 
+              takeorder "BUY" orderquan pr 
 
          --when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
-        -- when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
+         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>ordergrid)    ) $ do
              -- liftIO $ print ("-------------start sell process---------------")
-          --    let pr = curpr-0.01
-          --    runRedis conn (cproordertorediszset orderquan pr curtime)
-              --takeorder "SELL" orderquan pr 
-         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.003)    ) $ do
-              let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-              runRedis conn (ctestendordertorediszset orderquan pr curtime)
+              let pr = curpr-0.01
+              runRedis conn (cproordertorediszset orderquan pr curtime)
+              takeorder "SELL" orderquan pr 
+        -- when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.003)    ) $ do
+        --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+        --      runRedis conn (ctestendordertorediszset orderquan pr curtime)
 
 
     when (dettype /= "adausdt@kline_1m") $ do 
