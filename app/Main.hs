@@ -124,7 +124,7 @@ main =
     catch (runSecureClient "fstream.binance.com" 443 aimss  ws)(\e ->
           if e == ConnectionClosed 
           then do
-                 retryOnFailure conn 0
+                 retryOnFailure conn 0 0
           else do 
                  return ()
 
@@ -140,27 +140,27 @@ expirepredi conn min = do
          _         -> return False
         where mins = min
 
-retryOnFailure :: R.Connection -> Int  ->  IO ()
-retryOnFailure conn ac  = do
+retryOnFailure :: R.Connection -> Int -> Int  ->  IO ()
+retryOnFailure conn ac bc = do
     --liftIO $ print ("is is ",ac)
     preres <- expirepredi conn 100000
     case ac of 
-       x|x>=1    -> (retryOnFailure conn (-1))
+       x|x>=1    -> (retryOnFailure conn (-1) 0)
        x|x==0    -> do 
                       case preres of 
                          True -> do  
                                    runSecureClient "fstream.binance.com" 443 "/" ws 
-                               `catch`   (\e -> 
+                                 `catch`   (\e -> 
                                                if e == ConnectionClosed 
                                                then do
                                                       liftIO $ print ("it is snd!!") 
-                                                      retryOnFailure conn  (ac+1)
-                                               else retryOnFailure conn 0 )
-                         False -> retryOnFailure conn 0                                                            
+                                                      retryOnFailure conn  (ac+1) 0 
+                                               else retryOnFailure conn 0 0 )
+                         False -> retryOnFailure conn 0 0                                                           
        x|x==(-1) -> do 
                     let delaytime = 120000000
                     threadDelay delaytime
-                    retryOnFailure conn 0
+                    retryOnFailure conn 0 0
 
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
@@ -211,7 +211,7 @@ ws connection = do
                                void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
                                void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
                                void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
-                            threadDelay 6000000
+                            threadDelay 8000000
 
     spidf <- forkProcess $ do  
                              let logPath = "/root/trade/2.log"
