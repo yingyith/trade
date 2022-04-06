@@ -214,7 +214,7 @@ ws connection = do
                                threadDelay 4000000
                             threadDelay 4000000
 
-    threadDelay 16000000
+    threadDelay 160000000
     spidf <- forkProcess $ do  
                              let logPath = "/root/trade/2.log"
                              myStreamHandler <- streamHandler stderr INFO
