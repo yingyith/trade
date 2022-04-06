@@ -170,12 +170,12 @@ retryOnFailure conn  sid = do
     threadDelay 40000000
     res <- expirepredi conn 120000
     let preres = fst res
-    infoM "myapp" $ show $ snd res
+    --infoM "myapp" $ show $ snd res
     case preres of 
        True -> do  
-                 removeAllHandlers
-                 infoM "myapp" "before kill!"
+                 infoM "myapp" $ show $ snd res
                  signalProcess sigKILL sid
+                 threadDelay 60000
                  aid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 "/" ws 
                  --threadDelay 120000
                  retryOnFailure conn  aid 
@@ -236,7 +236,7 @@ ws connection = do
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            threadDelay 4000000
         --threadDelay 4000000
-        sendbye connection conn 0 ctrll 
+        --sendbye connection conn 0 ctrll 
 
     --sendbye
     --threadDelay (5*60*60*1000000) -- 5min
