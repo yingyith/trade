@@ -121,15 +121,13 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
-   -- catch (runSecureClient "fstream.binance.com" 443 aimss  ws)(\e ->
-   --       if e == ConnectionClosed 
-   --       then do
-   --              retryOnFailure conn 0 0
-   --       else do 
-   --              return ()
-
-   --       )
-    retryOnFailure conn 0 0
+    forever $ do 
+       preres <- expirepredi conn 100000
+       case preres of 
+            True   -> runSecureClient "fstream.binance.com" 443 aimss  ws
+            False  -> return ()
+       threadDelay 60000000
+    --retryOnFailure conn 0 0
     
 expirepredi :: R.Connection -> Integer -> IO Bool
 expirepredi conn min = do 
@@ -227,16 +225,17 @@ ws connection = do
                              updateGlobalLogger tlog (setHandlers [myFileHandler', myStreamHandler'])
                              infoM tlog $ "using log " 
                              sendbye connection conn 0 ctrll piid 
-    forever $ do 
-          --infoM flog $ "looping " 
-          preres <- expirepredi conn 100000
-          case preres of 
-               True   -> do
-                     signalProcess sigKILL spidf
-                     removeAllHandlers
-                     throwIO ConnectionClosed
-               False  -> return ()
-          threadDelay 1000000
+    return ()
+   -- forever $ do 
+   --       --infoM flog $ "looping " 
+   --       preres <- expirepredi conn 100000
+   --       case preres of 
+   --            True   -> do
+   --                  signalProcess sigKILL spidf
+   --                  removeAllHandlers
+   --                  throwIO ConnectionClosed
+   --            False  -> return ()
+   --       threadDelay 1000000
 
                
 
