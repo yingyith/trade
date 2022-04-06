@@ -121,14 +121,15 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
-    catch (runSecureClient "fstream.binance.com" 443 aimss  ws)(\e ->
-          if e == ConnectionClosed 
-          then do
-                 retryOnFailure conn 0 0
-          else do 
-                 return ()
+   -- catch (runSecureClient "fstream.binance.com" 443 aimss  ws)(\e ->
+   --       if e == ConnectionClosed 
+   --       then do
+   --              retryOnFailure conn 0 0
+   --       else do 
+   --              return ()
 
-          )
+   --       )
+    retryOnFailure conn 0 0
     
 expirepredi :: R.Connection -> Integer -> IO Bool
 expirepredi conn min = do 
