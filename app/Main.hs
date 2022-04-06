@@ -121,6 +121,8 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
+    runSecureClient "fstream.binance.com" 443 aimss  ws
+    liftIO $ print ("after ws----")
     forever $ do 
        preres <- expirepredi conn 100000
        case preres of 
