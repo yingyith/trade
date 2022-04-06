@@ -125,7 +125,7 @@ main =
     runSecureClient "fstream.binance.com" 443 aimss  ws
     liftIO $ print ("after ws----")
     forever $ do 
-       preres <- expirepredi conn 100000
+       preres <- expirepredi conn 150000
        case preres of 
             True   -> do 
                         removeAllHandlers
@@ -144,32 +144,32 @@ expirepredi conn min = do
          _         -> return False
         where mins = min
 
-retryOnFailure :: R.Connection -> Int -> Int  ->  IO ()
-retryOnFailure conn ac bc = do
-    --liftIO $ print ("is is ",ac)
-    preres <- expirepredi conn 100000
-    case ac of 
-       x|x>=1    -> (retryOnFailure conn (-1) 0)
-       x|x==0    -> do 
-                      case preres of 
-                         True -> do  
-                                   runSecureClient "fstream.binance.com" 443 "/" ws 
-                          --       `catch`   (\e -> 
-                          --                     if e == ConnectionClosed 
-                          --                     then do
-                          --                            liftIO $ print ("it is snd!!") 
-                          --                            retryOnFailure conn  (ac+1) 0 
-                          --                     else retryOnFailure conn 0 0 )
-                         False -> retryOnFailure conn 0 0                                                           
-       x|x==(-1) -> do 
-                    let delaytime = 120000000
-                    threadDelay delaytime
-                    retryOnFailure conn 0 0
+--retryOnFailure :: R.Connection -> Int -> Int  ->  IO ()
+--retryOnFailure conn ac bc = do
+--    --liftIO $ print ("is is ",ac)
+--    preres <- expirepredi conn 120000
+--    case ac of 
+--       x|x>=1    -> (retryOnFailure conn (-1) 0)
+--       x|x==0    -> do 
+--                      case preres of 
+--                         True -> do  
+--                                   runSecureClient "fstream.binance.com" 443 "/" ws 
+--                          --       `catch`   (\e -> 
+--                          --                     if e == ConnectionClosed 
+--                          --                     then do
+--                          --                            liftIO $ print ("it is snd!!") 
+--                          --                            retryOnFailure conn  (ac+1) 0 
+--                          --                     else retryOnFailure conn 0 0 )
+--                         False -> retryOnFailure conn 0 0                                                           
+--       x|x==(-1) -> do 
+--                    let delaytime = 120000000
+--                    threadDelay delaytime
+--                    retryOnFailure conn 0 0
 
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
 sendbye wconn conn ac ctrl mpid = do
-    preres <- expirepredi conn 90000
+    preres <- expirepredi conn 120000
     case preres of 
       True   -> do
                      void $ NW.sendClose wconn (B.pack "Bye!")
@@ -216,10 +216,10 @@ ws connection = do
                                void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
                                void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
                                void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
-                               threadDelay 4000000
-                            threadDelay 4000000
+                               threadDelay 40000
+                            threadDelay 40000
 
-    threadDelay 160000000
+    threadDelay 160000
     spidf <- forkProcess $ do  
                              let logPath = "/root/trade/2.log"
                              myStreamHandler <- streamHandler stderr INFO
