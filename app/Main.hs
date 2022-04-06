@@ -181,7 +181,7 @@ sendbye wconn conn ac ctrl mpid = do
     res <- expirepredi conn 120000
     let preres = fst res 
     let timediff = snd res
-    infoM "time" $ show timediff 
+    --infoM "time" $ show timediff 
     case preres of 
       True   -> do
                      void $ NW.sendClose wconn (B.pack "Bye!")
@@ -242,7 +242,7 @@ ws connection = do
                              let tlog = "time"
                              updateGlobalLogger tlog (setLevel INFO)
                              updateGlobalLogger tlog (setHandlers [myFileHandler'])--, myStreamHandler'])
-                             infoM tlog $ "using log " 
+                            -- infoM tlog $ "using log " 
                              sendbye connection conn 0 ctrll piid 
     return ()
    -- forever $ do 
