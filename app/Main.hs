@@ -139,6 +139,7 @@ expirepredi conn min = do
     beftimee <- runRedis conn gettimefromredis  
     let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
     curtime <- getcurtimestamp
+    liftIO $ print(curtime,beftime,curtime-beftime)
     case (curtime-beftime) of 
          y|y> mins -> return True
          _         -> return False
@@ -219,7 +220,7 @@ ws connection = do
                                threadDelay 4000000
                             threadDelay 4000000
 
-    threadDelay 8000000
+    threadDelay (5*60*1000000) -- 5min
     spidf <- forkProcess $ do  
                              let logPath = "/root/trade/2.log"
                              myStreamHandler <- streamHandler stderr INFO
