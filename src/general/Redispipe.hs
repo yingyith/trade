@@ -212,7 +212,7 @@ publishThread rc wc tvar ptid = do
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
-      throwIO ConnectionClosed
+     -- throwIO ConnectionClosed
 --    `catch` (\e ->
 --      if e == ConnectionClosed 
 --      then do
