@@ -100,7 +100,6 @@ main =
         --liftIO $ print (responseBody response :: Object)
         let ares = fromJust $  parseMaybe (.: "listenKey") result :: String
         pure ares
-    --liftIO $ print (aas)
     conn <- connect defaultConnectInfo
     nowtime <- getcurtimestamp
     runRedis conn (liskeytoredis aas nowtime)
@@ -122,10 +121,20 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
+    let logPath = "/root/trade/1.log"
+    myStreamHandler <- streamHandler stderr INFO
+    myFileHandler <- fileHandler logPath INFO
+    let myFileHandler' = withFormatter myFileHandler
+    let myStreamHandler' = withFormatter myStreamHandler
+    let flog = "myapp"
+    updateGlobalLogger flog (setLevel INFO)
+    updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
+    infoM flog $ "Logging to " ++ logPath
     runSecureClient "fstream.binance.com" 443 aimss  ws
-    liftIO $ print ("after ws----")
+    --liftIO $ print ("after ws----")
     forever $ do 
-       preres <- expirepredi conn 150000
+       res <- expirepredi conn 150000
+       let preres = fst res
        case preres of 
             True   -> do 
                         removeAllHandlers
@@ -134,15 +143,14 @@ main =
        threadDelay 60000000
     --retryOnFailure conn 0 0
     
-expirepredi :: R.Connection -> Integer -> IO Bool
+expirepredi :: R.Connection -> Integer -> IO (Bool,Integer)
 expirepredi conn min = do 
     beftimee <- runRedis conn gettimefromredis  
     let beftime = read $ BLU.toString $ BLL.fromStrict $ fromJust $ fromRight (Nothing) beftimee :: Integer
     curtime <- getcurtimestamp
-    liftIO $ print(curtime,beftime,curtime-beftime)
     case (curtime-beftime) of 
-         y|y> mins -> return True
-         _         -> return False
+         y|y> mins -> return (True , curtime-beftime)
+         _         -> return (False, curtime-beftime)
         where mins = min
 
 --retryOnFailure :: R.Connection -> Int -> Int  ->  IO ()
@@ -170,7 +178,10 @@ expirepredi conn min = do
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> (System.Posix.Types.ProcessID)  -> IO ()
 sendbye wconn conn ac ctrl mpid = do
-    preres <- expirepredi conn 120000
+    res <- expirepredi conn 120000
+    let preres = fst res 
+    let timediff = snd res
+    infoM "time" $ "using log " 
     case preres of 
       True   -> do
                      void $ NW.sendClose wconn (B.pack "Bye!")
@@ -195,15 +206,15 @@ ws connection = do
    -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-    let logPath = "/root/trade/1.log"
-    myStreamHandler <- streamHandler stderr INFO
-    myFileHandler <- fileHandler logPath INFO
-    let myFileHandler' = withFormatter myFileHandler
-    let myStreamHandler' = withFormatter myStreamHandler
-    let flog = "myapp"
-    updateGlobalLogger flog (setLevel INFO)
-    updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
-    infoM flog $ "Logging to " ++ logPath
+   -- let logPath = "/root/trade/1.log"
+   -- myStreamHandler <- streamHandler stderr INFO
+   -- myFileHandler <- fileHandler logPath INFO
+   -- let myFileHandler' = withFormatter myFileHandler
+   -- let myStreamHandler' = withFormatter myStreamHandler
+   -- let flog = "myapp"
+   -- updateGlobalLogger flog (setLevel INFO)
+   -- updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
+   -- infoM flog $ "Logging to " ++ logPath
 
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
@@ -220,8 +231,9 @@ ws connection = do
                                threadDelay 4000000
                             threadDelay 4000000
 
-    threadDelay (5*60*1000000) -- 5min
-    spidf <- forkProcess $ do  
+    --threadDelay (5*60*1000000) -- 5min
+    threadDelay (3*1000000) -- 5min
+    forkProcess $ do  
                              let logPath = "/root/trade/2.log"
                              myStreamHandler <- streamHandler stderr INFO
                              myFileHandler <- fileHandler logPath INFO
