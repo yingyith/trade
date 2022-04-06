@@ -211,8 +211,8 @@ ws connection = do
                                void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
                                void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
                                void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
-                               threadDelay 6000000
-                            threadDelay 6000000
+                               threadDelay 4000000
+                            threadDelay 4000000
 
     threadDelay 16000000
     spidf <- forkProcess $ do  
