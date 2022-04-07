@@ -151,6 +151,7 @@ minrule ahll pr interval  = do
                        ([],[]) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
                        (_,[]) -> last highsheet 
                        (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
+   logact logByteStringStdout $ B.pack $ show (highsheet,lowsheet,hlbak,maxhigh,minlow)
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
    --if now stick is lowest point ,then down fast.not open in 3m and 15m, in 1hour and more other ,should half their up

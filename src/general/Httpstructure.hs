@@ -34,6 +34,7 @@ import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.UTF8 as BL
 import qualified Network.HTTP.Base as NTB
 import Data.ByteString.Lazy.UTF8 as BLU
+import Data.ByteString.Internal (unpackBytes)
 import Data.Aeson as A
 import Data.Aeson.Types as DAT
 import Data.Aeson.Lens 
@@ -49,6 +50,8 @@ import Passwd
 import System.IO
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Globalvar
+import Colog (LogAction,logByteStringStdout)
+import Logger
 
 getorderitem :: IO ()
 getorderitem = runReq defaultHttpConfig $ do
@@ -180,7 +183,8 @@ takeorder a b c = do
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req POST url (ReqBodyUrlEnc params) jsonResponse httpparams
       response <- areq
-      let result = responseBody response :: Object
+      let result = responseBody response :: Value
+      liftIO $ logact logByteStringStdout $ BC.pack  (show result)
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
       --liftIO $ print ("ss")
       --liftIO $ print (response)
