@@ -144,14 +144,15 @@ minrule ahll pr interval  = do
    let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
    let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  && ((stype $ fst x) == "wsmall")] where xlist = reslistt
    
+   
    --liftIO $ print (highsheet,lowsheet)
    let maxhigh   =  case (highsheet,lowsheet) of 
                        ([],[]) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
-                       ([],_ ) -> last lowsheet
+                       ([],_ ) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak] 
                        (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
    let minlow    =  case (highsheet,lowsheet) of 
                        ([],[]) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
-                       (_,[]) -> last highsheet 
+                       (_,[])  -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak] 
                        (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
    logact logByteStringStdout $ B.pack $ show (highsheet,lowsheet,hlbak,maxhigh,minlow)
    let nowstick   =  ahl!!0
