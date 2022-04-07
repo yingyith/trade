@@ -62,13 +62,13 @@ import Logger
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
-                 ("3m" , [-20,  60,  -60, -90  ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m" , [-20,  60,  -60, -125 ]), --
-                 ("15m", [10 ,  60,  -60, -125 ]),
-                 ("1h" , [15 ,  60,  -60, -175 ]),
-                 ("4h" , [5  ,  60,  -60, -120 ]),
-                 ("12h", [5  ,  60,  -90, -50  ]),
-                 ("3d" , [5  ,   0,  -30, -25  ])
+                 ("3m" , [-20,  90,  -120, -180  ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m" , [-20,  90,  -120, -180 ]), --
+                 ("15m", [10 ,  90,  -120, -180 ]),
+                 ("1h" , [15 ,  90,  -120, -180 ]),
+                 ("4h" , [5  ,  90,  -120, -180 ]),
+                 ("12h", [5  ,  90,  -120, -180  ]),
+                 ("3d" , [5  ,  90,  -120, -180  ])
                ]
 
 crossminstra :: [((Int,Double),(String,Int))] -> Double -> IO (Int,Double)
@@ -92,6 +92,7 @@ crossminstra abc pr = do
     let itemipredi = (itemindex>3)
 
     let grid = (* 0.17) $ fromIntegral  $ snd $ snd $ (!! maxindex) abc :: Double  --transfer this grid to the redis order record can be used as 
+    logact logByteStringStdout $ B.pack  (show trueresl)
     case (itempredi,itemipredi) of 
           (True , _   )   -> return ((sum  [fst $ fst x|x<-abc]),grid)
           (False,True )   -> return ((sum  [fst $ fst x|x<-abc]),grid) 
