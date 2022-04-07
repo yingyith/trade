@@ -92,7 +92,7 @@ crossminstra abc pr = do
     let itemipredi = (itemindex>3)
 
     let grid = (* 0.17) $ fromIntegral  $ snd $ snd $ (!! maxindex) abc :: Double  --transfer this grid to the redis order record can be used as 
-    logact logByteStringStdout $ B.pack  (show trueresl)
+    logact logByteStringStdout $ B.pack $ show (trueresl,maxindex,"cross def")
     case (itempredi,itemipredi) of 
           (True , _   )   -> return ((sum  [fst $ fst x|x<-abc]),grid)
           (False,True )   -> return ((sum  [fst $ fst x|x<-abc]),grid) 

@@ -137,9 +137,11 @@ msgordertempdo msg osdetail =  do
     let mmsg = osdetail <> seperate <> msg
 
     when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
+        liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
     
     when (matchmsgfun msg /= True ) $ do 
+        liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
 
 generatehlsheet :: ByteString -> IO ()
@@ -194,14 +196,6 @@ publishThread rc wc tvar ptid = do
       let replydores = (read (replydomarray !! 0)) :: Integer
       let timediff = curtimestamp-replydores
       
-  -----------------------------
-  --check curtime need to update
-
-
-
-      --get the data of kline cache ,check the invalid key number and update these
-              
-      --print (ktype test)
       --decide which event now is
       --1.check redis cache ,if cache valid time pass ,then send update command,detail two,one for stick update,one for put listenkey every 30min
       --2.check all open and close condition ,if match ,send open/close command
@@ -212,18 +206,6 @@ publishThread rc wc tvar ptid = do
          msganalysistoredis message
          msgordertempdo message orderdet
       sendpongdo timediff  wc
-     -- throwIO ConnectionClosed
---    `catch` (\e ->
---      if e == ConnectionClosed 
---      then do
---             --liftIO $ print ("1",e)
---             --throwIO e
---             throwTo ptid e 
---      else do 
---             --liftIO $ print ("2",e)
---             --throwIO e
---             throwTo ptid e 
---             )
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
