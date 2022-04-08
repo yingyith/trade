@@ -95,7 +95,7 @@ crossminstra abc pr = do
     let resbquan = ((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
 
     let grid = (* 0.17) $ fromIntegral  $ snd $ snd $ (!! maxindex) abc :: Double  --transfer this grid to the redis order record can be used as 
-    logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,"cross def")
+    logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,"cross def")
     case (openpredi) of 
           True    -> return (resquan,grid)
           False   -> return ((min 0 resbquan) ,grid) 
