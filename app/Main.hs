@@ -212,15 +212,8 @@ ws connection = do
    -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
-   -- let logPath = "/root/trade/1.log"
-   -- myStreamHandler <- streamHandler stderr INFO
-   -- myFileHandler <- fileHandler logPath INFO
-   -- let myFileHandler' = withFormatter myFileHandler
-   -- let myStreamHandler' = withFormatter myStreamHandler
-   -- let flog = "myapp"
-   -- updateGlobalLogger flog (setLevel INFO)
-   -- updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
-   -- infoM flog $ "Logging to " ++ logPath
+    --add init order for if websocket lost connection ,u shoulf reinit,or the state of the order filled is not complete ,both contain the quant and state 
+    --first find the order redis record,match with api ,then alter it .insert new record to make up
 
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int

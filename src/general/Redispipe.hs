@@ -272,8 +272,8 @@ opclHandler channel  msg = do
               runRedis conn (proordertorediszset orderquan pr curtime)
               takeorder "BUY" orderquan pr 
 
-         --when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
-         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>ordergrid)    ) $ do
+         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
+         --when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>ordergrid)    ) $ do
              -- liftIO $ print ("-------------start sell process---------------")
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
@@ -284,16 +284,11 @@ opclHandler channel  msg = do
 
 
     when (dettype /= "adausdt@kline_1m") $ do 
-         
-         --liftIO $ print ("not kline ++++++++++++++++++++++++++++++++++++++++++++")
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = outString eventstr 
-         --liftIO $ print (eventname)
          currtime <- getcurtimestamp 
          let curtime = fromInteger currtime ::Double
          when (eventname == "outboundAccountPosition") $ do 
-         
-              --liftIO $ print ("enter outbound bal++++++++++++++++++++++++++++++++++++++++++++")
               let eventstr = fromJust $ detdata ^? key "e"
               let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
               let adacurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "ADA"))) !!0
@@ -310,60 +305,45 @@ opclHandler channel  msg = do
                  let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
                  let quantylll = read $ (quantyll !! 4) :: Integer
                  let quantdouble = read $ (quantyll !! 4) :: Double
-                -- liftIO $ print (adabal,usdtbal,orderres,quantyl,adacurbal,usdtcurbal)
                  let adanum = floor adacurbal :: Integer
-                 --liftIO $ print (usdtcurbal-usdtbal+0.1 )
                  when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
-                    -- liftIO $ print ("enter buy pro++++++++++++++++++++++++++++++++++++++++++++")
-                    -- liftIO $ print (usdtcurbal,quantdouble,usdtbal)
                      when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
-                     --    liftIO $ print ("enter execute pro++++++++++++++++++++++++++++++++++++++++++++")
                          hlfendordertorediszset adanum curtime  
                          setkvfromredis adakey $ show adacurbal 
                          setkvfromredis usdtkey $ show usdtcurbal 
-                         --need to update bal key and do close request 
-                     
                  when (usdtcurbal >= usdtbal-0.1) $ do   -- that is now >= past ,means to sell
-                     --liftIO $ print ("enter sell pro++++++++++++++++++++++++++++++++++++++++++++")
                      when (abs (adacurbal+ quantdouble-adabal)< 1 ) $ do -- record as end
                          cendordertorediszset quantylll curtime  
                          setkvfromredis adakey $ show adacurbal 
                          setkvfromredis usdtkey $ show usdtcurbal 
-                  --if lastrecord state == prepare  and diff <= quanty  then hlfendordertorediszset and closeorder
-                  --if lastrecord state == cprepare  and diff <= quanty  then endordertorediszset
-             
          when (eventname == "executionReport" ) $ do 
-               --for this event come before outbound ,so need to add price first,after outbound come ,correct quanty
-               --pexpandordertorediszset
-             -- liftIO $ print ("enter excution ++++++++++++++++++++++++++++++++++++++++++++")
               let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
-              --liftIO $ print (curorderstate)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
-                 -- liftIO $ print ("1++++++++++++++++++++++++++++++++++++++++++++")
                   let cpr = T.unpack $ outString $ fromJust $ detdata ^? key "L" 
                   let cty = T.unpack $ outString $ fromJust $ detdata ^? key "l"
-                  --liftIO $ print (cpr,cty)
-
                   let curorderpr = read cpr :: Double
-                  --liftIO $ print ("2++++++++++++++++++++++++++++++++++++++++++++")
                   let curquantyy = read cty :: Double
                   let curquanty = round curquantyy :: Integer
-                  --liftIO $ print ("3++++++++++++++++++++++++++++++++++++++++++++")
                   let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
-                  --liftIO $ print ("4++++++++++++++++++++++++++++++++++++++++++++")
                   let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
-                  --liftIO $ print ("5++++++++++++++++++++++++++++++++++++++++++++")
-                  --liftIO $ print (curorderpr,curquanty)
-                  --liftIO $ print ("6++++++++++++++++++++++++++++++++++++++++++++")
-                  --still need to  judge buy or sell
                   when (curside == "BUY" && curcoin == "ADA") $ do 
-                       --liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
                        runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
-
                   when (curside == "SELL" && curcoin == "ADA") $ do 
-                       --liftIO $ print ("enter merge order++++++++++++++++++++++++++++++++++++++++++++")
                        runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
-         
+         when (eventname == "ORDER_TRADE_UPDATE") $ do 
+              let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
+              when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
+                  let cty = T.unpack $ outString $ fromJust $ detdata ^? key "z"
+                  let cpr = T.unpack $ outString $ fromJust $ detdata ^? key "ap"
+                  let curorderpr = read cpr :: Double
+                  let curquantyy = read cty :: Double
+                  let curquanty = round curquantyy :: Integer
+                  let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
+                  let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
+                  when (curside == "BUY" && curcoin == "USDT") $ do 
+                       runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
+                  when (curside == "SELL" && curcoin == "USDT") $ do 
+                       runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
          --executionReport and outboundAccountPosition
         
    -- takeorder
