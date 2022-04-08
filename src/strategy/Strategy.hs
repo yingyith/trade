@@ -88,22 +88,20 @@ crossminstra abc pr = do
     let itemindex = sum $ DT.take (maxindex-1) grouplist
     let itemlen = DT.length item
     let remainlist = (DT.drop (maxindex+itemlen) abc) ++ (DT.take maxindex abc ) 
-    let itempredi = (itemlen <= 1)
-    let itemipredi = (itemindex>3)
+    let itempredi = (itemlen >= 3)
+    let maxindexpredi = maxindex == 0
+    let openpredi = maxindexpredi && itempredi 
 
     let grid = (* 0.17) $ fromIntegral  $ snd $ snd $ (!! maxindex) abc :: Double  --transfer this grid to the redis order record can be used as 
     logact logByteStringStdout $ B.pack $ show (trueresl,maxindex,"cross def")
-    case (itempredi,itemipredi) of 
-          (True , _   )   -> return ((sum  [fst $ fst x|x<-abc]),grid)
-          (False,True )   -> return ((sum  [fst $ fst x|x<-abc]),grid) 
-          (False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
+    case (openpredi) of 
+          True    -> return ((sum  [fst $ fst x|x<-abc]),grid)
+          False   -> return ((sum  [fst $ fst x|x<-abc]),grid) 
+          --(False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
                                           
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
 genehighlowsheet index hl key = do 
-    --liftIO $ print "____________hlsheet--------"
-    --liftIO $ print hl
-
     let curitemstr = BL.toString $ hl !! index
     let nextitemstr= BL.toString $ hl !! (index+1)
     let curitem = DLT.splitOn "|" curitemstr
