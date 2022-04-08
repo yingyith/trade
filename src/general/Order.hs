@@ -80,7 +80,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
    let lastquan = read (recorditem !! 4) :: Integer
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
-   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord )
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"----preorcpre---------" )
    when (DL.any (== recordstate) [(show $ fromEnum HalfDone),(show $ fromEnum Cprocess)] && ((recordstate == (show $ fromEnum Cprocess)) && (pr< (lastpr-grid)) ))  $ do -- sametime the append pr should have condition of close price
        --merge two order need add two record,add a field that record last quantity bef merge 
        let quanty = toInteger sumres
@@ -169,6 +169,7 @@ proordertorediszset quan pr stamp = do
    --let lastquan = read (recorditem !! 4) :: Integer
    let lmergequan = show mergequan
    let shgrid = show lastgrid
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------preorder---------")
    --only add but not alter ,if state change ,add a new record,but need to trace the orderid
    when (recordstate == (show $ fromEnum Prepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
@@ -202,6 +203,7 @@ pexpandordertorediszset side quan pr stamp = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    liftIO $ print (side ++ "is -------------------------------")
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "--------------pexpandorder--------------")
    let shstate = case side of 
                       "BUY" -> show $ fromEnum Process
                       "SELL" -> show $ fromEnum Cprocess
@@ -247,6 +249,7 @@ hlfendordertorediszset quan  stamp  = do
    let shquant =  show quan
    let shstate =  show $ fromEnum HalfDone
    let shgrid  = show lastgrid
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----hlfdone--------")
    when (recordstate == (show $ fromEnum Process) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
@@ -299,6 +302,7 @@ cproordertorediszset quan pr stamp  = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    let shgrid = show lastgrid
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"-------cpro---------")
    when (recordstate == (show $ fromEnum Cprepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
@@ -327,6 +331,7 @@ cendordertorediszset quan  stamp = do
    let shstate =  show $ fromEnum Done
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++ "-------cend---------" )
    when (recordstate == (show $ fromEnum Cprocess) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
@@ -355,6 +360,7 @@ ctestendordertorediszset quan pr  stamp = do
    let shstate =  show $ fromEnum Done
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord )
    when (recordstate == (show $ fromEnum Cprepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
