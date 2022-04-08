@@ -335,9 +335,12 @@ opclHandler channel  msg = do
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let cty = T.unpack $ outString $ fromJust $ detdata ^? key "z"
                   let cpr = T.unpack $ outString $ fromJust $ detdata ^? key "ap"
+                  let corty = T.unpack $ outString $ fromJust $ detdata ^? key "q"
                   let curorderpr = read cpr :: Double
                   let curquantyy = read cty :: Double
+                  let curortyy   = read corty :: Double
                   let curquanty = round curquantyy :: Integer
+                  let curorquanty = round curortyy :: Integer
                   let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
                   let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
                   when (curside == "BUY" && curcoin == "USDT") $ do 
