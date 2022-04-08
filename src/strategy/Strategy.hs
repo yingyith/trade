@@ -146,15 +146,9 @@ minrule ahll pr interval  = do
    
    
    --liftIO $ print (highsheet,lowsheet)
-   let maxhigh   =  case (highsheet,lowsheet) of 
-                       ([],[]) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
-                       ([],_ ) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak] 
-                       (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (highsheet!!0) highsheet
-   let minlow    =  case (highsheet,lowsheet) of 
-                       ([],[]) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (hlbak!!0) hlbak
-                       (_,[])  -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak] 
-                       (_ ,_ ) -> DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (lowsheet!!0)  lowsheet 
-   logact logByteStringStdout $ B.pack $ show (highsheet,lowsheet,hlbak,maxhigh,minlow)
+   let maxhigh   =   DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak,highsheet] 
+   let minlow    =   DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak,lowsheet] 
+   logact logByteStringStdout $ B.pack $ show (ahl,highsheet,lowsheet,hlbak,maxhigh,minlow)
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
    --if now stick is lowest point ,then down fast.not open in 3m and 15m, in 1hour and more other ,should half their up
