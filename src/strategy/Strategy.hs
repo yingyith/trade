@@ -131,15 +131,7 @@ genehighlowsheet index hl key = do
 minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,Double),(String,Int))
 minrule ahll pr interval  = do 
    let ahl = DT.take 10 ahll
-   -- get max (high)
-   -- get min (low)
-   -- confirm nearest (high or low)
-   -- return this grid risk
-   -- confirm if last stick is low or high point ,their  last how many sticks,if low,then good to buy ,but need to know how man position,and close price
-   --liftIO $ print ahl
-   --let reslist   =  [(xlist!!x,x)|x<-[1..(length xlist-2)],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = ahl
    let reslist   =  [(xlist!!x,x)|x<-[1..(length xlist-2)]] where xlist = ahl
-   --let reslistt   =  [(xlist!!x,x)|x<-[1..(length xlist-2)],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x))] where xlist = ahl
    logact logByteStringStdout $ B.pack  ("enter min do ---------------------")
    let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
@@ -149,7 +141,7 @@ minrule ahll pr interval  = do
    --liftIO $ print (highsheet,lowsheet)
    let maxhigh   =   DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak,highsheet] 
    let minlow    =   DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak,lowsheet] 
-   logact logByteStringStdout $ B.pack $ show (ahl,highsheet,lowsheet,hlbak,maxhigh,minlow)
+   logact logByteStringStdout $ B.pack $ show (highsheet,lowsheet,hlbak,maxhigh,minlow)
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
    --if now stick is lowest point ,then down fast.not open in 3m and 15m, in 1hour and more other ,should half their up
