@@ -184,7 +184,7 @@ takeorder a b c = do
       let areq = req POST url (ReqBodyUrlEnc params) jsonResponse httpparams
       response <- areq
       let result = responseBody response :: Value
-      liftIO $ logact logByteStringStdout $ BC.pack  (show result)
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show (result,a,b,c)
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
       --liftIO $ print ("ss")
       --liftIO $ print (response)
