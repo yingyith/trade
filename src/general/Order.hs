@@ -20,6 +20,7 @@ import Data.String
 import Data.List as DL
 import Data.Maybe 
 import qualified Data.ByteString as B
+import Data.ByteString.Char8 as  BC
 import qualified Data.ByteString.UTF8 as BL
 import qualified Data.ByteString.Lazy as BLL
 import Data.Text (Text)
@@ -38,6 +39,8 @@ import Data.List.Split as DLT
 import Analysistructure as AS
 import Globalvar
 import Data.Typeable
+import Logger
+import Colog (LogAction,logByteStringStdout)
 
 data Ostate = Prepare | Process | HalfDone | Cprepare | Cprocess | Done
 instance Enum Ostate where 
@@ -67,7 +70,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
-   let recordstate = last recorditem
+   let recordstate = DL.last recorditem
    --liftIO $ print ("++++bef preorcpre record is -------------------------")
    --liftIO $ print (recorditem)
    let lastprr = recorditem !! 5
@@ -77,7 +80,8 @@ preorcpreordertorediszset sumres pr  stamp grid = do
    let lastquan = read (recorditem !! 4) :: Integer
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
-   when (any (== recordstate) [(show $ fromEnum HalfDone),(show $ fromEnum Cprocess)] && ((recordstate == (show $ fromEnum Cprocess)) && (pr< (lastpr-grid)) ))  $ do -- sametime the append pr should have condition of close price
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord )
+   when (DL.any (== recordstate) [(show $ fromEnum HalfDone),(show $ fromEnum Cprocess)] && ((recordstate == (show $ fromEnum Cprocess)) && (pr< (lastpr-grid)) ))  $ do -- sametime the append pr should have condition of close price
        --merge two order need add two record,add a field that record last quantity bef merge 
        let quanty = toInteger sumres
        let quantity = case compare quanty 10 of
@@ -98,7 +102,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let lmergequan = show lastquan
        let shgrid = show grid
        when (quantity > 0) $ do
-           let abyvaluestr = BL.fromString $  intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
@@ -122,7 +126,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let shgrid = show lastgrid
        let lmergequan ="0" 
        when (quantity > 0) $ do
-           let abyvaluestr = BL.fromString $  intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum HalfDone)) $ do
@@ -135,7 +139,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let lmergequan = show lastquan
        let shgrid = show lastgrid
        when (quantity > 0) $ do
-           let abyvaluestr = BL.fromString $  intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
 proordertorediszset :: Integer -> Double -> Double -> Redis ()
@@ -155,7 +159,7 @@ proordertorediszset quan pr stamp = do
    let lastorderid = recorditem !! 3
    --liftIO $ print ("bef process record is -------------------------")
    liftIO $ print (pr)
-   let recordstate = last recorditem
+   let recordstate = DL.last recorditem
    let orderid =  show stamp 
    let shprice =  show pr
    let shquant =  show quan
@@ -167,7 +171,7 @@ proordertorediszset quan pr stamp = do
    let shgrid = show lastgrid
    --only add but not alter ,if state change ,add a new record,but need to trace the orderid
    when (recordstate == (show $ fromEnum Prepare) ) $ do
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 pexpandordertorediszset :: String -> Integer -> Double -> Double -> Redis ()
@@ -189,7 +193,7 @@ pexpandordertorediszset side quan pr stamp = do
    let lastorderquant = read $ recorditem !!4 ::Integer
    let lastordertype = recorditem !!2 
    let lastgrid = read (recorditem !! 6) :: Double
-   let recordstate = last recorditem
+   let recordstate = DL.last recorditem
    let orderid =  show stamp 
    let shprice =  show pr
    let shquant =  case lastordertype of 
@@ -203,15 +207,15 @@ pexpandordertorediszset side quan pr stamp = do
                       "SELL" -> show $ fromEnum Cprocess
    let prestate = show $ fromEnum Prepare
    let cprestate = show $ fromEnum Cprepare
-   let tpred = (any (recordstate ==) [prestate, cprestate ,shstate])
-   let abyvaluestr = [coin,side,otype,lastorderid,shquant,shprice,shstate]
-   let abyvaluestr = intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shstate]
-   let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shstate]
+   let tpred = (DL.any (recordstate ==) [prestate, cprestate ,shstate])
+   --let abyvaluestr = [coin,side,otype,lastorderid,shquant,shprice,shstate]
+   --let abyvaluestr = intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shstate]
+   --let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shstate]
    let shgrid = show lastgrid
    --only add but not alter ,if state change ,add a new record,but need to trace the orderid
    when (tpred == True) $ do
        liftIO $ print ("bef pexpand add  is -------------------------")
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,shmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,shmergequan,shstate]
        liftIO $ print (abyvaluestr)
        liftIO $ print ("bef pexpand add  is -------------------------")
        liftIO $ print (abyvaluestr)
@@ -234,7 +238,7 @@ hlfendordertorediszset quan  stamp  = do
    --liftIO $ print ("bef haldend record is -------------------------")
    --liftIO $ print (recorditem)
    --liftIO $ print (pr)
-   let recordstate = last recorditem
+   let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
@@ -244,7 +248,7 @@ hlfendordertorediszset quan  stamp  = do
    let shstate =  show $ fromEnum HalfDone
    let shgrid  = show lastgrid
    when (recordstate == (show $ fromEnum Process) ) $ do
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 
@@ -287,7 +291,7 @@ cproordertorediszset quan pr stamp  = do
    --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let lastgrid = read (recorditem !! 6) :: Double
-   let recordstate = last recorditem
+   let recordstate = DL.last recorditem
    let orderid =  show lastorderid ::String
    let shprice =  show pr
    let shquant =  show quan
@@ -296,7 +300,7 @@ cproordertorediszset quan pr stamp  = do
    let shmergequan =  show mergequan
    let shgrid = show lastgrid
    when (recordstate == (show $ fromEnum Cprepare) ) $ do
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 cendordertorediszset :: Integer  -> Double -> Redis ()
@@ -314,7 +318,7 @@ cendordertorediszset quan  stamp = do
    --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let pr = recorditem !! 5
-   let recordstate = last recorditem
+   let recordstate = DL.last recorditem
    let orderid =  show lastorderid ::String
    let lastgrid = read (recorditem !! 6) :: Double
    let shgrid = show lastgrid
@@ -324,7 +328,7 @@ cendordertorediszset quan  stamp = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    when (recordstate == (show $ fromEnum Cprocess) ) $ do
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 ctestendordertorediszset :: Integer->Double  -> Double -> Redis ()
@@ -342,7 +346,7 @@ ctestendordertorediszset quan pr  stamp = do
    --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let pr = recorditem !! 5
-   let recordstate = last recorditem
+   let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let shgrid = show lastgrid
    let orderid =  show lastorderid ::String
@@ -352,5 +356,5 @@ ctestendordertorediszset quan pr  stamp = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    when (recordstate == (show $ fromEnum Cprepare) ) $ do
-       let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
