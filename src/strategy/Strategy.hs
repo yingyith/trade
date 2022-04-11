@@ -71,7 +71,7 @@ minrisksheet = fromList [
                  ("3d" , [5  ,  90,  -120, -180  ])
                ]
 
-crossminstra :: [((Int,Double),(String,Int))] -> Double -> IO (Int,Double)
+crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO (Int,Double)
 crossminstra abc pr = do 
     --3m ,5m,15m,1h,4h  if all up ,then double up 
     --3m ,5m,15m,1h,4h  if all down ,then double down 
@@ -93,12 +93,19 @@ crossminstra abc pr = do
     let openpredi = maxindexpredi && itempredi 
     let resquan = (sum  [fst $ fst x|x<-abc])
     let resbquan = ((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
+    let fallklineindex = maxindex+itemlen-1
 
-    let grid = (* 0.17)   $ snd $ fst $ (!! (maxindex+itemlen-1)) abc   --transfer this grid to the redis order record can be used as 
-    logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,"cross def")
+    let gridspan = snd $ fst $ (!! (fallklineindex)) abc   --transfer this grid to the redis order record can be used as 
+    let grid = 0.17* ((fst gridspan) - (snd gridspan))
+    let lowp = snd gridspan
+    let lowpredi = pr < (lowp + grid)
+    let fallkline = (!!fallklineindex) abc 
+    let openpredi = maxindexpredi && itempredi && lowpredi 
+    let newgrid = grid - (pr-lowp)
+    logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,newgrid,"cross def")
     case (openpredi) of 
-          True    -> return (resquan,grid)
-          False   -> return ((min 0 resbquan) ,grid) 
+          True    -> return (resquan,newgrid)
+          False   -> return ((min 0 resbquan) ,newgrid) 
           --(False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
                                           
 
@@ -128,7 +135,7 @@ genehighlowsheet index hl key = do
     --liftIO $ print "____________hlsheet--------"
     return res
 
-minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,Double),(String,Int))
+minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,(Double,Double)),(String,Int))
 minrule ahll pr interval  = do 
    let ahl = DT.take 10 ahll
    let reslist   =  [(xlist!!x,x)|x<-[1..(length xlist-2)]] where xlist = ahl
@@ -152,7 +159,8 @@ minrule ahll pr interval  = do
    --if curpr < 1/4 grid > 1/8 ,is 1/2 up position  ,down    ,if rsi match then add total up 
    --                           else ,return -10, is notknown,if rsi match then add 1/2 up                
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
-   let griddiff         =  (fst maxhigh)      -    (fst minlow)
+   let gridspan         = ( (fst maxhigh) ,(fst minlow))
+   let griddiff         = (fst maxhigh)-(fst minlow)
    let fastuppredi      =  (0   ==   (snd maxhigh))
    let fastdownpredi    =  (0   ==   (snd minlow ))
    let fastprevuppredi  =  (1   ==   (snd maxhigh)) &&  (interval == "15m") --need 3m support 
@@ -192,14 +200,14 @@ minrule ahll pr interval  = do
    --liftIO $ print (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi)
    logact logByteStringStdout $ B.pack  (show (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi))
    case (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi) of 
-        (True  ,_     ,_     ,_     ,_     ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),griddiff),("up",rsiindex)) -- up 
-        (False ,True  ,False ,_     ,_     ,_     ) ->  return ((( (!!0) $ fromJust $  minrisksheet!?interval),griddiff),("uf",rsiindex)) -- up fast
-        (False ,False ,True  ,_     ,_     ,_     ) ->  return ((( (!!3) $ fromJust $  minrisksheet!?interval),griddiff),("df",rsiindex)) -- down fast
-        (False ,False ,False ,True  ,False ,_     ) ->  return ((( (!!2) $ fromJust $  minrisksheet!?interval),griddiff),("do",rsiindex)) -- down fast
-        (False ,False ,False ,False ,True  ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),griddiff),("up",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,True  ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),griddiff),("up",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,False ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),griddiff),("do",rsiindex)) -- down fast
-        (False ,_     ,_     ,_     ,_     ,_     ) ->  return ((0,griddiff),("no",0)) -- down fast
+        (True  ,_     ,_     ,_     ,_     ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- up 
+        (False ,True  ,False ,_     ,_     ,_     ) ->  return ((( (!!0) $ fromJust $  minrisksheet!?interval),gridspan),("uf",rsiindex)) -- up fast
+        (False ,False ,True  ,_     ,_     ,_     ) ->  return ((( (!!3) $ fromJust $  minrisksheet!?interval),gridspan),("df",rsiindex)) -- down fast
+        (False ,False ,False ,True  ,False ,_     ) ->  return ((( (!!2) $ fromJust $  minrisksheet!?interval),gridspan),("do",rsiindex)) -- down fast
+        (False ,False ,False ,False ,True  ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,True  ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- down fast
+        (False ,False ,False ,False ,False ,False ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),gridspan),("do",rsiindex)) -- down fast
+        (False ,_     ,_     ,_     ,_     ,_     ) ->  return ((0,gridspan),("no",0)) -- down fast
    
 
 

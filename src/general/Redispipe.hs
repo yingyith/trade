@@ -278,6 +278,14 @@ opclHandler channel  msg = do
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
               takeorder "SELL" orderquan pr 
+
+         when ((orderstate == (show $ fromEnum Cprocess)) && ((orderpr-curpr)>ordergrid)    ) $ do
+              --cancel the the order ,not here,after cancel confirm ,websocket event come ,then change to halddone state
+              runRedis conn (ccanordertorediszset curtime)
+              cancelorder "SELL"  
+              --
+              --
+              --
         -- when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.003)    ) $ do
         --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
         --      runRedis conn (ctestendordertorediszset orderquan pr curtime)
@@ -387,9 +395,31 @@ opclHandler channel  msg = do
                   when (curside == "SELL" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
                           runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
+                          --add func that provide record current order id 
                        when (curquanty == curorquanty) $ do 
                           --runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
                           runRedis conn (cendordertorediszset curquanty curtime)  
+              when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
+                  let cty         = T.unpack $ outString $ fromJust $ detdata ^? key "z"
+                  let cpr         = T.unpack $ outString $ fromJust $ detdata ^? key "ap"
+                  let corty       = T.unpack $ outString $ fromJust $ detdata ^? key "q"
+                  let curorderpr  = read cpr            :: Double
+                  let curquantyy  = read cty            :: Double
+                  let curortyy    = read corty          :: Double
+                  let curquanty   = round curquantyy    :: Integer
+                  let curorquanty = round curortyy      :: Integer
+                  let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
+                  let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
+                  let initquan = 0
+                  when (curside == "SELL" && curcoin == "USDT") $ do 
+                          runRedis conn (cproordertorediszset initquan curorderpr curtime)
+                  when (curside == "BUY" && curcoin == "USDT") $ do 
+                          runRedis conn (cproordertorediszset initquan curorderpr curtime)
+                          --runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
+                          --add orderid  to redis, but how to diff a sell order need to cancel or not 
+                          --this only use to record orderid ,cancel need  to use pr distance predi and record to do on kline event
+              --when cancel success ,then what event will come out
+
          --executionReport and outboundAccountPosition
         
    -- takeorder

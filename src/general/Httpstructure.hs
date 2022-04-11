@@ -117,24 +117,25 @@ getspotbalance = do
       return (adaball,usdtball)
 
 
-cancelorder ::  IO ()
-cancelorder = do
+cancelorder :: String -> IO ()
+cancelorder side = do
    curtimestamp <- getcurtimestamp
    runReq defaultHttpConfig $ do 
-      let astring = BLU.fromString $ ("timestamp="++ (show curtimestamp))
       let signature = BLU.fromString sk
-      let ares = showDigest(hmacSha256 signature astring)
-      let ouri = "https://fapi.binance.com/fapi/v1/allOpenOrders"  
-      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
-      uri <- URI.mkURI auri 
       let passwdtxt = BC.pack Passwd.passwd
+      let origClientOrderId = case side of 
+                                 "BUY"  -> buyorderid
+                                 "SELL" -> sellorderid
       let params = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("timestamp" =: (curtimestamp :: Integer ))<>
-            ("signature" =: (T.pack ares :: Text ))
-      --liftIO $ print uri
-      --liftIO $ print (useHttpsURI uri)
+            ("origClientOrderId" =: (origClientOrderId ))
 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("origClientOrderId",origClientOrderId),("timestamp",show curtimestamp)] 
+      let ares = showDigest(hmacSha256 signature abody)
+      let ouri = "https://fapi.binance.com/fapi/v1/allOpenOrders"  
+      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req DELETE url NoReqBody lbsResponse  params
       response <- areq
@@ -150,6 +151,9 @@ takeorder a b c = do
    let stype = "LIMIT"
    let timeinforce = "GTC"
    let timeinforcee = "GTC"
+   let newClientOrderId = case side of 
+                             "BUY"  -> buyorderid
+                             "SELL" -> sellorderid
    let quantity = if b > 10 then b else 10 :: Integer
    
    let price = c :: Double
@@ -165,10 +169,11 @@ takeorder a b c = do
              "type" =: (stype) <>
              "quantity" =: (quantity) <>
              "price" =: (price) <>
+             "newClientOrderId" =: (newClientOrderId) <>
              "timeInForce" =: (timeinforcee :: Text) <>
              "timestamp" =: (curtimestamp)
 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",show price),("timeInForce",timeinforce),("timestamp",show curtimestamp)] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",show price),("newClientOrderId",newClientOrderId),("timeInForce",timeinforce),("timestamp",show curtimestamp)] 
       let ares = showDigest(hmacSha256 signature abody)
       let passwdtxt = BC.pack Passwd.passwd
       let httpparams = 

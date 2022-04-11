@@ -13,6 +13,8 @@ module Globalvar (
     usdtkey,
     liskey,
     timekey,
+    sellorderid,
+    buyorderid,
     secondstick
 ) where
 
@@ -31,3 +33,5 @@ adakey = "Ada"
 usdtkey = "Usdt"
 liskey = "liskey"
 secondstick = 60 :: Integer
+sellorderid = "sellorderid20220411202204110000000000"
+buyorderid = "buyyorderid20220411202204110000000000"
