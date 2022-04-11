@@ -137,7 +137,8 @@ genehighlowsheet index hl key = do
 
 minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,(Double,Double)),(String,Int))
 minrule ahll pr interval  = do 
-   let ahl = DT.take 10 ahll
+   let ahl = DT.take 11 ahll
+
    let reslist   =  [(xlist!!x,x)|x<-[1..(length xlist-2)]] where xlist = ahl
    logact logByteStringStdout $ B.pack  ("enter min do ---------------------")
    let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
@@ -161,10 +162,10 @@ minrule ahll pr interval  = do
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
    let gridspan         = ( (fst maxhigh) ,(fst minlow))
    let griddiff         = (fst maxhigh)-(fst minlow)
-   let fastuppredi      =  (0   ==   (snd maxhigh))
-   let fastdownpredi    =  (0   ==   (snd minlow ))
-   let fastprevuppredi  =  (1   ==   (snd maxhigh)) &&  (interval == "15m") --need 3m support 
-   let fastprevdopredi  =  (1   ==   (snd minlow )) &&  (interval == "15m") --need 3m support
+   let fastuppredi      =  (1   >=   (snd maxhigh)) 
+   let fastdownpredi    =  (1   >=   (snd minlow ))
+   let fastprevuppredi  =  (1   >=   (snd maxhigh)) &&  (interval == "15m") --need 3m support 
+   let fastprevdopredi  =  (1   >=   (snd minlow )) &&  (interval == "15m") --need 3m support
    let openpos          = case pr of 
                              x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.125
                              x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.25 

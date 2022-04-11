@@ -270,19 +270,16 @@ opclHandler channel  msg = do
               let fpr =  curpr
               let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               runRedis conn (proordertorediszset orderquan pr curtime)
-              takeorder "BUY" orderquan pr 
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
          --when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>ordergrid)    ) $ do
              -- liftIO $ print ("-------------start sell process---------------")
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
-              takeorder "SELL" orderquan pr 
 
          when ((orderstate == (show $ fromEnum Cprocess)) && ((orderpr-curpr)>ordergrid)    ) $ do
               --cancel the the order ,not here,after cancel confirm ,websocket event come ,then change to halddone state
               runRedis conn (ccanordertorediszset curtime)
-              cancelorder "SELL"  
               --
               --
               --

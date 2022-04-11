@@ -173,6 +173,7 @@ proordertorediszset quan pr stamp = do
    when (recordstate == (show $ fromEnum Prepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       liftIO $ takeorder "BUY" quan pr
 
 pexpandordertorediszset :: String -> Integer -> Double -> Double -> Redis ()
 pexpandordertorediszset side quan pr stamp = do 
@@ -283,6 +284,7 @@ cproordertorediszset quan pr stamp  = do
    when (recordstate == (show $ fromEnum Cprepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       liftIO $ takeorder "SELL" quan pr
 
 ccanordertorediszset :: Double -> Redis ()
 ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, then after weboscket recieve order cancel event,then can merge order/append new pos,then set to halfdone
@@ -313,6 +315,7 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    when (recordstate == (show $ fromEnum Prepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       liftIO $ cancelorder "SELL"
 
 cendordertorediszset :: Integer  -> Double -> Redis ()
 cendordertorediszset quan  stamp = do 
