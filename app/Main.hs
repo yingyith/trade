@@ -175,6 +175,7 @@ retryOnFailure conn  sid = do
     case preres of 
        True -> do  
                 -- infoM "myapp" $ show $ snd res
+                 logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
                  killThread sid
                  logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
                  threadDelay 6000000
