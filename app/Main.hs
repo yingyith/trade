@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 import Network.Wuss
 import Database.Redis as R
-import Control.Concurrent (myThreadId ,forkIO ,threadDelay )
+import Control.Concurrent (myThreadId ,forkIO ,threadDelay,ThreadId,killThread)
 import Control.Concurrent.Async
 import Control.Concurrent.STM
 import Control.Monad (forever, unless, void)
@@ -130,7 +130,7 @@ main =
     updateGlobalLogger flog (setLevel INFO)
     updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
     infoM flog $ "Logging to " ++ logPath
-    sid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 aimss  ws
+    sid <- forkIO $ do runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("after ws----")
    -- forever $ do 
    --    res <- expirepredi conn 150000
@@ -165,7 +165,7 @@ expirepredi conn min = do
         where mins = min
 
 
-retryOnFailure :: R.Connection  -> (System.Posix.Types.ProcessID) ->  IO ()
+retryOnFailure :: R.Connection  -> (ThreadId) ->  IO ()
 retryOnFailure conn  sid = do
     threadDelay 40000000
     res <- expirepredi conn 120000
@@ -174,9 +174,10 @@ retryOnFailure conn  sid = do
     case preres of 
        True -> do  
                  infoM "myapp" $ show $ snd res
-                 signalProcess sigKILL sid
+                 killThread sid
+                -- signalProcess sigKILL sid
                  threadDelay 60000
-                 aid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 "/" ws 
+                 aid <- forkIO $ do runSecureClient "fstream.binance.com" 443 "/" ws 
                  --threadDelay 120000
                  retryOnFailure conn  aid 
        False ->  threadDelay 60000                                                            
