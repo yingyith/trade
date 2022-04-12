@@ -131,7 +131,7 @@ main =
     updateGlobalLogger flog (setLevel INFO)
     updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
     infoM flog $ "Logging to " ++ logPath
-    sid <- forkIO $ do runSecureClient "fstream.binance.com" 443 aimss  ws
+    sid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("after ws----")
    -- forever $ do 
    --    res <- expirepredi conn 150000
@@ -166,7 +166,7 @@ expirepredi conn min = do
         where mins = min
 
 
-retryOnFailure :: R.Connection  -> (ThreadId) ->  IO ()
+retryOnFailure :: R.Connection  -> (ProcessID) ->  IO ()
 retryOnFailure conn  sid = do
     threadDelay 40000000
     res <- expirepredi conn 120000
@@ -174,12 +174,13 @@ retryOnFailure conn  sid = do
     --infoM "myapp" $ show $ snd res
     case preres of 
        True -> do  
-                -- infoM "myapp" $ show $ snd res
-                 logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
-                 killThread sid
-                 logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
+                 infoM "myapp" $ show $ snd res
+                 --logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
+                 signalProcess sigKILL sid
+                 infoM "myapp" $ show $ "after kill"
+                 --logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
                  threadDelay 6000000
-                 aid <- forkIO $ do runSecureClient "fstream.binance.com" 443 "/" ws 
+                 aid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 "/" ws 
                  --threadDelay 120000
                  retryOnFailure conn  aid 
        False ->  threadDelay 6000000                                                            
@@ -233,6 +234,7 @@ ws connection = do
            threadDelay 4000000
         --threadDelay 4000000
         --sendbye connection conn 0 ctrll 
-
+    forever  $ do
+       threadDelay 50000000
     return ()
 
