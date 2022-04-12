@@ -52,6 +52,7 @@ import System.Posix.Types
 import System.Process
 import System.Posix.Signals
 import System.Posix
+import Colog (LogAction,logByteStringStdout)
 
 --retryOnFailure ws = runSecureClient "ws.kraken.com" 443 "/" ws
 --  `catch` (\e -> 
@@ -173,14 +174,14 @@ retryOnFailure conn  sid = do
     --infoM "myapp" $ show $ snd res
     case preres of 
        True -> do  
-                 infoM "myapp" $ show $ snd res
+                -- infoM "myapp" $ show $ snd res
                  killThread sid
-                -- signalProcess sigKILL sid
-                 threadDelay 60000
+                 logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
+                 threadDelay 6000000
                  aid <- forkIO $ do runSecureClient "fstream.binance.com" 443 "/" ws 
                  --threadDelay 120000
                  retryOnFailure conn  aid 
-       False ->  threadDelay 60000                                                            
+       False ->  threadDelay 6000000                                                            
 
 
 sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO () -- -> (System.Posix.Types.ProcessID)  -> IO ()
@@ -219,7 +220,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
-    liftIO $ print ("fork async now!")
+    --liftIO $ print ("fork async now!")
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
         withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do
