@@ -372,6 +372,7 @@ opclHandler channel  msg = do
 
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
+              logact logByteStringStdout $ B.pack  $ show ("bef order update ---------",show curorderstate)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let cty         = T.unpack $ outString $ fromJust $ detdata ^? key "z"
                   let cpr         = T.unpack $ outString $ fromJust $ detdata ^? key "ap"
@@ -385,16 +386,17 @@ opclHandler channel  msg = do
                   let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
                   when (curside == "BUY" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
+                          logact logByteStringStdout $ B.pack  ("bef order update partfilled redis---------")
                           runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
                        when (curquanty == curorquanty) $ do 
-                          --runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
+                          logact logByteStringStdout $ B.pack  ("bef order update filled redis---------")
                           runRedis conn (hlfendordertorediszset curquanty curtime)  
                   when (curside == "SELL" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
+                          logact logByteStringStdout $ B.pack  ("bef order update sell partfilled redis---------")
                           runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
-                          --add func that provide record current order id 
                        when (curquanty == curorquanty) $ do 
-                          --runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
+                          logact logByteStringStdout $ B.pack  ("bef order update sell filled redis---------")
                           runRedis conn (cendordertorediszset curquanty curtime)  
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
                   let cty         = T.unpack $ outString $ fromJust $ detdata ^? key "z"
