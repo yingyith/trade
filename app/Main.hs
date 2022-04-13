@@ -130,7 +130,7 @@ main =
     let flog = "myapp"
     updateGlobalLogger flog (setLevel INFO)
     updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
-    infoM flog $ "Logging to " ++ logPath
+    --infoM flog $ "Logging to " ++ logPath
     sid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("after ws----")
    -- forever $ do 
