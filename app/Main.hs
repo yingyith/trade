@@ -174,10 +174,10 @@ retryOnFailure conn  sid = do
     --infoM "myapp" $ show $ snd res
     case preres of 
        True -> do  
-                 infoM "myapp" $ show $ snd res
+                 --infoM "myapp" $ show $ snd res
                  --logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
                  signalProcess sigKILL sid
-                 infoM "myapp" $ show $ "after kill"
+                 --infoM "myapp" $ show $ "after kill"
                  --logact logByteStringStdout $ B.pack $ show ("kill bef thread!",snd res)
                  threadDelay 6000000
                  aid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 "/" ws 
