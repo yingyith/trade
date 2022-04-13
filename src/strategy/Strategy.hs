@@ -62,13 +62,13 @@ import Logger
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
-                 ("3m" , [-20,  90,  -120, -180  ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m" , [-20,  90,  -120, -180 ]), --
-                 ("15m", [10 ,  90,  -120, -180 ]),
-                 ("1h" , [15 ,  90,  -120, -180 ]),
-                 ("4h" , [5  ,  90,  -120, -180 ]),
-                 ("12h", [5  ,  90,  -120, -180  ]),
-                 ("3d" , [5  ,  90,  -120, -180  ])
+                 ("3m" , [0      ,  90,  -120, -180  ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
+                 ("5m" , [ 0     ,  90,  -120, -180  ]), --
+                 ("15m", [ 0     ,  90,  -120, -180  ]),
+                 ("1h" , [5      ,  90,  -120, -180  ]),
+                 ("4h" , [5      ,  90,  -120, -180  ]),
+                 ("12h", [5      ,  90,  -120, -180  ]),
+                 ("3d" , [5      ,  90,  -120, -180  ])
                ]
 
 crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO (Int,Double)
@@ -78,7 +78,7 @@ crossminstra abc pr = do
     --accroding to the continuous kline ,the largest interval go against others is the risk number(append rule)
   --find  the near "up" "uf" "do" "df"
   --find the largest weight factor line ,use this line to set the benefit price 
-    let uppredi  = (== 'u').(!!0) . fst .snd  
+    let uppredi  = \x -> ((> 50) $ fst $ fst x) && ( (== 'u') $ (!!0) $ fst $ snd  x )
     -- get the continuous longest up interval ,
     let lhsheet = DT.map uppredi abc
     let trueresl = DL.group lhsheet --[true,false,true ,false]
@@ -193,6 +193,7 @@ minrule ahll pr interval  = do
                              x| x>12 && x<=18                                                         -> 120
                              x| x>5  && x<=12                                                          -> 240
                              x| x<=5                                                                  -> 360
+
                                                        -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
   -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
   -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)

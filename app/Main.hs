@@ -225,13 +225,13 @@ ws connection = do
     --liftIO $ print ("fork async now!")
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
+        threadDelay 4000000
         withAsync (handlerThread conn ctrll orderVar) $ \_handlerT -> do
            void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler )]
            void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
            void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
-           threadDelay 4000000
         --threadDelay 4000000
         --sendbye connection conn 0 ctrll 
     forever  $ do
