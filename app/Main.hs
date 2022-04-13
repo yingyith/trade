@@ -122,14 +122,14 @@ main =
     --runSecureClient "stream.binance.com" 9443 aimss  ws
     --runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("connect to websocket------")
-    let logPath = "/root/trade/1.log"
-    myStreamHandler <- streamHandler stderr INFO
-    myFileHandler <- fileHandler logPath INFO
-    let myFileHandler' = withFormatter myFileHandler
-    let myStreamHandler' = withFormatter myStreamHandler
-    let flog = "myapp"
-    updateGlobalLogger flog (setLevel INFO)
-    updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
+   -- let logPath = "/root/trade/1.log"
+   -- myStreamHandler <- streamHandler stderr INFO
+   -- myFileHandler <- fileHandler logPath INFO
+   -- let myFileHandler' = withFormatter myFileHandler
+   -- let myStreamHandler' = withFormatter myStreamHandler
+   -- let flog = "myapp"
+   -- updateGlobalLogger flog (setLevel INFO)
+   -- updateGlobalLogger flog (setHandlers [myFileHandler', myStreamHandler'])
     --infoM flog $ "Logging to " ++ logPath
     sid <- forkProcess $ do runSecureClient "fstream.binance.com" 443 aimss  ws
     --liftIO $ print ("after ws----")
