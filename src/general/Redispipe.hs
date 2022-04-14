@@ -243,6 +243,7 @@ opclHandler channel  msg = do
     let detdata = wsdata $ fromJust restmsg
     --liftIO $ print (detdata)
     let dettype = wstream $ fromJust restmsg
+    logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
     --liftIO $ print (dettype)
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg
@@ -323,7 +324,6 @@ opclHandler channel  msg = do
         --                 cendordertorediszset quantylll curtime  
         --                 setkvfromredis adakey $ show adacurbal 
         --                 setkvfromredis usdtkey $ show usdtcurbal 
-
          when (eventname == "ACCOUNT_UPDATE") $ do 
               let eventstr = fromJust $ detdata ^? key "e"
               let usdtcurballll = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    ))    -- !!0  
@@ -370,7 +370,6 @@ opclHandler channel  msg = do
         --               runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
         --          when (curside == "SELL" && curcoin == "ADA") $ do 
         --               runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
-
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
