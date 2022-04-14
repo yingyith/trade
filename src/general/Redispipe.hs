@@ -294,6 +294,7 @@ opclHandler channel  msg = do
          let eventname = outString eventstr 
          currtime <- getcurtimestamp 
          let curtime = fromInteger currtime ::Double
+         logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
         -- when (eventname == "outboundAccountPosition") $ do 
         --      let eventstr = fromJust $ detdata ^? key "e"
         --      let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
@@ -371,8 +372,9 @@ opclHandler channel  msg = do
         --               runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
 
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
+              logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
-              logact logByteStringStdout $ B.pack  $ show ("bef order update ---------",show curorderstate)
+              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",show curorderstate)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let cty         = T.unpack $ outString $ fromJust $ detdata ^? key "z"
                   let cpr         = T.unpack $ outString $ fromJust $ detdata ^? key "ap"
