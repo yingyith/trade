@@ -327,15 +327,12 @@ opclHandler channel  msg = do
          when (eventname == "ACCOUNT_UPDATE") $ do 
               let eventstr = fromJust $ detdata ^? key "e"
               let usdtcurballll = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    ))    -- !!0  
-              let adacurballll  = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "ADA"     ))    -- !!0
               let orderballll   = detdata ^.. key "a" .key "P" .values.filtered (has (key "a"._String.only "ADAUSDT" ))    -- !!0
               let usdtcurball = usdtcurballll !! 0
-              let adacurball = adacurballll !! 0
               let ordercurball = orderballll !! 0
               let usdtcurballl = fromJust $ usdtcurball ^? key "f" 
-              let adacurballl = fromJust $ adacurball ^? key "f" 
               let usdtcurbal = read $ T.unpack $ outString usdtcurballl :: Double
-              let adacurbal = read $ T.unpack $ outString adacurballl :: Double
+              let adacurbal = read $ T.unpack $ outString ordercurball :: Integer
               runRedis conn $ do  
                  balres <- getbalfromredis
                  orderres <- getorderfromredis
@@ -345,17 +342,8 @@ opclHandler channel  msg = do
                  let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
                  let quantylll = read $ (quantyll !! 4) :: Integer
                  let quantdouble = read $ (quantyll !! 4) :: Double
-                 let adanum = floor adacurbal :: Integer
-                 when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
-                     when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
-                         --hlfendordertorediszset adanum curtime  
-                         setkvfromredis adakey $ show adacurbal 
-                         setkvfromredis usdtkey $ show usdtcurbal 
-                 when (usdtcurbal >= usdtbal-0.1) $ do   -- that is now >= past ,means to sell
-                     when (abs (adacurbal+ quantdouble-adabal)< 1 ) $ do -- record as end
-                         --cendordertorediszset quantylll curtime  
-                         setkvfromredis adakey $ show adacurbal 
-                         setkvfromredis usdtkey $ show usdtcurbal 
+                 setkvfromredis adakey $ show adacurbal 
+                 setkvfromredis usdtkey $ show usdtcurbal 
         -- when (eventname == "executionReport" ) $ do 
         --      let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
         --      when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
@@ -374,17 +362,17 @@ opclHandler channel  msg = do
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate = T.unpack $ outString $ fromJust $ (detdata ^? key "o" . key "X") 
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",show curorderstate)
+              let cty         = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
+              let cpr         = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
+              let corty       = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
+              let curorderpr  = read cpr            :: Double
+              let curquantyy  = read cty            :: Double
+              let curortyy    = read corty          :: Double
+              let curquanty   = round curquantyy    :: Integer
+              let curorquanty = round curortyy      :: Integer
+              let curside = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
+              let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
-                  let cty         = T.unpack $ outString $ fromJust $ detdata ^? key "z"
-                  let cpr         = T.unpack $ outString $ fromJust $ detdata ^? key "ap"
-                  let corty       = T.unpack $ outString $ fromJust $ detdata ^? key "q"
-                  let curorderpr  = read cpr            :: Double
-                  let curquantyy  = read cty            :: Double
-                  let curortyy    = read corty          :: Double
-                  let curquanty   = round curquantyy    :: Integer
-                  let curorquanty = round curortyy      :: Integer
-                  let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
-                  let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
                   when (curside == "BUY" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
                           logact logByteStringStdout $ B.pack  ("bef order update partfilled redis---------")
@@ -400,16 +388,6 @@ opclHandler channel  msg = do
                           logact logByteStringStdout $ B.pack  ("bef order update sell filled redis---------")
                           runRedis conn (cendordertorediszset curquanty curtime)  
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
-                  let cty         = T.unpack $ outString $ fromJust $ detdata ^? key "z"
-                  let cpr         = T.unpack $ outString $ fromJust $ detdata ^? key "ap"
-                  let corty       = T.unpack $ outString $ fromJust $ detdata ^? key "q"
-                  let curorderpr  = read cpr            :: Double
-                  let curquantyy  = read cty            :: Double
-                  let curortyy    = read corty          :: Double
-                  let curquanty   = round curquantyy    :: Integer
-                  let curorquanty = round curortyy      :: Integer
-                  let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
-                  let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
                   let initquan = 0
                   when (curside == "SELL" && curcoin == "USDT") $ do 
                           runRedis conn (cproordertorediszset initquan curorderpr curtime)
