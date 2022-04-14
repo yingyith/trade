@@ -372,7 +372,7 @@ opclHandler channel  msg = do
         --               runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
-              let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
+              let curorderstate = T.unpack $ outString $ fromJust $ (detdata ^? key "o" . key "X") 
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",show curorderstate)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let cty         = T.unpack $ outString $ fromJust $ detdata ^? key "z"
