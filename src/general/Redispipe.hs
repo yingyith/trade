@@ -136,6 +136,7 @@ msgordertempdo msg osdetail =  do
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
     liftIO $ logact logByteStringStdout mmsg                          
+    liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchmsgfun msg)                         
 
     when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
         liftIO $ logact logByteStringStdout "take order part"                             
