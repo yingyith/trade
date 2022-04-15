@@ -130,15 +130,14 @@ matchmsgfun msg = do
     let  matchormsg = BLU.fromString "ORDER_TRADE_UPDATE"
     liftIO $ logact logByteStringStdout $ B.pack $  show (msg)                         
     liftIO $ logact logByteStringStdout $ B.pack $  show (matchacevent,matchorevent)                         
-    if (matchkline == matchkmsg)
-       then return "kline"
-       else return  "no"
-    if (matchacevent == matchacmsg) 
-       then return "ac"
-       else return  "no"
-    if (matchorevent == matchormsg) 
-       then return "or"
-       else return  "no"
+    let klinepredi = matchkline == matchkmsg
+    let acpredi = matchacevent == matchacmsg
+    let orpredi = matchorevent == matchormsg
+    case (klinepredi,acpredi,orpredi) of 
+        (True  , _     ,_     ) -> return "kline"
+        (_     , True  ,_     ) -> return "ac"
+        (_     , _     ,True  ) -> return "or"
+        (_     , _     ,_     ) -> return "no"
 
 
 msgordertempdo :: ByteString -> ByteString -> Redis ()
