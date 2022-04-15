@@ -15,6 +15,7 @@ module Redispipe
       mintocacheHandler,
       showChannels,
       sndtocacheHandler,
+      acupdHandler,
       analysisHandler
 
     ) where
@@ -119,11 +120,24 @@ sendpongdo a conn = do
               return ()
           
 
-matchmsgfun :: ByteString -> Bool
-matchmsgfun msg = matchmsg == matchamsg  
-              where  
-                  matchmsg = DB.drop 11 $ DB.take 24 msg 
-                  matchamsg = BLU.fromString "adausdt@kline"
+matchmsgfun :: ByteString -> Redis String
+matchmsgfun msg = do
+    let  matchkline = DB.drop 11 $ DB.take 24 msg 
+    let  matchkmsg = BLU.fromString "adausdt@kline"
+    let  matchacevent = DB.drop 90 $ DB.take 105 msg 
+    let  matchacmsg = BLU.fromString "ACCOUNT_UPDATE"
+    let  matchorevent = DB.drop 90 $ DB.take 108 msg 
+    let  matchormsg = BLU.fromString "ORDER_TRADE_UPDATE"
+    liftIO $ logact logByteStringStdout $ B.pack $  show (matchacevent,matchorevent)                         
+    if (matchkline == matchkmsg)
+       then return "kline"
+       else return  "no"
+    if (matchacevent == matchacmsg) 
+       then return "ac"
+       else return  "no"
+    if (matchorevent == matchormsg) 
+       then return "or"
+       else return  "no"
 
 
 msgordertempdo :: ByteString -> ByteString -> Redis ()
@@ -136,13 +150,18 @@ msgordertempdo msg osdetail =  do
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
     liftIO $ logact logByteStringStdout mmsg                          
-    liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchmsgfun msg)                         
+    matchevent <- matchmsgfun msg
+    liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchevent)                         
 
     when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
         liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
     
-    when (matchmsgfun msg /= True ) $ do 
+    when (matchevent == "ac" ) $ do 
+        liftIO $ logact logByteStringStdout "take order partit"                             
+        void $ publish "ac:1" ("ac" <> mmsg )
+
+    when (matchevent == "or" ) $ do 
         liftIO $ logact logByteStringStdout "take order partit"                             
         void $ publish "order:1" ("order" <> mmsg )
 
@@ -157,7 +176,8 @@ generatehlsheet msg = do
 
 msgsklinetoredis :: ByteString -> Integer -> Redis ()
 msgsklinetoredis msg stamp = do
-    when (matchmsgfun msg == True ) $ do 
+    matchevent <- matchmsgfun msg
+    when (matchevent == "kline" ) $ do 
       void $ publish "sndc:1" ( msg)
       --logact logByteStringStdout $ msg                              
       let abyvaluestr = msg
@@ -171,7 +191,8 @@ msgsklinetoredis msg stamp = do
       -- store to kline seconds in  redis key as  1m 
 msganalysistoredis :: ByteString -> Redis ()
 msganalysistoredis msg = do
-    when (matchmsgfun msg == True ) $ do 
+    matchevent <- matchmsgfun msg
+    when (matchevent == "kline" ) $ do 
       void $ publish "analysis:1" ( msg)
 
 getliskeyfromredis :: Redis ()
@@ -232,66 +253,40 @@ handlerThread conn ctrl tvar = do
 
 opclHandler :: RedisChannel -> ByteString -> IO ()
 opclHandler channel  msg = do
-    -- open close order accroding to redis ada position and grid  and setnx and expire time and proccess uuid
-    -- if msg send grid not match to redis grid ,cancel operation
-    -- ==> command set from analysishandler ==> redis ==> publish ==> opclHandler
-    --mtthread <- myThreadId
     conn <- connect defaultConnectInfo
-    --liftIO $ print ("start opcl ++++++++++++++++++++++++++++++++++++++++++++")
+    logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
-    --liftIO $ print (restmsg)
     let detdata = wsdata $ fromJust restmsg
-    --liftIO $ print (detdata)
     let dettype = wstream $ fromJust restmsg
     logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
-    --liftIO $ print (dettype)
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg
          let msgitem = DLT.splitOn ":::" msgorigin 
-         --liftIO $ print (msgitem)
          let order = DLT.splitOn "|" $  (msgitem!!0)
          let klinemsg = msgitem !! 1
-         --liftIO $ print ("start take order")
-         --liftIO $ print (klinemsg)
          let orderquan = read (order !!4) :: Integer
          let orderpr = read (order !!5) :: Double
          let ordergrid = read (order !!6) :: Double
          let orderstate = DL.last order
-         --liftIO $ print (orderquan)
-         -- check need to close at what a price or need to open
          kline <- getmsgfromstr  klinemsg 
-        -- liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
          let curpr = read $ kclose kline :: Double
-        -- liftIO $ print ("kline ++++++++++++++++++++++++++++++++++++++++++++")
          currtime <- getcurtimestamp 
          let curtime = fromInteger currtime ::Double
          when (orderstate == (show $ fromEnum Prepare)) $ do
               logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
-              --let fpr = 0.01 + curpr
               let fpr =  curpr
               let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               runRedis conn (proordertorediszset orderquan pr curtime)
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
-         --when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>ordergrid)    ) $ do
-             -- liftIO $ print ("-------------start sell process---------------")
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
 
          when ((orderstate == (show $ fromEnum Cprocess)) && ((orderpr-curpr)>ordergrid)    ) $ do
-              --cancel the the order ,not here,after cancel confirm ,websocket event come ,then change to halddone state
               runRedis conn (ccanordertorediszset curtime)
-              --
-              --
-              --
-        -- when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.003)    ) $ do
-        --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-        --      runRedis conn (ctestendordertorediszset orderquan pr curtime)
 --{"stream":"ygUttsOxssq35UpQQ8U4n64fHhJWAJDGPopFolWbriQd0C3UvWvMTXxM0zIbam3C","data":{"e":"ACCOUNT_UPDATE","T":1649411079451,"E":1649411079456,"a":{"B":[{"a":"USDT","wb":"1596.37297494","cw":"1596.37297494","bc":"0"}],"P":[{"s":"ADAUSDT","pa":"22","ep":"1.08920","cr":"290.31149981","up":"0.00836594","mt":"cross","iw":"0","ps":"BOTH","ma":"USDT"}],"m":"ORDER"}}}
-
-
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = outString eventstr 
@@ -326,26 +321,6 @@ opclHandler channel  msg = do
         --                 cendordertorediszset quantylll curtime  
         --                 setkvfromredis adakey $ show adacurbal 
         --                 setkvfromredis usdtkey $ show usdtcurbal 
-         when (eventname == "ACCOUNT_UPDATE") $ do 
-              let eventstr = fromJust $ detdata ^? key "e"
-              let usdtcurballll = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    ))    -- !!0  
-              let orderballll   = detdata ^.. key "a" .key "P" .values.filtered (has (key "a"._String.only "ADAUSDT" ))    -- !!0
-              let usdtcurball = usdtcurballll !! 0
-              let ordercurball = orderballll !! 0
-              let usdtcurballl = fromJust $ usdtcurball ^? key "f" 
-              let usdtcurbal = read $ T.unpack $ outString usdtcurballl :: Double
-              let adacurbal = read $ T.unpack $ outString ordercurball :: Integer
-              runRedis conn $ do  
-                 balres <- getbalfromredis
-                 orderres <- getorderfromredis
-                 let adabal = read $ BLU.toString $ fromJust $ fromRight Nothing $ fst balres :: Double
-                 let usdtbal = read $ BLU.toString $ fromJust $ fromRight Nothing $ snd balres :: Double
-                 let quantyl =  fromRight [DB.empty] orderres
-                 let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
-                 let quantylll = read $ (quantyll !! 4) :: Integer
-                 let quantdouble = read $ (quantyll !! 4) :: Double
-                 setkvfromredis adakey $ show adacurbal 
-                 setkvfromredis usdtkey $ show usdtcurbal 
         -- when (eventname == "executionReport" ) $ do 
         --      let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
         --      when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
@@ -396,18 +371,43 @@ opclHandler channel  msg = do
                           runRedis conn (cproordertorediszset initquan curorderpr curtime)
                   when (curside == "BUY" ) $ do 
                           runRedis conn (cproordertorediszset initquan curorderpr curtime)
-                          --runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
-                          --add orderid  to redis, but how to diff a sell order need to cancel or not 
-                          --this only use to record orderid ,cancel need  to use pr distance predi and record to do on kline event
-              --when cancel success ,then what event will come out
 
-         --executionReport and outboundAccountPosition
-        
-   -- takeorder
-   --change the state 
-    --if type just = msg  and predication is qualified,then try get lock 
-    --if type      = websocket account change/order token, release lock
-
+acupdHandler :: RedisChannel -> ByteString -> IO ()
+acupdHandler channel  msg = do
+    conn <- connect defaultConnectInfo
+    logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
+    let seperatemark = BLU.fromString ":::"
+    let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
+    let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
+    let detdata = wsdata $ fromJust restmsg
+    let dettype = wstream $ fromJust restmsg
+    logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
+    when (dettype /= "adausdt@kline_1m") $ do 
+         let eventstr = fromJust $ detdata ^? key "e"
+         let eventname = outString eventstr 
+         currtime <- getcurtimestamp 
+         let curtime = fromInteger currtime ::Double
+         logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
+         when (eventname == "ACCOUNT_UPDATE") $ do 
+              let eventstr = fromJust $ detdata ^? key "e"
+              let usdtcurballll = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    ))    -- !!0  
+              let orderballll   = detdata ^.. key "a" .key "P" .values.filtered (has (key "a"._String.only "ADAUSDT" ))    -- !!0
+              let usdtcurball = usdtcurballll !! 0
+              let ordercurball = orderballll !! 0
+              let usdtcurballl = fromJust $ usdtcurball ^? key "f" 
+              let usdtcurbal = read $ T.unpack $ outString usdtcurballl :: Double
+              let adacurbal = read $ T.unpack $ outString ordercurball :: Integer
+              runRedis conn $ do  
+                 balres <- getbalfromredis
+                 orderres <- getorderfromredis
+                 let adabal = read $ BLU.toString $ fromJust $ fromRight Nothing $ fst balres :: Double
+                 let usdtbal = read $ BLU.toString $ fromJust $ fromRight Nothing $ snd balres :: Double
+                 let quantyl =  fromRight [DB.empty] orderres
+                 let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
+                 let quantylll = read $ (quantyll !! 4) :: Integer
+                 let quantdouble = read $ (quantyll !! 4) :: Double
+                 setkvfromredis adakey $ show adacurbal 
+                 setkvfromredis usdtkey $ show usdtcurbal 
 
 sndklinetoredis :: ByteString -> Redis ()
 sndklinetoredis msg  = do 
