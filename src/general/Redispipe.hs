@@ -135,13 +135,14 @@ msgordertempdo msg osdetail =  do
     let orderquan =  read $ order!!4 :: Integer
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
+    liftIO $ logact logByteStringStdout mmsg                          
 
     when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
         liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
     
     when (matchmsgfun msg /= True ) $ do 
-        liftIO $ logact logByteStringStdout "take order part"                             
+        liftIO $ logact logByteStringStdout "take order partit"                             
         void $ publish "order:1" ("order" <> mmsg )
 
 generatehlsheet :: ByteString -> IO ()
