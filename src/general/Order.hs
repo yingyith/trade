@@ -188,8 +188,8 @@ pexpandordertorediszset side quan pr stamp = do
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
-   liftIO $ print ("expand record is -------------------------")
-   liftIO $ print (recorditem)
+   --liftIO $ print ("expand record is -------------------------")
+   --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let lastorderquant = read $ recorditem !!4 ::Integer
    let lastordertype = recorditem !!2 
@@ -202,7 +202,7 @@ pexpandordertorediszset side quan pr stamp = do
                     "Taken"-> show (quan+ lastorderquant)
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
-   liftIO $ print (side ++ "is -------------------------------")
+   --liftIO $ print (side ++ "is -------------------------------")
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "--------------pexpandorder--------------")
    let shstate = case side of 
                       "BUY" -> show $ fromEnum Process
@@ -237,9 +237,6 @@ hlfendordertorediszset quan  stamp  = do
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
    let pr = recorditem !! 5
-   --liftIO $ print ("bef haldend record is -------------------------")
-   --liftIO $ print (recorditem)
-   --liftIO $ print (pr)
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
