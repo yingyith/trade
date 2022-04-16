@@ -38,9 +38,11 @@ import Control.Monad.Trans (liftIO)
 import Httpstructure
 import Data.List.Split as DLT
 import Analysistructure as AS
+import Numeric
 import Globalvar
 import Data.Typeable
 import Logger
+import Myutils
 import Colog (LogAction,logByteStringStdout)
 
 data Ostate = Prepare | Process | HalfDone | Cprepare | Cprocess | Ccancel | Done
@@ -103,7 +105,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let shquant = show (lastquan*2 )
        let shstate =  show $ fromEnum Ccancel
        let lmergequan = show lastquan
-       let shgrid = show grid
+       let shgrid = showdouble grid
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]

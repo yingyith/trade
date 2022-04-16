@@ -124,7 +124,7 @@ matchmsgfun :: ByteString -> Redis String
 matchmsgfun msg = do
     let  matchkline = DB.drop 11 $ DB.take 24 msg 
     let  matchkmsg = BLU.fromString "adausdt@kline"
-    let  matchacevent = DB.drop 90 $ DB.take 105 msg 
+    let  matchacevent = DB.drop 90 $ DB.take 103 msg 
     let  matchacmsg = BLU.fromString "ACCOUNT_UPDATE"
     let  matchorevent = DB.drop 90 $ DB.take 108 msg 
     let  matchormsg = BLU.fromString "ORDER_TRADE_UPDATE"

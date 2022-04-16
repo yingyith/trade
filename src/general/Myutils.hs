@@ -4,7 +4,8 @@
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
 -- I execute this with `stack runghc ManualPubSub.hs`
 module Myutils (
-       outString
+       outString,
+       showdouble
 ) where
 
 import Database.Redis as R
@@ -30,8 +31,12 @@ import Httpstructure
 import Data.List.Split as DLT
 import Analysistructure as AS
 import Globalvar
+import Numeric 
 
 outString :: Value -> Text
 outString a =  case a of 
                    DAT.String l -> l
+
+showdouble :: Double -> String
+showdouble x = showFFloat Nothing x "" 
 
