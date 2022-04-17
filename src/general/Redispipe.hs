@@ -370,7 +370,7 @@ opclHandler channel  msg = do
                   when (curside == "SELL" ) $ do 
                           runRedis conn (cproordertorediszset initquan curorderpr curtime)
                   when (curside == "BUY" ) $ do 
-                          runRedis conn (cproordertorediszset initquan curorderpr curtime)
+                          runRedis conn (proordertorediszset initquan curorderpr curtime)
 
 acupdHandler :: RedisChannel -> ByteString -> IO ()
 acupdHandler channel  msg = do

@@ -283,6 +283,7 @@ cproordertorediszset quan pr stamp  = do
    when (recordstate == (show $ fromEnum Cprepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"-------starttake order---------")
        liftIO $ takeorder "SELL" quan pr
 
 ccanordertorediszset :: Double -> Redis ()
