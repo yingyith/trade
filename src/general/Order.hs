@@ -125,7 +125,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
                            LT -> show minquan
                            _  -> show quantity
        let shstate =  show $ fromEnum Prepare
-       let shgrid = show lastgrid
+       let shgrid = showdouble  grid
        let lmergequan ="0" 
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]

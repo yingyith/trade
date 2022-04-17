@@ -280,7 +280,7 @@ opclHandler channel  msg = do
               let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               runRedis conn (proordertorediszset orderquan pr curtime)
 
-         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>0.001)    ) $ do
+         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>(0.5*ordergrid)    )) $ do
               let pr = curpr-0.01
               runRedis conn (cproordertorediszset orderquan pr curtime)
 

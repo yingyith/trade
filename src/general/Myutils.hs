@@ -38,5 +38,5 @@ outString a =  case a of
                    DAT.String l -> l
 
 showdouble :: Double -> String
-showdouble x = showFFloat Nothing x "" 
+showdouble x = showFFloat (Just 4) x "" 
 
