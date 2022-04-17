@@ -187,6 +187,7 @@ takeorder a b c = do
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req POST url (ReqBodyUrlEnc params) jsonResponse httpparams
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("bef take order!--")
       response <- areq
       let result = responseBody response :: Value
       liftIO $ logact logByteStringStdout $ BC.pack  $ show (result,a,b,c)
