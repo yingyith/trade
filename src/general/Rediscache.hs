@@ -261,8 +261,9 @@ mseriesFromredis conn msg = do
                   let sumres = (fst biginterval) + secondnum
                   logact logByteStringStdout $ BC.pack $ (show ("++--",timecurtime,biginterval,secondnum,sumres))
                   curtimestampi <- getcurtimestamp
-                  runRedis conn $ do
-                     preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval)
+                  when (fst biginterval > 50) $ do 
+                      runRedis conn $ do
+                         preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval)
      --genposgrid hlsheet dcp
   --write order command to zset
      

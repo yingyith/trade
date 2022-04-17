@@ -79,6 +79,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
    --liftIO $ print ("++++bef preorcpre record is -------------------------")
    --liftIO $ print (recorditem)
    let lastprr = recorditem !! 5
+   let lastorderid = recorditem !! 3
    --liftIO $ print (lastprr)
    let lastpr = read (recorditem !! 5) :: Double
    let lastgrid = read (recorditem !! 6) :: Double
@@ -86,14 +87,16 @@ preorcpreordertorediszset sumres pr  stamp grid = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"----preorcpre---------" )
-   when (DL.any (== recordstate) [(show $ fromEnum HalfDone),(show $ fromEnum Cprocess)] && ((recordstate == (show $ fromEnum Cprocess)) && (pr< (lastpr-grid)) ))  $ do -- sametime the append pr should have condition of close price
+   when (DL.any (== recordstate) [(show $ fromEnum Ccancel)] )  $ do 
+       -- cancel state ==>if curpr < openpr-grid ,then to halfdone
+       -- cancel state ==>if curpr > openpr-grid ,then to prepare new quant    merge quant
        --merge two order need add two record,add a field that record last quantity bef merge 
        let quanty = toInteger sumres
        let quantity = case compare quanty 10 of
                            LT -> quanty 
                            GT -> 10 
                            _  -> 100
-       let orderid =  show stamp 
+       let orderid =  lastorderid 
        let side = "BUY" :: String
        let shprice =  show pr
        let minquan = (round (10/pr))+2 :: Integer
@@ -102,11 +105,23 @@ preorcpreordertorediszset sumres pr  stamp grid = do
                            LT -> show minquan
                            _  -> show quantity
        --liftIO $ print (shquant)
-       let shquant = show (lastquan*2 )
-       let shstate =  show $ fromEnum Ccancel
-       let lmergequan = show lastquan
        let shgrid = showdouble grid
-       when (quantity > 0) $ do
+       let lmergequan = show (lastquan+mergequan)
+
+       when (pr< (lastpr-grid)) $ do  
+           let shstate =  show $ fromEnum Prepare
+           let shquant = show (lastquan )
+           let shprice = showdouble pr
+           let lmergequan = show (lastquan+mergequan)
+           --need more strict condition ,and double the quant`
+           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+           void $ zadd abykeystr [(-stampi,abyvaluestr)]
+
+       when (pr>= (lastpr+0.5*grid)) $ do
+           let shstate =  show $ fromEnum HalfDone
+           let lmergequan = show mergequan
+           let shquant = show (lastquan )
+           let shprice = lastprr
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
@@ -135,7 +150,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let quantity = lastquan 
        let orderid =  show stamp 
        let side = "SELL" :: String
-       let shprice =  show (lastpr+grid)
+       let shprice =  show (lastpr)
        let shquant =  show quantity
        let shstate =  show $ fromEnum Cprepare
        let lmergequan = show lastquan
@@ -144,8 +159,8 @@ preorcpreordertorediszset sumres pr  stamp grid = do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
-proordertorediszset :: Integer -> Double -> Double -> Redis ()
-proordertorediszset quan pr stamp = do 
+proordertorediszset ::  Double -> Double -> Redis ()
+proordertorediszset pr stamp = do 
    -- alter the state 
    --res <- zrange abykeystr 0 1
    --let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
@@ -161,9 +176,10 @@ proordertorediszset quan pr stamp = do
    let lastorderid = recorditem !! 3
    --liftIO $ print ("bef process record is -------------------------")
    let recordstate = DL.last recorditem
+   let lastquan = read (recorditem !! 4) :: Integer
    let orderid =  show stamp 
-   let shprice =  show pr
-   let shquant =  show quan
+   let shprice =  showdouble pr
+   let shquant =  show lastquan
    let shstate =  show $ fromEnum Process
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
@@ -175,7 +191,7 @@ proordertorediszset quan pr stamp = do
    when (recordstate == (show $ fromEnum Prepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
-       liftIO $ takeorder "BUY" quan pr
+       liftIO $ takeorder "BUY" lastquan pr
 
 pexpandordertorediszset :: String -> Integer -> Double -> Double -> Redis ()
 pexpandordertorediszset side quan pr stamp = do 
@@ -255,8 +271,8 @@ hlfendordertorediszset quan  stamp  = do
 
 
 
-cproordertorediszset :: Integer -> Double -> Double -> Redis ()
-cproordertorediszset quan pr stamp  = do 
+cproordertorediszset :: Double -> Redis ()
+cproordertorediszset stamp  = do 
    let abykeystr = BL.fromString orderkey
    let side = "SELL" :: String
    let coin = "ADA" :: String
@@ -270,11 +286,12 @@ cproordertorediszset quan pr stamp  = do
    --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let lastgrid = read (recorditem !! 6) :: Double
+   let lastquan = read (recorditem !! 4) :: Integer
    let lastpr = read (recorditem !! 5) :: Double
    let recordstate = DL.last recorditem
    let orderid =  show lastorderid ::String
    let shprice =  show lastpr
-   let shquant =  show quan
+   let shquant =  show lastquan
    let shstate =  show $ fromEnum Cprocess
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
@@ -284,7 +301,7 @@ cproordertorediszset quan pr stamp  = do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"-------starttake order---------")
-       liftIO $ takeorder "SELL" quan pr
+       liftIO $ takeorder "SELL" lastquan (lastpr+lastgrid)
 
 ccanordertorediszset :: Double -> Redis ()
 ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, then after weboscket recieve order cancel event,then can merge order/append new pos,then set to halfdone
@@ -292,9 +309,9 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    --res <- zrange abykeystr 0 1
    --let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
    let abykeystr = BL.fromString orderkey
-   let side = "BUY" :: String
+   let side = "SELL" :: String
    let coin = "ADA" :: String
-   let otype = "Open" :: String
+   let otype = "Cancel" :: String
    res <- zrange abykeystr 0 0
    let tdata = case res of 
                     Right c -> c
@@ -303,7 +320,7 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    let lastorderid = recorditem !! 3
    let recordstate = DL.last recorditem
    let orderid =  show stamp 
-   let shstate =  show $ fromEnum HalfDone
+   let shstate =  show $ fromEnum Ccancel
    let lastgrid = read (recorditem !! 6) :: Double
    let shprice = recorditem !! 5
    let shquant = recorditem !! 4
@@ -312,7 +329,7 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    let shgrid = show lastgrid
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------cancel---------")
    --only add but not alter ,if state change ,add a new record,but need to trace the orderid
-   when (recordstate == (show $ fromEnum Prepare) ) $ do
+   when (recordstate == (show $ fromEnum Cprocess) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
        liftIO $ cancelorder "SELL"

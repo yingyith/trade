@@ -278,11 +278,11 @@ opclHandler channel  msg = do
               logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
               let fpr =  curpr
               let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
-              runRedis conn (proordertorediszset orderquan pr curtime)
+              runRedis conn (proordertorediszset  pr curtime)
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>((-0.5)*ordergrid)    )) $ do
-              let pr = orderpr+ ordergrid
-              runRedis conn (cproordertorediszset orderquan pr curtime)
+              --let pr = orderpr+ ordergrid
+              runRedis conn (cproordertorediszset   curtime)
 
          when ((orderstate == (show $ fromEnum Cprocess)) && ((orderpr-curpr)>ordergrid)    ) $ do
               runRedis conn (ccanordertorediszset curtime)
@@ -366,11 +366,10 @@ opclHandler channel  msg = do
                           logact logByteStringStdout $ B.pack  ("bef order update sell filled redis---------")
                           runRedis conn (cendordertorediszset curquanty curtime)  
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
-                  let initquan = 0
                   when (curside == "SELL" ) $ do 
-                          runRedis conn (cproordertorediszset initquan curorderpr curtime)
+                          runRedis conn (cproordertorediszset  curtime)
                   when (curside == "BUY" ) $ do 
-                          runRedis conn (proordertorediszset initquan curorderpr curtime)
+                          runRedis conn (proordertorediszset curorderpr  curtime)
 
 acupdHandler :: RedisChannel -> ByteString -> IO ()
 acupdHandler channel  msg = do
