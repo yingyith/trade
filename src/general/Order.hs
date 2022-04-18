@@ -328,7 +328,6 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    let lmergequan = show mergequan
    let shgrid = show lastgrid
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------cancel---------")
-   --only add but not alter ,if state change ,add a new record,but need to trace the orderid
    when (recordstate == (show $ fromEnum Cprocess) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
