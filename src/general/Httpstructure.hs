@@ -138,6 +138,7 @@ cancelorder side = do
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req DELETE url NoReqBody lbsResponse  params
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----")
       response <- areq
       return ()
     --cancel all the order ,if  any more need can use api cancel detail order
@@ -186,11 +187,11 @@ takeorder a b c = do
       --增加对astring的hmac的处理 
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
-      let areq = req POST url (ReqBodyUrlEnc params) jsonResponse httpparams
+      let areq = req POST url (ReqBodyUrlEnc params) ignoreResponse httpparams
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("bef take order!--")
       response <- areq
-      let result = responseBody response :: Value
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show (result,a,b,c)
+     -- let result = responseBody response :: Value
+      --liftIO $ logact logByteStringStdout $ BC.pack  $ show (result,a,b,c)
       --let ares = fromJust $  parseMaybe (.: "signature") result :: String
       --liftIO $ print ("ss")
       --liftIO $ print (response)

@@ -253,7 +253,7 @@ handlerThread conn ctrl tvar = do
 
 opclHandler :: RedisChannel -> ByteString -> IO ()
 opclHandler channel  msg = do
-    conn <- connect defaultConnectInfo
+    conn <- (connect defaultConnectInfo)
     logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
@@ -367,9 +367,9 @@ opclHandler channel  msg = do
                           runRedis conn (cendordertorediszset curquanty curtime)  
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
                   when (curside == "SELL" ) $ do 
-                          runRedis conn (cproordertorediszset  curtime)
+                      runRedis conn (cproordertorediszset  curtime)
                   when (curside == "BUY" ) $ do 
-                          runRedis conn (proordertorediszset curorderpr  curtime)
+                      runRedis conn (proordertorediszset curorderpr  curtime)
 
 acupdHandler :: RedisChannel -> ByteString -> IO ()
 acupdHandler channel  msg = do
