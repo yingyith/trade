@@ -7,6 +7,7 @@ import Database.Redis as R
 import Control.Concurrent (myThreadId ,forkIO ,threadDelay,ThreadId,killThread)
 import Control.Concurrent.Async
 import Control.Concurrent.STM
+import Control.Concurrent.STM.TBQueue
 import Control.Monad (forever, unless, void)
 import Control.Exception (catch,throwIO)
 import Colog (usingLoggerT,cmap,fmtMessage,logTextStdout,logTextHandle,logInfo)
@@ -223,6 +224,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
+    q <- newTBQueueIO 30 :: IO (TBQueue ())
     --liftIO $ print ("fork async now!")
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
@@ -231,12 +233,16 @@ ws connection = do
            void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler )]
            void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
-           void $ addChannels ctrll [] [("order:*"    , opclHandler       )]
+           void $ addChannels ctrll [] [("order:*"    , opclHandler  q    )]
            void $ addChannels ctrll [] [("ac:*"       , acupdHandler      )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            threadDelay 400000
         threadDelay 400000
         --sendbye connection conn 0 ctrll 
+    forkIO $ forever $  do
+        res <- atomically $ readTBQueue q
+        logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
+        return ()
     forever  $ do
        threadDelay 50000000
     return ()

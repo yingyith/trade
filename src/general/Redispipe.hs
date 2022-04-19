@@ -37,6 +37,7 @@ import Network.WebSockets (sendPong)
 import Network.WebSockets.Connection as NC
 import Control.Concurrent.Async as CA
 import Control.Concurrent.STM
+import Control.Concurrent.STM.TBQueue
 import Control.Concurrent 
 import Data.Text as T
 import Data.Text.IO as T
@@ -251,8 +252,8 @@ handlerThread conn ctrl tvar = do
 --listenkeyHandler :: ByteString -> IO ()
 --listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
-opclHandler :: RedisChannel -> ByteString -> IO ()
-opclHandler channel  msg = do
+opclHandler :: TBQueue () -> RedisChannel -> ByteString -> IO ()
+opclHandler tbq channel  msg = do
     conn <- (connect defaultConnectInfo)
     --logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
     let seperatemark = BLU.fromString ":::"
@@ -260,6 +261,7 @@ opclHandler channel  msg = do
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
     let detdata = wsdata $ fromJust restmsg
     let dettype = wstream $ fromJust restmsg
+    async $ (atomically $ writeTBQueue tbq ()) >> print "now-----"
     --logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg

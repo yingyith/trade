@@ -116,7 +116,7 @@ liskeytoredis a b = do
    void $ set key value
    void $ zremrangebyrank (BL.fromString orderkey) 0 2000
    void $ zremrangebyrank (BL.fromString secondkey) 0 2000
-   let abyvaluestr = BL.fromString  $ DL.intercalate "|" ["start","Buy","0","0","20","1","0","6"]
+   let abyvaluestr = BL.fromString  $ DL.intercalate "|" ["start","Buy","0","0","20","1","0","11"]
    void $ zadd (BL.fromString orderkey) [(0,abyvaluestr)]
    ---delete other key
 

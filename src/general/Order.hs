@@ -45,22 +45,32 @@ import Logger
 import Myutils
 import Colog (LogAction,logByteStringStdout)
 
-data Ostate = Prepare | Process | HalfDone | Cprepare | Cprocess | Ccancel | Done
+data Ostate = Prepare | Process |Proinit | Ppartdone | Pcancel | HalfDone | Cprepare | Cprocess | Cproinit | Cpartdone | Ccancel | Done
 instance Enum Ostate where 
-     toEnum 0 = Prepare
-     toEnum 1 = Process
-     toEnum 2 = HalfDone
-     toEnum 3 = Cprepare
-     toEnum 4 = Cprocess
-     toEnum 5 = Ccancel
-     toEnum 6 = Done
-     fromEnum Prepare  = 0
-     fromEnum Process  = 1
-     fromEnum HalfDone = 2
-     fromEnum Cprepare = 3
-     fromEnum Cprocess = 4
-     fromEnum Ccancel  = 5   -- need to merge 
-     fromEnum Done     = 6
+     toEnum 0   = Prepare
+     toEnum 1   = Process
+     toEnum 2   = Proinit  --take order and init successful with order id 
+     toEnum 3   = Ppartdone  --take order and init successful with order id 
+     toEnum 4   = Pcancel   
+     toEnum 5   = HalfDone -- order totoally finish
+     toEnum 6   = Cprepare
+     toEnum 7   = Cprocess
+     toEnum 8   = Cproinit --take order and init successful with order id
+     toEnum 9   = Cpartdone  --take order and init successful with order id 
+     toEnum 10  = Ccancel   
+     toEnum 11  = Done      -- order totoally finish 
+     fromEnum Prepare     = 0
+     fromEnum Process     = 1
+     fromEnum Proinit     = 2
+     fromEnum Ppartdone   = 3
+     fromEnum Pcancel     = 4
+     fromEnum HalfDone    = 5
+     fromEnum Cprepare    = 6
+     fromEnum Cprocess    = 7
+     fromEnum Cproinit    = 8
+     fromEnum Cpartdone   = 9
+     fromEnum Ccancel     = 10   -- need to merge 
+     fromEnum Done        = 11
 
 preorcpreordertorediszset :: Int -> Double  -> Integer -> Double -> Redis ()
 preorcpreordertorediszset sumres pr  stamp grid = do 
@@ -154,7 +164,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let shquant =  show quantity
        let shstate =  show $ fromEnum Cprepare
        let lmergequan = show lastquan
-       let shgrid = show lastgrid
+       let shgrid = show mergequan
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
@@ -289,7 +299,7 @@ cproordertorediszset stamp  = do
    let lastquan = read (recorditem !! 4) :: Integer
    let lastpr = read (recorditem !! 5) :: Double
    let recordstate = DL.last recorditem
-   let orderid =  show lastorderid ::String
+   let orderid =  lastorderid 
    let shprice =  show lastpr
    let shquant =  show lastquan
    let shstate =  show $ fromEnum Cprocess
@@ -319,7 +329,7 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
    let recordstate = DL.last recorditem
-   let orderid =  show stamp 
+   let orderid =  lastorderid 
    let shstate =  show $ fromEnum Ccancel
    let lastgrid = read (recorditem !! 6) :: Double
    let shprice = recorditem !! 5
@@ -344,12 +354,10 @@ cendordertorediszset quan  stamp = do
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
-   --liftIO $ print ("bef end record is -------------------------")
-   --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let pr = recorditem !! 5
    let recordstate = DL.last recorditem
-   let orderid =  show lastorderid ::String
+   let orderid =  lastorderid
    let lastgrid = read (recorditem !! 6) :: Double
    let shgrid = show lastgrid
    let shprice =  show pr
