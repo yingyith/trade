@@ -224,7 +224,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
-    q <- newTBQueueIO 30 :: IO (TBQueue ())
+    q <- newTBQueueIO 30 :: IO (TBQueue String)
     --liftIO $ print ("fork async now!")
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do

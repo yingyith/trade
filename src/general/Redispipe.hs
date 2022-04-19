@@ -252,7 +252,7 @@ handlerThread conn ctrl tvar = do
 --listenkeyHandler :: ByteString -> IO ()
 --listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 
-opclHandler :: TBQueue () -> RedisChannel -> ByteString -> IO ()
+opclHandler :: TBQueue String -> RedisChannel -> ByteString -> IO ()
 opclHandler tbq channel  msg = do
     conn <- (connect defaultConnectInfo)
     --logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
@@ -261,7 +261,7 @@ opclHandler tbq channel  msg = do
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
     let detdata = wsdata $ fromJust restmsg
     let dettype = wstream $ fromJust restmsg
-    async $ (atomically $ writeTBQueue tbq ()) >> print "now-----"
+    async $ (atomically $ writeTBQueue tbq "nownow" ) 
     --logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg
