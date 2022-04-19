@@ -218,6 +218,7 @@ ws connection = do
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
     connn <- connect defaultConnectInfo
+    connnn <- connect defaultConnectInfo
     --add init order for if websocket lost connection ,u shoulf reinit,or the state of the order filled is not complete ,both contain the quant and state 
     --first find the order redis record,match with api ,then alter it .insert new record to make up
 
@@ -233,7 +234,7 @@ ws connection = do
            void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler )]
            void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
-           void $ addChannels ctrll [] [("order:*"    , opclHandler  q    )]
+           void $ addChannels ctrll [] [("order:*"    , opclHandler  q connn   )]
            void $ addChannels ctrll [] [("ac:*"       , acupdHandler      )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            forkIO $ detailopHandler q 

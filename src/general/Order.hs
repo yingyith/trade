@@ -260,7 +260,7 @@ proinitordertorediszset quan pr stampi = do
    let lmergequan = show mergequan
    let stamp = fromIntegral stampi :: Double
    let shgrid = show lastgrid
-   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------preorder---------")
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------proinit---------")
    when (recordstate == (show $ fromEnum Process) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
