@@ -160,10 +160,10 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let quantity = lastquan 
        let orderid =  show stamp 
        let side = "SELL" :: String
-       let shprice =  show (lastpr)
+       let shprice =  show (lastpr+lastgrid)
        let shquant =  show quantity
        let shstate =  show $ fromEnum Cprepare
-       let lmergequan = show lastquan
+       let lmergequan = show mergequan
        let shgrid = show mergequan
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
