@@ -289,12 +289,12 @@ opclHandler tbq channel  msg = do
     conn <- (connect defaultConnectInfo)
     --logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
     let seperatemark = BLU.fromString ":::"
-    let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
+    let strturple = BL.fromStrict  $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
     let detdata = wsdata $ fromJust restmsg
     let dettype = wstream $ fromJust restmsg
     --async $ (atomically $ writeTBQueue tbq "nownow" ) 
-    --logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
+    logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg
          let msgitem = DLT.splitOn ":::" msgorigin 
