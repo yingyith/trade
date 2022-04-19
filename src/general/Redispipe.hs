@@ -383,7 +383,8 @@ opclHandler tbq channel  msg = do
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
-              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",curorderstate,curorderstate == "NEW")
+              let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
+              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",curorderstate,curorderstate == "NEW",curside,curside=="SELL",curside=="BUY")
               let cty            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
               let cpr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
               let corty          = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
@@ -394,28 +395,29 @@ opclHandler tbq channel  msg = do
               let otimestamp     = read otimestampstr  :: Int
               let curquanty      = round curquantyy    :: Integer
               let curorquanty    = round curortyy      :: Integer
-              let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
               --let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
                   when (curside == "BUY" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
-                          logact logByteStringStdout $ B.pack  ("bef order update partfilled redis---------")
+                          logact logByteStringStdout $ B.pack $ show ("bef order update partfilled redis---------")
                           runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
                        when (curquanty == curorquanty) $ do 
-                          logact logByteStringStdout $ B.pack  ("bef order update filled redis---------")
+                          logact logByteStringStdout $ B.pack $ show ("bef order update filled redis---------")
                           runRedis conn (hlfendordertorediszset curquanty curtime)  
                   when (curside == "SELL" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
-                          logact logByteStringStdout $ B.pack  ("bef order update sell partfilled redis---------")
+                          logact logByteStringStdout $ B.pack $ show ("bef order update sell partfilled redis---------")
                           runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
                        when (curquanty == curorquanty) $ do 
-                          logact logByteStringStdout $ B.pack  ("bef order update sell filled redis---------")
+                          logact logByteStringStdout $ B.pack $ show  ("bef order update sell filled redis---------")
                           runRedis conn (cendordertorediszset curquanty curtime)  
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
                   when (curside == "SELL" ) $ do 
+                      logact logByteStringStdout $ B.pack $ show ("---------",curside)
                       runRedis conn (cproinitordertorediszset curorquanty curorderpr otimestamp)
                   when (curside == "BUY" ) $ do 
+                      logact logByteStringStdout $ B.pack $ show ("---------",curside)
                       runRedis conn (proinitordertorediszset curorquanty curorderpr otimestamp)
 
 acupdHandler :: RedisChannel -> ByteString -> IO ()
