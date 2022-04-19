@@ -6,10 +6,12 @@
 module Order (
     Ostate (..),
     proordertorediszset,
+    proinitordertorediszset,
     hlfendordertorediszset,
     preorcpreordertorediszset,
     cproordertorediszset,
     ccanordertorediszset,
+    pcanordertorediszset,
     cendordertorediszset,
     ctestendordertorediszset,
     pexpandordertorediszset
@@ -203,6 +205,62 @@ proordertorediszset pr stamp = do
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
        liftIO $ takeorder "BUY" lastquan pr
 
+pcanordertorediszset :: Double -> Redis ()
+pcanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, then after weboscket recieve order cancel event,then can merge order/append new pos,then set to halfdone
+   let abykeystr = BL.fromString orderkey
+   let side = "SELL" :: String
+   let coin = "ADA" :: String
+   let otype = "Cancel" :: String
+   res <- zrange abykeystr 0 0
+   let tdata = case res of 
+                    Right c -> c
+   let lastrecord = BL.toString $ tdata !!0
+   let recorditem = DLT.splitOn "|" lastrecord
+   let lastorderid = recorditem !! 3
+   let recordstate = DL.last recorditem
+   let orderid =  lastorderid 
+   let shstate =  show $ fromEnum Ccancel
+   let lastgrid = read (recorditem !! 6) :: Double
+   let shprice = recorditem !! 5
+   let shquant = recorditem !! 4
+   let mergequan = read (recorditem !! 7) :: Integer
+   let lmergequan = show mergequan
+   let shgrid = show lastgrid
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------pcancel---------")
+   when (DL.any (== recordstate) [(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] )  $ do 
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
+       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       liftIO $ cancelorder "BUY"
+
+proinitordertorediszset :: Integer -> Double -> Int -> Redis ()
+proinitordertorediszset quan pr stampi = do 
+   let abykeystr = BL.fromString orderkey
+   let side = "BUY" :: String
+   let coin = "ADA" :: String
+   let otype = "init" :: String
+   res <- zrange abykeystr 0 0
+   let tdata = case res of 
+                    Right c -> c
+   let lastrecord = BL.toString $ tdata !!0
+   let recorditem = DLT.splitOn "|" lastrecord
+   let lastorderid = recorditem !! 3
+   let recordstate = DL.last recorditem
+   let lastquan  = read (recorditem !! 4) :: Integer
+   let orderid   =  show stampi 
+   let shprice   =  showdouble pr
+   let shquant   =  show quan
+   let shstate   =  show $ fromEnum Proinit
+   let lastgrid  = read (recorditem !! 6) :: Double
+   let mergequan = read (recorditem !! 7) :: Integer
+   let lmergequan = show mergequan
+   let stamp = fromIntegral stampi :: Double
+   let shgrid = show lastgrid
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------preorder---------")
+   when (recordstate == (show $ fromEnum Process) ) $ do
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
+       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+
+
 pexpandordertorediszset :: String -> Integer -> Double -> Double -> Redis ()
 pexpandordertorediszset side quan pr stamp = do 
    -- this operation only append the order detail ,not alter the state
@@ -230,17 +288,13 @@ pexpandordertorediszset side quan pr stamp = do
                     "Taken"-> show (quan+ lastorderquant)
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
-   --liftIO $ print (side ++ "is -------------------------------")
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "--------------pexpandorder--------------")
    let shstate = case side of 
-                      "BUY" -> show $ fromEnum Process
-                      "SELL" -> show $ fromEnum Cprocess
-   let prestate = show $ fromEnum Prepare
-   let cprestate = show $ fromEnum Cprepare
+                      "BUY" -> show $ fromEnum Ppartdone
+                      "SELL" -> show $ fromEnum Cpartdone
+   let prestate = show $ fromEnum Proinit
+   let cprestate = show $ fromEnum Cproinit
    let tpred = (DL.any (recordstate ==) [prestate, cprestate ,shstate])
-   --let abyvaluestr = [coin,side,otype,lastorderid,shquant,shprice,shstate]
-   --let abyvaluestr = intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shstate]
-   --let abyvaluestr = BL.fromString  $ intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shstate]
    let shgrid = show lastgrid
    --only add but not alter ,if state change ,add a new record,but need to trace the orderid
    when (tpred == True) $ do
@@ -275,7 +329,7 @@ hlfendordertorediszset quan  stamp  = do
    let shstate =  show $ fromEnum HalfDone
    let shgrid  = show lastgrid
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----hlfdone--------")
-   when (recordstate == (show $ fromEnum Process) ) $ do
+   when (DL.any (== recordstate) [(show $ fromEnum Proinit),(show $ fromEnum Ppartdone)] ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
@@ -315,9 +369,6 @@ cproordertorediszset stamp  = do
 
 ccanordertorediszset :: Double -> Redis ()
 ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, then after weboscket recieve order cancel event,then can merge order/append new pos,then set to halfdone
-   -- alter the state 
-   --res <- zrange abykeystr 0 1
-   --let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
    let abykeystr = BL.fromString orderkey
    let side = "SELL" :: String
    let coin = "ADA" :: String
@@ -338,7 +389,7 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    let lmergequan = show mergequan
    let shgrid = show lastgrid
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------cancel---------")
-   when (recordstate == (show $ fromEnum Cprocess) ) $ do
+   when (DL.any (== recordstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] )  $ do 
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
        liftIO $ cancelorder "SELL"
