@@ -277,7 +277,7 @@ detailopHandler tbq = do
               runRedis conn (proordertorediszset  etpr curtime)
         when (et == "sopen") $ do 
               runRedis conn (cproordertorediszset   curtime)
-        when (et == "cancel") $ do 
+        when (et == "bcancel") $ do 
               runRedis conn (pcanordertorediszset curtime)
 
         logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
@@ -307,7 +307,7 @@ opclHandler tbq channel  msg = do
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
          logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
-         when (orderstate == (show $ fromEnum Prepare)) $ do
+         when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do
               logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
               let fpr =  curpr
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
@@ -321,12 +321,12 @@ opclHandler tbq channel  msg = do
               (atomically $ writeTBQueue tbq aevent ) 
               --runRedis conn (cproordertorediszset   curtime)
 
-         when ((orderstate == (show $ fromEnum Cprocess)) && ((orderpr-curpr)>ordergrid)    ) $ do
+         when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
               let aevent = Opevent "scancel" 0 0
               (atomically $ writeTBQueue tbq aevent ) 
 
-         when ((orderstate == (show $ fromEnum Process)) && ((orderpr-curpr)>ordergrid)    ) $ do
-              let aevent = Opevent "cancel" 0 0
+         when (DL.any (== orderstate) [(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
+              let aevent = Opevent "bcancel" 0 0
               (atomically $ writeTBQueue tbq aevent ) 
               --runRedis conn (ccanordertorediszset curtime)
 --{"stream":"ygUttsOxssq35UpQQ8U4n64fHhJWAJDGPopFolWbriQd0C3UvWvMTXxM0zIbam3C","data":{"e":"ACCOUNT_UPDATE","T":1649411079451,"E":1649411079456,"a":{"B":[{"a":"USDT","wb":"1596.37297494","cw":"1596.37297494","bc":"0"}],"P":[{"s":"ADAUSDT","pa":"22","ep":"1.08920","cr":"290.31149981","up":"0.00836594","mt":"cross","iw":"0","ps":"BOTH","ma":"USDT"}],"m":"ORDER"}}}
@@ -412,7 +412,7 @@ opclHandler tbq channel  msg = do
                           runRedis conn (cendordertorediszset curquanty curtime)  
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
                   when (curside == "SELL" ) $ do 
-                      runRedis conn (cproordertorediszset  curtime)
+                      runRedis conn (cproinitordertorediszset curorquanty curorderpr otimestamp)
                   when (curside == "BUY" ) $ do 
                       runRedis conn (proinitordertorediszset curorquanty curorderpr otimestamp)
 

@@ -7,6 +7,7 @@ module Order (
     Ostate (..),
     proordertorediszset,
     proinitordertorediszset,
+    cproinitordertorediszset,
     hlfendordertorediszset,
     preorcpreordertorediszset,
     cproordertorediszset,
@@ -393,6 +394,34 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
        liftIO $ cancelorder "SELL"
+
+cproinitordertorediszset :: Integer -> Double -> Int -> Redis ()
+cproinitordertorediszset quan pr stampi = do 
+   let abykeystr = BL.fromString orderkey
+   let side = "SELL" :: String
+   let coin = "ADA" :: String
+   let otype = "init" :: String
+   res <- zrange abykeystr 0 0
+   let tdata = case res of 
+                    Right c -> c
+   let lastrecord = BL.toString $ tdata !!0
+   let recorditem = DLT.splitOn "|" lastrecord
+   let lastorderid = recorditem !! 3
+   let recordstate = DL.last recorditem
+   let lastquan  = read (recorditem !! 4) :: Integer
+   let orderid   =  show stampi 
+   let shprice   =  showdouble pr
+   let shquant   =  show quan
+   let shstate   =  show $ fromEnum Cproinit
+   let lastgrid  = read (recorditem !! 6) :: Double
+   let mergequan = read (recorditem !! 7) :: Integer
+   let lmergequan = show mergequan
+   let stamp = fromIntegral stampi :: Double
+   let shgrid = show lastgrid
+   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "---------cproinitorder---------")
+   when (recordstate == (show $ fromEnum Process) ) $ do
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
+       void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 cendordertorediszset :: Integer  -> Double -> Redis ()
 cendordertorediszset quan  stamp = do 
