@@ -272,13 +272,25 @@ detailopHandler tbq = do
         let etquan = quant res
         let etpr = price res
         when (et == "scancel") $ do 
-              runRedis conn (ccanordertorediszset curtime)
+              (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
+              case res of 
+                  True  -> cancelorder "SELL" 
+                  False -> return () 
         when (et == "bopen") $ do 
-              runRedis conn (proordertorediszset  etpr curtime)
+              (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
+              case res of 
+                  True  -> takeorder "BUY" lastquan apr
+                  False -> return () 
         when (et == "sopen") $ do 
-              runRedis conn (cproordertorediszset   curtime)
+              (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
+              case res of 
+                  True  -> takeorder "SELL" lastquan apr
+                  False -> return () 
         when (et == "bcancel") $ do 
-              runRedis conn (pcanordertorediszset curtime)
+              (lastquan,res) <- runRedis conn (pcanordertorediszset curtime)
+              case res of 
+                  True  -> cancelorder "BUY" 
+                  False -> return () 
 
         logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
         return ()
