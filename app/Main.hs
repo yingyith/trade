@@ -237,12 +237,12 @@ ws connection = do
            void $ addChannels ctrll [] [("ac:*"       , acupdHandler      )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            threadDelay 400000
-        threadDelay 400000
+        forkIO $ forever $  do
+            res <- atomically $ readTBQueue q
+            logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
+            return ()
+            threadDelay 400000
         --sendbye connection conn 0 ctrll 
-    forkIO $ forever $  do
-        res <- atomically $ readTBQueue q
-        logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
-        return ()
     forever  $ do
        threadDelay 50000000
     return ()
