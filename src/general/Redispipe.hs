@@ -257,7 +257,8 @@ handlerThread conn ctrl tvar = do
 data Opevent = Opevent {
                   etype :: String,
                   quant :: Integer,
-                  price :: Double
+                  price :: Double,
+                  etime :: Int 
 }  deriving (Show,Generic) 
 
 detailopHandler :: TBQueue Opevent -> IO () 
@@ -271,6 +272,7 @@ detailopHandler tbq = do
         let et = etype res
         let etquan = quant res
         let etpr = price res
+        let etimee = etime res
         when (et == "scancel") $ do 
               (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
               case res of 
@@ -291,6 +293,12 @@ detailopHandler tbq = do
               case res of 
                   True  -> cancelorder "BUY" 
                   False -> return () 
+
+        when (et == "binit") $ do 
+              runRedis conn (proinitordertorediszset etquan etpr etimee)
+
+        when (et == "sinit") $ do 
+              runRedis conn (cproinitordertorediszset etquan etpr etimee)
 
         logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
         return ()
@@ -325,22 +333,22 @@ opclHandler tbq conn channel  msg = do
               logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
               let fpr =  curpr
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
-              let aevent = Opevent "bopen"  0 fpr
+              let aevent = Opevent "bopen"  0 fpr 0
               (atomically $ writeTBQueue tbq aevent ) 
               --runRedis conn (proordertorediszset  pr curtime)
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>((-0.5)*ordergrid)    )) $ do
               --let pr = orderpr+ ordergrid
-              let aevent = Opevent "sopen" 0 0
+              let aevent = Opevent "sopen" 0 0 0
               (atomically $ writeTBQueue tbq aevent ) 
               --runRedis conn (cproordertorediszset   curtime)
 
          when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
-              let aevent = Opevent "scancel" 0 0
+              let aevent = Opevent "scancel" 0 0 0
               (atomically $ writeTBQueue tbq aevent ) 
 
          when (DL.any (== orderstate) [(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
-              let aevent = Opevent "bcancel" 0 0
+              let aevent = Opevent "bcancel" 0 0 0
               (atomically $ writeTBQueue tbq aevent ) 
               --runRedis conn (ccanordertorediszset curtime)
 --{"stream":"ygUttsOxssq35UpQQ8U4n64fHhJWAJDGPopFolWbriQd0C3UvWvMTXxM0zIbam3C","data":{"e":"ACCOUNT_UPDATE","T":1649411079451,"E":1649411079456,"a":{"B":[{"a":"USDT","wb":"1596.37297494","cw":"1596.37297494","bc":"0"}],"P":[{"s":"ADAUSDT","pa":"22","ep":"1.08920","cr":"290.31149981","up":"0.00836594","mt":"cross","iw":"0","ps":"BOTH","ma":"USDT"}],"m":"ORDER"}}}
@@ -426,10 +434,14 @@ opclHandler tbq conn channel  msg = do
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
                   when (curside == "SELL" ) $ do 
                       logact logByteStringStdout $ B.pack $ show ("---------",curside)
-                      runRedis conn (cproinitordertorediszset curorquanty curorderpr otimestamp)
+                      let aevent = Opevent "sinit" curorquanty curorderpr otimestamp
+                      (atomically $ writeTBQueue tbq aevent ) 
+                      --runRedis conn (cproinitordertorediszset curorquanty curorderpr otimestamp)
                   when (curside == "BUY" ) $ do 
                       logact logByteStringStdout $ B.pack $ show ("---------",curside)
-                      runRedis conn (proinitordertorediszset curorquanty curorderpr otimestamp)
+                      let aevent = Opevent "binit" curorquanty curorderpr otimestamp
+                      (atomically $ writeTBQueue tbq aevent ) 
+                     -- runRedis conn (proinitordertorediszset curorquanty curorderpr otimestamp)
 
 acupdHandler :: RedisChannel -> ByteString -> IO ()
 acupdHandler channel  msg = do
