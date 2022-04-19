@@ -224,7 +224,7 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
-    q <- newTBQueueIO 30 :: IO (TBQueue String)
+    q <- newTBQueueIO 30 :: IO (TBQueue Opevent)
     --liftIO $ print ("fork async now!")
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
@@ -236,12 +236,7 @@ ws connection = do
            void $ addChannels ctrll [] [("order:*"    , opclHandler  q    )]
            void $ addChannels ctrll [] [("ac:*"       , acupdHandler      )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
-           forkIO $ forever $  do
-               logact logByteStringStdout $ B.pack $ show ("killbef thread!")
-               res <- atomically $ readTBQueue q
-               logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
-               return ()
-               threadDelay 400000
+           forkIO $ detailopHandler q 
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000

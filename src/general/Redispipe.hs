@@ -16,6 +16,8 @@ module Redispipe
       showChannels,
       sndtocacheHandler,
       acupdHandler,
+      detailopHandler,
+      Opevent (etype,price,quant),
       analysisHandler
 
     ) where
@@ -251,8 +253,38 @@ handlerThread conn ctrl tvar = do
 -- multi command operation now
 --listenkeyHandler :: ByteString -> IO ()
 --listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
+--
+data Opevent = Opevent {
+                  etype :: String,
+                  quant :: Integer,
+                  price :: Double
+}  deriving (Show,Generic) 
 
-opclHandler :: TBQueue String -> RedisChannel -> ByteString -> IO ()
+detailopHandler :: TBQueue Opevent -> IO () 
+detailopHandler tbq = do 
+    conn <- (connect defaultConnectInfo)
+    forever $  do
+        logact logByteStringStdout $ B.pack $ show ("killbef thread!")
+        res <- atomically $ readTBQueue tbq
+        currtime <- getcurtimestamp 
+        let curtime = fromInteger currtime ::Double
+        let et = etype res
+        let etquan = quant res
+        let etpr = price res
+        when (et == "scancel") $ do 
+              runRedis conn (ccanordertorediszset curtime)
+        when (et == "bopen") $ do 
+              runRedis conn (proordertorediszset  etpr curtime)
+        when (et == "sopen") $ do 
+              runRedis conn (cproordertorediszset   curtime)
+        when (et == "") $ do 
+              return ()
+
+        logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
+        return ()
+        
+
+opclHandler :: TBQueue Opevent -> RedisChannel -> ByteString -> IO ()
 opclHandler tbq channel  msg = do
     conn <- (connect defaultConnectInfo)
     --logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
@@ -261,7 +293,7 @@ opclHandler tbq channel  msg = do
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
     let detdata = wsdata $ fromJust restmsg
     let dettype = wstream $ fromJust restmsg
-    async $ (atomically $ writeTBQueue tbq "nownow" ) 
+    --async $ (atomically $ writeTBQueue tbq "nownow" ) 
     --logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg
@@ -274,21 +306,25 @@ opclHandler tbq channel  msg = do
          let orderstate = DL.last order
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
-         currtime <- getcurtimestamp 
-         let curtime = fromInteger currtime ::Double
          logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
          when (orderstate == (show $ fromEnum Prepare)) $ do
               logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
               let fpr =  curpr
-              let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
-              runRedis conn (proordertorediszset  pr curtime)
+              --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
+              let aevent = Opevent "bopen"  0 fpr
+              (atomically $ writeTBQueue tbq aevent ) 
+              --runRedis conn (proordertorediszset  pr curtime)
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>((-0.5)*ordergrid)    )) $ do
               --let pr = orderpr+ ordergrid
-              runRedis conn (cproordertorediszset   curtime)
+              let aevent = Opevent "sopen" 0 0
+              (atomically $ writeTBQueue tbq aevent ) 
+              --runRedis conn (cproordertorediszset   curtime)
 
          when ((orderstate == (show $ fromEnum Cprocess)) && ((orderpr-curpr)>ordergrid)    ) $ do
-              runRedis conn (ccanordertorediszset curtime)
+              let aevent = Opevent "scancel" 0 0
+              (atomically $ writeTBQueue tbq aevent ) 
+              --runRedis conn (ccanordertorediszset curtime)
 --{"stream":"ygUttsOxssq35UpQQ8U4n64fHhJWAJDGPopFolWbriQd0C3UvWvMTXxM0zIbam3C","data":{"e":"ACCOUNT_UPDATE","T":1649411079451,"E":1649411079456,"a":{"B":[{"a":"USDT","wb":"1596.37297494","cw":"1596.37297494","bc":"0"}],"P":[{"s":"ADAUSDT","pa":"22","ep":"1.08920","cr":"290.31149981","up":"0.00836594","mt":"cross","iw":"0","ps":"BOTH","ma":"USDT"}],"m":"ORDER"}}}
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
