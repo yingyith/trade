@@ -330,10 +330,9 @@ opclHandler tbq conn channel  msg = do
          let curpr = read $ kclose kline :: Double
          logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
          when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do
-              logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
-              let fpr =  curpr
+              --logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
-              let aevent = Opevent "bopen"  0 fpr 0
+              let aevent = Opevent "bopen"  0 curpr 0
               (atomically $ writeTBQueue tbq aevent ) 
               --runRedis conn (proordertorediszset  pr curtime)
 
@@ -355,7 +354,7 @@ opclHandler tbq conn channel  msg = do
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = outString eventstr 
-         logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
+         --logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
         -- when (eventname == "outboundAccountPosition") $ do 
         --      let eventstr = fromJust $ detdata ^? key "e"
         --      let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
@@ -433,12 +432,12 @@ opclHandler tbq conn channel  msg = do
                           runRedis conn (cendordertorediszset curquanty otimestampd)  
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
                   when (curside == "SELL" ) $ do 
-                      logact logByteStringStdout $ B.pack $ show ("---------",curside)
+                     -- logact logByteStringStdout $ B.pack $ show ("---------",curside)
                       let aevent = Opevent "sinit" curorquanty curorderpr otimestamp
                       (atomically $ writeTBQueue tbq aevent ) 
                       --runRedis conn (cproinitordertorediszset curorquanty curorderpr otimestamp)
                   when (curside == "BUY" ) $ do 
-                      logact logByteStringStdout $ B.pack $ show ("---------",curside)
+                     -- logact logByteStringStdout $ B.pack $ show ("---------",curside)
                       let aevent = Opevent "binit" curorquanty curorderpr otimestamp
                       (atomically $ writeTBQueue tbq aevent ) 
                      -- runRedis conn (proinitordertorediszset curorquanty curorderpr otimestamp)
