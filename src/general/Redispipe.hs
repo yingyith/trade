@@ -383,7 +383,7 @@ opclHandler tbq channel  msg = do
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
-              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",show curorderstate)
+              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",curorderstate,curorderstate == "NEW")
               let cty            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
               let cpr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
               let corty          = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
