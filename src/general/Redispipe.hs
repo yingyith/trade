@@ -346,8 +346,8 @@ opclHandler tbq conn channel  msg = do
               
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
-         let eventname = outString eventstr 
-         --logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
+         let eventname = T.unpack $ outString eventstr 
+         logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
         -- when (eventname == "outboundAccountPosition") $ do 
         --      let eventstr = fromJust $ detdata ^? key "e"
         --      let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
