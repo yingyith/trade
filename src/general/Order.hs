@@ -205,7 +205,7 @@ proordertorediszset pr stamp = do
        True  ->  do
                     let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
                     void $ zadd abykeystr [(-stamp,abyvaluestr)]
-                    return (lastquan,(True,pr))
+                    return (lastquan,(True,pr+0.001))
        False ->  return (lastquan,(False,pr))
 
 pcanordertorediszset :: Double -> Redis (Integer,Bool)

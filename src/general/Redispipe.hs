@@ -329,7 +329,8 @@ opclHandler tbq conn channel  msg = do
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
          logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
-         when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do
+         --when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do  if < ,reset to origin
+         when ((orderstate == (show $ fromEnum Prepare)) )$ do
               --logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               let aevent = Opevent "bopen"  0 curpr 0
@@ -341,7 +342,8 @@ opclHandler tbq conn channel  msg = do
                
               --runRedis conn (proordertorediszset  pr curtime)
 
-         when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>((-0.5)*ordergrid)    )) $ do
+         --when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>((-0.5)*ordergrid)    )) $ do
+         when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
               --let pr = orderpr+ ordergrid
               let aevent = Opevent "sopen" 0 0 0
               atomically $  do 
