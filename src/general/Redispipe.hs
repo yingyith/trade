@@ -400,7 +400,9 @@ opclHandler tbq conn channel  msg = do
               let corderid            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "c")
               logact logByteStringStdout $ B.pack  $ show ("b11eforderupdate1 ---------",cty,corderid)
               let cpr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
+              logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",cpr)
               let corty          = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
+              logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",corty)
               let otimestampstr  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "T")
               logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",cpr,corty,otimestampstr)
               let curorderpr     = read cpr            :: Double
