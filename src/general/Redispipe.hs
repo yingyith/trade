@@ -332,8 +332,9 @@ opclHandler tbq conn channel  msg = do
               addeventtotbqueue aevent tbq
 
          when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
+              logact logByteStringStdout $ B.pack  ("enterstake order do ---------------------")
               --let pr = orderpr+ ordergrid
-              let aevent = Opevent "sopen" 0 0 0 ordid
+              let aevent = Opevent "sopen" 0 curpr 0 ordid
               addeventtotbqueue aevent tbq
 
          when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
