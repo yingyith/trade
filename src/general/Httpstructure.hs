@@ -118,14 +118,15 @@ getspotbalance = do
 
 
 cancelorder :: String -> IO ()
-cancelorder side = do
+cancelorder orderid = do
    curtimestamp <- getcurtimestamp
    runReq defaultHttpConfig $ do 
       let signature = BLU.fromString sk
       let passwdtxt = BC.pack Passwd.passwd
-      let origClientOrderId = case side of 
-                                 "BUY"  -> buyorderid
-                                 "SELL" -> sellorderid
+     -- let origClientOrderId = case side of 
+     --                            "BUY"  -> buyorderid
+     --                            "SELL" -> sellorderid
+      let origClientOrderId = orderid
       let params = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("timestamp" =: (curtimestamp :: Integer ))<>

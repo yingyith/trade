@@ -6,7 +6,7 @@
 module Order (
     Ostate (..),
     proordertorediszset,
-    proinitordertorediszset,
+    procproinitordertorediszset,
     cproinitordertorediszset,
     hlfendordertorediszset,
     preorcpreordertorediszset,
@@ -237,10 +237,10 @@ pcanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
                     return (0,True)
        False -> return (0,False)
 
-proinitordertorediszset :: Integer -> Double -> Int -> Redis ()
-proinitordertorediszset quan pr stampi = do 
+procproinitordertorediszset :: Integer -> Double -> String -> Int -> Redis ()
+procproinitordertorediszset quan pr ordid  stampi = do 
    let abykeystr = BL.fromString orderkey
-   let side = "BUY" :: String
+   --let side = "BUY" :: String
    let coin = "ADA" :: String
    let otype = "init" :: String
    res <- zrange abykeystr 0 0
@@ -249,9 +249,11 @@ proinitordertorediszset quan pr stampi = do
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
+   let lastside = recorditem !! 1
+   let side = lastside
    let recordstate = DL.last recorditem
    let lastquan  = read (recorditem !! 4) :: Integer
-   let orderid   =  show stampi 
+   let orderid   =  ordid 
    let shprice   =  showdouble pr
    let shquant   =  show quan
    let shstate   =  show $ fromEnum Proinit
@@ -263,7 +265,7 @@ proinitordertorediszset quan pr stampi = do
    liftIO $ logact logByteStringStdout $ BC.pack $ show (lastrecord ++ "---------proinit---------",recordstate,recordstate == (show $ fromEnum Process))
    liftIO $ logact logByteStringStdout $ BC.pack $ show (coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate)
    when (recordstate == (show $ fromEnum Process) ) $ do
-       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 
@@ -316,7 +318,6 @@ pexpandordertorediszset side quan pr otimestamp = do
 hlfendordertorediszset :: Integer  -> Int -> Redis ()
 hlfendordertorediszset quan  otimestamp  = do 
    let abykeystr = BL.fromString orderkey
-   let side = "BUY" :: String
    let coin = "ADA" :: String
    let otype = "Hdone" :: String
    let stamp    = fromIntegral otimestamp  :: Double
@@ -326,6 +327,8 @@ hlfendordertorediszset quan  otimestamp  = do
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
+   let lastside = recorditem !! 1
+   let side = lastside
    let pr = recorditem !! 5
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double

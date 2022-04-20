@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
   module Events (
-       Opevent (etype,price,quant,etime,Opevent),
+       Opevent (etype,price,quant,etime,ordid,Opevent),
        addeventtotbqueue
 ) where
 
@@ -18,7 +18,8 @@ data Opevent = Opevent {
                   etype :: String,
                   quant :: Integer,
                   price :: Double,
-                  etime :: Int 
+                  etime :: Int,
+                  ordid :: String
 }  deriving (Show,Generic) 
 
 addeventtotbqueue :: Opevent -> TBQueue Opevent -> IO ()

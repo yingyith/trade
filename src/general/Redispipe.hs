@@ -267,10 +267,11 @@ detailopHandler tbq = do
         let etquan = quant res
         let etpr = price res
         let etimee = etime res
-        when (et == "scancel") $ do 
+        let eordid = ordid res
+        when (et == "cancel") $ do 
               (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
               case res of 
-                  True  -> cancelorder "SELL" 
+                  True  -> cancelorder eordid
                   False -> return () 
         when (et == "bopen") $ do 
               (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
@@ -283,23 +284,15 @@ detailopHandler tbq = do
                   True  -> takeorder "SELL" lastquan apr
                   False -> return () 
 
-        when (et == "sfill") $ do 
-              runRedis conn (cendordertorediszset etquan etimee)  
 
-        when (et == "bfill") $ do 
+        when (et == "fill") $ do 
               runRedis conn (hlfendordertorediszset etquan etimee)  
 
-        when (et == "bcancel") $ do 
-              (lastquan,res) <- runRedis conn (pcanordertorediszset curtime)
-              case res of 
-                  True  -> cancelorder "BUY" 
-                  False -> return () 
+        when (et == "init") $ do 
+              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee)
 
-        when (et == "binit") $ do 
-              runRedis conn (proinitordertorediszset etquan etpr etimee)
-
-        when (et == "sinit") $ do 
-              runRedis conn (cproinitordertorediszset etquan etpr etimee)
+      --  when (et == "sinit") $ do 
+      --        runRedis conn (cproinitordertorediszset etquan etpr etimee)
 
         logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
         return ()
@@ -326,6 +319,7 @@ opclHandler tbq conn channel  msg = do
          let orderquan = read (order !!4) :: Integer
          let orderpr = read (order !!5) :: Double
          let ordergrid = read (order !!6) :: Double
+         let ordid = order !!3
          let orderstate = DL.last order
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
@@ -334,20 +328,20 @@ opclHandler tbq conn channel  msg = do
          when ((orderstate == (show $ fromEnum Prepare)) )$ do
               logact logByteStringStdout $ B.pack  ("entertake order do ---------------------")
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
-              let aevent = Opevent "bopen"  0 curpr 0
+              let aevent = Opevent "bopen"  0 curpr 0 ordid
               addeventtotbqueue aevent tbq
 
          when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
               --let pr = orderpr+ ordergrid
-              let aevent = Opevent "sopen" 0 0 0
+              let aevent = Opevent "sopen" 0 0 0 ordid
               addeventtotbqueue aevent tbq
 
          when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
-              let aevent = Opevent "scancel" 0 0 0
+              let aevent = Opevent "cancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
          when (DL.any (== orderstate) [(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
-              let aevent = Opevent "bcancel" 0 0 0
+              let aevent = Opevent "cancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
     when (dettype /= "adausdt@kline_1m") $ do 
@@ -402,6 +396,7 @@ opclHandler tbq conn channel  msg = do
               let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
               logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",curorderstate,curorderstate == "NEW",curside,curside=="SELL",curside=="BUY")
               let cty            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
+              let corderid            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "c")
               let cpr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
               let corty          = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
               let otimestampstr  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "T")
@@ -415,31 +410,30 @@ opclHandler tbq conn channel  msg = do
               --let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
               logact logByteStringStdout $ B.pack $ show (curorderstate,curside,cty,cpr,corty,otimestampstr)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
-                  let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
-                  when (curside == "BUY" && curcoin == "USDT") $ do 
+                       let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
+                --  when (curside == "BUY" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
                           logact logByteStringStdout $ B.pack $ show ("bef order update partfilled redis---------")
                           runRedis conn (pexpandordertorediszset curside curquanty curorderpr otimestamp)
                        when (curquanty == curorquanty) $ do 
                           logact logByteStringStdout $ B.pack $ show ("bef order update filled redis---------")
-                          let aevent = Opevent "bfill" curquanty 0  otimestamp
+                          let aevent = Opevent "fill" curquanty 0  otimestamp corderid
                           addeventtotbqueue aevent tbq
-                  when (curside == "SELL" && curcoin == "USDT") $ do 
-                       when (curquanty < curorquanty)  $ do 
-                          logact logByteStringStdout $ B.pack $ show ("bef order update sell partfilled redis---------")
-                          runRedis conn (pexpandordertorediszset curside curquanty curorderpr otimestamp)
-                       when (curquanty == curorquanty) $ do 
-                          logact logByteStringStdout $ B.pack $ show  ("bef order update sell filled redis---------")
-                          let aevent = Opevent "sfill" curquanty 0  otimestamp
-                          addeventtotbqueue aevent tbq
+                 -- when (curside == "SELL" && curcoin == "USDT") $ do 
+                  --     when (curquanty < curorquanty)  $ do 
+                  --        logact logByteStringStdout $ B.pack $ show ("bef order update sell partfilled redis---------")
+                  --        runRedis conn (pexpandordertorediszset curside curquanty curorderpr otimestamp)
+                  --     when (curquanty == curorquanty) $ do 
+                  --        logact logByteStringStdout $ B.pack $ show  ("bef order update sell filled redis---------")
+                  --        let aevent = Opevent "sfill" curquanty 0  otimestamp
+                  --        addeventtotbqueue aevent tbq
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
-                  when (curside == "SELL" ) $ do 
-                      let aevent = Opevent "sinit" curorquanty curorderpr otimestamp
+                      let aevent = Opevent "init" curorquanty curorderpr otimestamp corderid
                       addeventtotbqueue aevent tbq
 
-                  when (curside == "BUY" ) $ do 
-                      let aevent = Opevent "binit" curorquanty curorderpr otimestamp
-                      addeventtotbqueue aevent tbq
+               --   when (curside == "BUY" ) $ do 
+               --       let aevent = Opevent "binit" curorquanty curorderpr otimestamp
+               --       addeventtotbqueue aevent tbq
 
 acupdHandler :: RedisChannel -> ByteString -> IO ()
 acupdHandler channel  msg = do
