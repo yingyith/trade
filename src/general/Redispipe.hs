@@ -261,6 +261,8 @@ detailopHandler tbq = do
     forever $  do
         logact logByteStringStdout $ B.pack $ show ("killbef thread!")
         res <- atomically $ readTBQueue tbq
+        tbqlen <- atomically $ lengthTBQueue tbq
+        logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
         let curtime = fromInteger currtime ::Double
         let et = etype res
@@ -270,19 +272,16 @@ detailopHandler tbq = do
         let eordid = ordid res
         when (et == "cancel") $ do 
               (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
-              logact logByteStringStdout $ B.pack $ show ("fullornot",res)
               case res of 
                   True  -> cancelorder eordid
                   False -> return () 
         when (et == "bopen") $ do 
               (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
-              logact logByteStringStdout $ B.pack $ show ("fullornot",res)
               case res of 
                   True  -> takeorder "BUY" lastquan apr
                   False -> return () 
         when (et == "sopen") $ do 
               (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
-              logact logByteStringStdout $ B.pack $ show ("fullornot",res)
               case res of 
                   True  -> takeorder "SELL" lastquan apr
                   False -> return () 
