@@ -62,6 +62,9 @@ dependencies:
 - hslogger
 - co-log
 - typerep-map
+- scientific
+
+
 library:
   source-dirs: [src,src/general,src/strategy,src/event]
 

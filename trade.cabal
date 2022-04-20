@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 078c0d48e6500de9c4e177e57ef3ff2046a69bcd8f3521d751cb4076258bdd2d
+-- hash: 45e9f5cccf21de93b962ec13dda41f31b49d782b5b1a7e2e9369a543fe7b0d2a
 
 name:           trade
 version:        0.1.0.0
@@ -94,6 +94,7 @@ library
     , process
     , random
     , req
+    , scientific
     , split
     , stm
     , streaming-commons
@@ -144,6 +145,7 @@ executable trade-exe
     , process
     , random
     , req
+    , scientific
     , split
     , stm
     , streaming-commons
@@ -196,6 +198,7 @@ test-suite trade-test
     , process
     , random
     , req
+    , scientific
     , split
     , stm
     , streaming-commons

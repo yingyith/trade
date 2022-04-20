@@ -24,6 +24,7 @@ import Network.HTTP.Req
 import qualified Data.Map as Map
 import Data.Aeson as A
 import Data.Aeson.Types as DAT
+import Data.Scientific
 import Database.Redis
 import GHC.Generics
 import Data.Monoid ((<>))
@@ -39,7 +40,7 @@ import Numeric
 outString :: Value -> Text
 outString a =  case a of 
                    DAT.String l -> l
-                   DAT.Number l -> T.pack $ show  l
+                   DAT.Number l -> T.pack $ show $ fromRight 0 $ floatingOrInteger  (l::Scientific)
 
 showdouble :: Double -> String
 showdouble x = showFFloat (Just 4) x "" 
