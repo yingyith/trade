@@ -39,6 +39,7 @@ import Httpstructure
 import Passwd
 import Redispipe
 import Rediscache
+import Events
 import Data.Text.Encoding
 import Logger
 import System.IO

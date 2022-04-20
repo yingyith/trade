@@ -40,3 +40,4 @@ outString a =  case a of
 showdouble :: Double -> String
 showdouble x = showFFloat (Just 4) x "" 
 
+    

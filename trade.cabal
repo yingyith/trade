@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 374e429775114ceb662c88fcb14a3743debe0ff9bac4dc70f14b1d96416737d0
+-- hash: 078c0d48e6500de9c4e177e57ef3ff2046a69bcd8f3521d751cb4076258bdd2d
 
 name:           trade
 version:        0.1.0.0
@@ -57,12 +57,14 @@ library
       Redispipe
       Sndsrule
       Strategy
+      Events
   other-modules:
       Paths_trade
   hs-source-dirs:
       src
       src/general
       src/strategy
+      src/event
   build-depends:
       HTTP
     , SHA

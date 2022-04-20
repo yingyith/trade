@@ -63,7 +63,7 @@ dependencies:
 - co-log
 - typerep-map
 library:
-  source-dirs: [src,src/general,src/strategy]
+  source-dirs: [src,src/general,src/strategy,src/event]
 
 executables:
   trade-exe:

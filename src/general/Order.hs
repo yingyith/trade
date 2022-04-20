@@ -266,14 +266,15 @@ proinitordertorediszset quan pr stampi = do
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 
-pexpandordertorediszset :: String -> Integer -> Double -> Double -> Redis ()
-pexpandordertorediszset side quan pr stamp = do 
+pexpandordertorediszset :: String -> Integer -> Double -> Int -> Redis ()
+pexpandordertorediszset side quan pr otimestamp = do 
    -- this operation only append the order detail ,not alter the state
    let abykeystr = BL.fromString orderkey
    let coin = case side of 
                    "BUY" -> "ADA"
                    "SELL" -> "USDT"
    let otype = "Taken" :: String
+   let stamp    = fromIntegral otimestamp  :: Double
    res <- zrange abykeystr 0 0
    let tdata = case res of 
                     Right c -> c
@@ -311,12 +312,13 @@ pexpandordertorediszset side quan pr stamp = do
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
        liftIO $ print ("aft pexpand add  is -------------------------")
 
-hlfendordertorediszset :: Integer  -> Double -> Redis ()
-hlfendordertorediszset quan  stamp  = do 
+hlfendordertorediszset :: Integer  -> Int -> Redis ()
+hlfendordertorediszset quan  otimestamp  = do 
    let abykeystr = BL.fromString orderkey
    let side = "BUY" :: String
    let coin = "ADA" :: String
    let otype = "Hdone" :: String
+   let stamp    = fromIntegral otimestamp  :: Double
    res <- zrange abykeystr 0 0
    let tdata = case res of 
                     Right c -> c
@@ -430,12 +432,13 @@ cproinitordertorediszset quan pr stampi = do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
-cendordertorediszset :: Integer  -> Double -> Redis ()
-cendordertorediszset quan  stamp = do 
+cendordertorediszset :: Integer  -> Int -> Redis ()
+cendordertorediszset quan  otimestamp = do 
    let abykeystr = BL.fromString orderkey
    let side = "SELL" :: String
    let coin = "ADA" :: String
    let otype = "Done" :: String
+   let stamp    = fromIntegral otimestamp  :: Double
    res <- zrange abykeystr 0 0
    let tdata = case res of 
                     Right c -> c
