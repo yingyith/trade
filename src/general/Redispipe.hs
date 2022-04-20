@@ -331,7 +331,7 @@ opclHandler tbq conn channel  msg = do
          logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
          --when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do  if < ,reset to origin
          when ((orderstate == (show $ fromEnum Prepare)) )$ do
-              --logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
+              logact logByteStringStdout $ B.pack  ("entertake order do ---------------------")
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               let aevent = Opevent "bopen"  0 curpr 0
               atomically $  do 
