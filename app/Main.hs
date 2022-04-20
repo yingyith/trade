@@ -238,7 +238,7 @@ ws connection = do
            void $ addChannels ctrll [] [("ac:*"       , acupdHandler      )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            threadDelay 1000000
-           forkIO $ detailopHandler q 
+        forkIO $ detailopHandler q 
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000
