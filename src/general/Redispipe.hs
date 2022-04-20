@@ -413,6 +413,7 @@ opclHandler tbq conn channel  msg = do
               let curquanty      = round curquantyy    :: Integer
               let curorquanty    = round curortyy      :: Integer
               --let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
+              logact logByteStringStdout $ B.pack $ show (curorderstate,curside,cty,cpr,corty,otimestampstr)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
                   when (curside == "BUY" && curcoin == "USDT") $ do 
