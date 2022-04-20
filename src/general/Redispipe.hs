@@ -156,7 +156,10 @@ msgordertempdo msg osdetail =  do
     matchevent <- matchmsgfun msg
     liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchevent)                         
 
-    when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
+    --when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
+
+    when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
+                                  (show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)]  )  $ do 
         liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
     
@@ -293,6 +296,7 @@ detailopHandler tbq = do
               runRedis conn (hlfendordertorediszset etquan etimee)  
 
         when (et == "init") $ do 
+              logact logByteStringStdout $ B.pack $ show ("bef init!")
               runRedis conn (procproinitordertorediszset etquan etpr eordid etimee)
               logact logByteStringStdout $ B.pack $ show ("aft init!")
 
