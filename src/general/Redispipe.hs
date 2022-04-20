@@ -334,14 +334,13 @@ opclHandler tbq conn channel  msg = do
               logact logByteStringStdout $ B.pack  ("entertake order do ---------------------")
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               let aevent = Opevent "bopen"  0 curpr 0
-              lentf <- atomically $  do 
+              atomically $  do 
                              res <- isFullTBQueue tbq
-                             lentbq <- lengthTBQueue tbq
+                             --lentbq <- lengthTBQueue tbq
                              case (res) of 
-                                True  -> writeTBQueue tbq aevent
-                                False -> return ()
-                             return lentbq
-              logact logByteStringStdout $ B.pack $ show ("length ---------------------",lentf)
+                                False  -> writeTBQueue tbq aevent
+                                True   -> return ()
+              --logact logByteStringStdout $ B.pack $ show ("length ---------------------",lentf)
 
                
               --runRedis conn (proordertorediszset  pr curtime)
@@ -353,8 +352,8 @@ opclHandler tbq conn channel  msg = do
               atomically $  do 
                              res <- isFullTBQueue tbq
                              case (res) of 
-                                True  -> writeTBQueue tbq aevent
-                                False -> return ()
+                                False  -> writeTBQueue tbq aevent
+                                True   -> return ()
               
               --runRedis conn (cproordertorediszset   curtime)
 
@@ -363,16 +362,16 @@ opclHandler tbq conn channel  msg = do
               atomically $  do 
                              res <- isFullTBQueue tbq
                              case (res) of 
-                                True  -> writeTBQueue tbq aevent
-                                False -> return ()
+                                False  -> writeTBQueue tbq aevent
+                                True   -> return ()
               
          when (DL.any (== orderstate) [(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
               let aevent = Opevent "bcancel" 0 0 0
               atomically $  do 
                              res <- isFullTBQueue tbq
                              case (res) of 
-                                True  -> writeTBQueue tbq aevent
-                                False -> return ()
+                                False  -> writeTBQueue tbq aevent
+                                True   -> return ()
               
               --runRedis conn (ccanordertorediszset curtime)
 --{"stream":"ygUttsOxssq35UpQQ8U4n64fHhJWAJDGPopFolWbriQd0C3UvWvMTXxM0zIbam3C","data":{"e":"ACCOUNT_UPDATE","T":1649411079451,"E":1649411079456,"a":{"B":[{"a":"USDT","wb":"1596.37297494","cw":"1596.37297494","bc":"0"}],"P":[{"s":"ADAUSDT","pa":"22","ep":"1.08920","cr":"290.31149981","up":"0.00836594","mt":"cross","iw":"0","ps":"BOTH","ma":"USDT"}],"m":"ORDER"}}}
