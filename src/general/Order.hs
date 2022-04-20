@@ -269,13 +269,10 @@ procproinitordertorediszset quan pr ordid  stampi = do
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 
-pexpandordertorediszset :: String -> Integer -> Double -> Int -> Redis ()
-pexpandordertorediszset side quan pr otimestamp = do 
+pexpandordertorediszset :: Integer -> Double -> Int -> Redis ()
+pexpandordertorediszset quan pr otimestamp = do 
    -- this operation only append the order detail ,not alter the state
    let abykeystr = BL.fromString orderkey
-   let coin = case side of 
-                   "BUY" -> "ADA"
-                   "SELL" -> "USDT"
    let otype = "Taken" :: String
    let stamp    = fromIntegral otimestamp  :: Double
    res <- zrange abykeystr 0 0
@@ -286,6 +283,10 @@ pexpandordertorediszset side quan pr otimestamp = do
    --liftIO $ print ("expand record is -------------------------")
    --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
+   let lastside = recorditem !! 1
+   let coin = case lastside of 
+                   "BUY" -> "ADA"
+                   "SELL" -> "USDT"
    let lastorderquant = read $ recorditem !!4 ::Integer
    let lastordertype = recorditem !!2 
    let lastgrid = read (recorditem !! 6) :: Double
@@ -298,7 +299,7 @@ pexpandordertorediszset side quan pr otimestamp = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "--------------pexpandorder--------------")
-   let shstate = case side of 
+   let shstate = case lastside of 
                       "BUY" -> show $ fromEnum Ppartdone
                       "SELL" -> show $ fromEnum Cpartdone
    let prestate = show $ fromEnum Proinit
@@ -308,7 +309,7 @@ pexpandordertorediszset side quan pr otimestamp = do
    --only add but not alter ,if state change ,add a new record,but need to trace the orderid
    when (tpred == True) $ do
        liftIO $ print ("bef pexpand add  is -------------------------")
-       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,shmergequan,shstate]
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,lastside,otype,lastorderid,shquant,shprice,shgrid,shmergequan,shstate]
        liftIO $ print (abyvaluestr)
        liftIO $ print ("bef pexpand add  is -------------------------")
        liftIO $ print (abyvaluestr)

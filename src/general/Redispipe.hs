@@ -270,21 +270,25 @@ detailopHandler tbq = do
         let eordid = ordid res
         when (et == "cancel") $ do 
               (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
+              logact logByteStringStdout $ B.pack $ show ("fullornot",res)
               case res of 
                   True  -> cancelorder eordid
                   False -> return () 
         when (et == "bopen") $ do 
               (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
-              logact logByteStringStdout $ B.pack $ show ("aft bopen!")
+              logact logByteStringStdout $ B.pack $ show ("fullornot",res)
               case res of 
                   True  -> takeorder "BUY" lastquan apr
                   False -> return () 
         when (et == "sopen") $ do 
               (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
+              logact logByteStringStdout $ B.pack $ show ("fullornot",res)
               case res of 
                   True  -> takeorder "SELL" lastquan apr
                   False -> return () 
 
+        when (et == "merge") $ do 
+              runRedis conn (pexpandordertorediszset etquan etpr etimee)
 
         when (et == "fill") $ do 
               runRedis conn (hlfendordertorediszset etquan etimee)  
@@ -422,10 +426,12 @@ opclHandler tbq conn channel  msg = do
                 --  when (curside == "BUY" && curcoin == "USDT") $ do 
                        when (curquanty < curorquanty)  $ do 
                           logact logByteStringStdout $ B.pack $ show ("bef order update partfilled redis---------")
-                          runRedis conn (pexpandordertorediszset curside curquanty curorderpr otimestamp)
+                          --runRedis conn (pexpandordertorediszset curside curquanty curorderpr otimestamp)
+                          let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid
+                          addeventtotbqueue aevent tbq
                        when (curquanty == curorquanty) $ do 
                           logact logByteStringStdout $ B.pack $ show ("bef order update filled redis---------")
-                          let aevent = Opevent "fill" curquanty 0  otimestamp corderid
+                          let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
                           addeventtotbqueue aevent tbq
                  -- when (curside == "SELL" && curcoin == "USDT") $ do 
                   --     when (curquanty < curorquanty)  $ do 
