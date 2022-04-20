@@ -333,22 +333,41 @@ opclHandler tbq conn channel  msg = do
               --logact logByteStringStdout $ B.pack  ("enter take order do ---------------------")
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               let aevent = Opevent "bopen"  0 curpr 0
-              (atomically $ writeTBQueue tbq aevent ) 
+              atomically $  do 
+                             res <- isFullTBQueue tbq
+                             case (res) of 
+                                True  -> writeTBQueue tbq aevent
+                                False -> return ()
+               
               --runRedis conn (proordertorediszset  pr curtime)
 
          when ((orderstate == (show $ fromEnum Cprepare)) && ((curpr -orderpr)>((-0.5)*ordergrid)    )) $ do
               --let pr = orderpr+ ordergrid
               let aevent = Opevent "sopen" 0 0 0
-              (atomically $ writeTBQueue tbq aevent ) 
+              atomically $  do 
+                             res <- isFullTBQueue tbq
+                             case (res) of 
+                                True  -> writeTBQueue tbq aevent
+                                False -> return ()
+              
               --runRedis conn (cproordertorediszset   curtime)
 
          when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
               let aevent = Opevent "scancel" 0 0 0
-              (atomically $ writeTBQueue tbq aevent ) 
-
+              atomically $  do 
+                             res <- isFullTBQueue tbq
+                             case (res) of 
+                                True  -> writeTBQueue tbq aevent
+                                False -> return ()
+              
          when (DL.any (== orderstate) [(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
               let aevent = Opevent "bcancel" 0 0 0
-              (atomically $ writeTBQueue tbq aevent ) 
+              atomically $  do 
+                             res <- isFullTBQueue tbq
+                             case (res) of 
+                                True  -> writeTBQueue tbq aevent
+                                False -> return ()
+              
               --runRedis conn (ccanordertorediszset curtime)
 --{"stream":"ygUttsOxssq35UpQQ8U4n64fHhJWAJDGPopFolWbriQd0C3UvWvMTXxM0zIbam3C","data":{"e":"ACCOUNT_UPDATE","T":1649411079451,"E":1649411079456,"a":{"B":[{"a":"USDT","wb":"1596.37297494","cw":"1596.37297494","bc":"0"}],"P":[{"s":"ADAUSDT","pa":"22","ep":"1.08920","cr":"290.31149981","up":"0.00836594","mt":"cross","iw":"0","ps":"BOTH","ma":"USDT"}],"m":"ORDER"}}}
     when (dettype /= "adausdt@kline_1m") $ do 
