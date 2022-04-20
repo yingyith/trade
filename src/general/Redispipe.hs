@@ -158,8 +158,8 @@ msgordertempdo msg osdetail =  do
 
     --when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
 
-    when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
-                                  (show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)]  )  $ do 
+    when (DL.any (== orderstate) [(show $ fromEnum Cprepare),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
+                                  (show $ fromEnum Prepare),(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)]  )  $ do 
         liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
     
