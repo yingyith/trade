@@ -334,11 +334,15 @@ opclHandler tbq conn channel  msg = do
               logact logByteStringStdout $ B.pack  ("entertake order do ---------------------")
               --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
               let aevent = Opevent "bopen"  0 curpr 0
-              atomically $  do 
+              lentf <- atomically $  do 
                              res <- isFullTBQueue tbq
+                             lentbq <- lengthTBQueue tbq
                              case (res) of 
                                 True  -> writeTBQueue tbq aevent
                                 False -> return ()
+                             return lentbq
+              logact logByteStringStdout $ B.pack $ show ("length ---------------------",lentf)
+
                
               --runRedis conn (proordertorediszset  pr curtime)
 
