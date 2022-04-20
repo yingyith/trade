@@ -275,6 +275,7 @@ detailopHandler tbq = do
                   False -> return () 
         when (et == "bopen") $ do 
               (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
+              logact logByteStringStdout $ B.pack $ show ("aft bopen!")
               case res of 
                   True  -> takeorder "BUY" lastquan apr
                   False -> return () 
@@ -290,6 +291,7 @@ detailopHandler tbq = do
 
         when (et == "init") $ do 
               runRedis conn (procproinitordertorediszset etquan etpr eordid etimee)
+              logact logByteStringStdout $ B.pack $ show ("aft init!")
 
       --  when (et == "sinit") $ do 
       --        runRedis conn (cproinitordertorediszset etquan etpr etimee)
