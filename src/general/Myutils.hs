@@ -13,6 +13,9 @@ import Data.Map (Map)
 import Data.String
 import Data.List as DL
 import Data.Maybe 
+import Data.Either
+import Data.Text as T
+import Data.Text.IO as T
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as BL
 import qualified Data.ByteString.Lazy as BLL
@@ -36,6 +39,7 @@ import Numeric
 outString :: Value -> Text
 outString a =  case a of 
                    DAT.String l -> l
+                   DAT.Number l -> T.pack $ show  l
 
 showdouble :: Double -> String
 showdouble x = showFFloat (Just 4) x "" 

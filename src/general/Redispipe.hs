@@ -394,7 +394,7 @@ opclHandler tbq conn channel  msg = do
               --logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
               let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
-              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",dettype,curorderstate,curorderstate == "NEW",curside,curside=="SELL",curside=="BUY")
+              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",detdata,curorderstate,curorderstate == "NEW",curside,curside=="SELL",curside=="BUY")
               let cty            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
               logact logByteStringStdout $ B.pack  $ show ("b11eforderupdate1 ---------",cty)
               let corderid            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "c")
