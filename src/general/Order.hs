@@ -316,8 +316,8 @@ pexpandordertorediszset quan pr otimestamp = do
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
        liftIO $ print ("aft pexpand add  is -------------------------")
 
-hlfendordertorediszset :: Integer  -> Int -> Redis ()
-hlfendordertorediszset quan  otimestamp  = do 
+hlfendordertorediszset :: Integer ->Double -> Int -> Redis ()
+hlfendordertorediszset quan pr otimestamp  = do 
    let abykeystr = BL.fromString orderkey
    let coin = "ADA" :: String
    let otype = "Hdone" :: String
@@ -330,13 +330,13 @@ hlfendordertorediszset quan  otimestamp  = do
    let lastorderid = recorditem !! 3
    let lastside = recorditem !! 1
    let side = lastside
-   let pr = recorditem !! 5
+   --let pr = recorditem !! 5
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    let orderid =  lastorderid
-   let shprice =  pr
+   let shprice = show pr
    let shquant =  show quan
    let shstate =  show $ fromEnum HalfDone
    let shgrid  = show lastgrid

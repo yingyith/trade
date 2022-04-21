@@ -293,7 +293,7 @@ detailopHandler tbq = do
               runRedis conn (pexpandordertorediszset etquan etpr etimee)
 
         when (et == "fill") $ do 
-              runRedis conn (hlfendordertorediszset etquan etimee)  
+              runRedis conn (hlfendordertorediszset etquan etpr etimee)  
 
         when (et == "init") $ do 
               logact logByteStringStdout $ B.pack $ show ("bef init!")
