@@ -145,7 +145,7 @@ cancelorder orderid = do
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",orderid)
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
-      let areq = req DELETE url (ReqBodyUrlEnc params) lbsResponse  httpparams
+      let areq = req DELETE url (ReqBodyUrlEnc params) ignoreResponse  httpparams
       response <- areq
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",response,orderid)
       return ()
