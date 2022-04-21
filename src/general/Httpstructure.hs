@@ -132,7 +132,7 @@ cancelorder orderid = do
             ("timestamp" =: (curtimestamp :: Integer ))<>
             ("origClientOrderId" =: (origClientOrderId ))
 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("origClientOrderId",origClientOrderId),("timestamp",show curtimestamp)] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("timestamp",show curtimestamp), ("origClientOrderId",origClientOrderId)] 
       let ares = showDigest(hmacSha256 signature abody)
       let httpparams = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
