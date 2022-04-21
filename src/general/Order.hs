@@ -80,7 +80,6 @@ preorcpreordertorediszset sumres pr  stamp grid = do
 -- quantity ,side ,price ,ostate
    let price  = pr :: Double
    let coin = "ADA" :: String
-   let otype = "Open" :: String
    let abykeystr = BL.fromString orderkey
    let stampi = fromIntegral stamp :: Double
    res <- zrange abykeystr 0 0
@@ -103,6 +102,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
    when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
        --append new order after cancel
        let quanty = toInteger sumres
+       let otype = "Reset" :: String
        let quantity = case compare quanty 10 of
                            LT -> quanty 
                            GT -> 10 
@@ -138,6 +138,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
 
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
        let quanty = toInteger sumres
+       let otype = "Prep" :: String
        let quantity = case compare quanty 10 of
                            LT -> quanty 
                            GT -> 10 
@@ -158,6 +159,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum HalfDone)) $ do -- if curpr orderpr  > grid   then append new order,and need merge
+       let otype = "Oprep" :: String
        let quantity = lastquan 
        let orderid =  show stamp 
        let side = "SELL" :: String
