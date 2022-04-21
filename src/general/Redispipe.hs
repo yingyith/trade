@@ -340,14 +340,15 @@ opclHandler tbq conn channel  msg = do
          --when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do  if < ,reset to origin
          when ((orderstate == (show $ fromEnum Prepare)) )$ do
               logact logByteStringStdout $ B.pack  ("entertake order do ---------------------")
-              --let pr = (fromInteger $  round $ fpr * (10^4))/(10.0^^4)
-              let aevent = Opevent "bopen"  0 curpr 0 ordid
+              let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+              let aevent = Opevent "bopen"  0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
          when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
               logact logByteStringStdout $ B.pack  ("enterstake order do ---------------------")
+              let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               --let pr = orderpr+ ordergrid
-              let aevent = Opevent "sopen" 0 curpr 0 ordid
+              let aevent = Opevent "sopen" 0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
          when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (2*ordergrid))  )  $ do 
