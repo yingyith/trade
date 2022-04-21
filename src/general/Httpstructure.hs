@@ -129,17 +129,19 @@ cancelorder orderid = do
      --                            "SELL" -> sellorderid
       let origClientOrderId = orderid
       let params = 
-            (header "X-MBX-APIKEY" passwdtxt ) <>
             ("timestamp" =: (curtimestamp :: Integer ))<>
             ("origClientOrderId" =: (origClientOrderId ))
 
       let abody = BLU.fromString $ NTB.urlEncodeVars [("origClientOrderId",origClientOrderId),("timestamp",show curtimestamp)] 
       let ares = showDigest(hmacSha256 signature abody)
+      let httpparams = 
+            (header "X-MBX-APIKEY" passwdtxt ) <>
+            ("signature" =: (T.pack ares :: Text ))
       let ouri = "https://fapi.binance.com/fapi/v1/order"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
-      let areq = req DELETE url NoReqBody lbsResponse  params
+      let areq = req DELETE url (ReqBodyUrlEnc params) lbsResponse  httpparams
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----")
       response <- areq
       return ()
