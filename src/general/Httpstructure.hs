@@ -159,8 +159,8 @@ takeorder a b c = do
                              "SELL" -> sellorderid
    let quantity = if b > 10 then b else 10 :: Integer
    
-   let oprice = c :: Double
-   let price = (fromInteger $  round $ oprice * (10^4))/(10.0^^4)
+   let price = c :: Double
+   --let price = (fromInteger $  round $ oprice * (10^4))/(10.0^^4)
 
    curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
    let curtimestamp = curtimestampl :: Integer
@@ -172,7 +172,7 @@ takeorder a b c = do
              "side" =: (side) <>
              "type" =: (stype) <>
              "quantity" =: (quantity) <>
-             "price" =: (price) <>
+             "price" =: (showdouble price) <>
              "newClientOrderId" =: (newClientOrderId) <>
              "timeInForce" =: (timeinforcee :: Text) <>
              "timestamp" =: (curtimestamp)
