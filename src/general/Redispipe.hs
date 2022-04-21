@@ -280,7 +280,9 @@ detailopHandler tbq = do
                   True  -> cancelorder eordid
                   False -> return () 
         when (et == "bopen") $ do 
+              logact logByteStringStdout $ B.pack $ show ("bef bopen!")
               (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
+              logact logByteStringStdout $ B.pack $ show ("aft bopen!")
               case res of 
                   True  -> takeorder "BUY" lastquan apr
                   False -> return () 
@@ -341,8 +343,11 @@ opclHandler tbq conn channel  msg = do
          when ((orderstate == (show $ fromEnum Prepare)) )$ do
               logact logByteStringStdout $ B.pack  ("entertake order do ---------------------")
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+              logact logByteStringStdout $ B.pack  ("entertake1 order do ---------------------")
               let aevent = Opevent "bopen"  0 pr 0 ordid
+              logact logByteStringStdout $ B.pack  ("entertake1 order do ---------------------")
               addeventtotbqueue aevent tbq
+              logact logByteStringStdout $ B.pack  ("aftentertake order do ---------------------")
 
          when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
               logact logByteStringStdout $ B.pack  ("enterstake order do ---------------------")

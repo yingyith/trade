@@ -135,7 +135,7 @@ cancelorder orderid = do
 
       let abody = BLU.fromString $ NTB.urlEncodeVars [("origClientOrderId",origClientOrderId),("timestamp",show curtimestamp)] 
       let ares = showDigest(hmacSha256 signature abody)
-      let ouri = "https://fapi.binance.com/fapi/v1/allOpenOrders"  
+      let ouri = "https://fapi.binance.com/fapi/v1/order"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
