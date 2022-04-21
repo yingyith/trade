@@ -109,7 +109,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
                            _  -> 100
        let orderid =  lastorderid 
        let side = "BUY" :: String
-       let shprice =  show pr
+       let shprice =  showdouble lastpr
        let minquan = (round (10/pr))+2 :: Integer
 
        let addquant =  case compare quantity minquan of
