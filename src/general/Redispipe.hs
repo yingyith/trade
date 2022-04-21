@@ -293,17 +293,17 @@ detailopHandler tbq = do
                   False -> return () 
 
         when (et == "merge") $ do 
-              runRedis conn (pexpandordertorediszset etquan etpr etimee)
+              runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
 
         when (et == "reset") $ do 
-              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee)
+              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
         when (et == "fill") $ do 
-              runRedis conn (endordertorediszset etquan etpr etimee)  
+              runRedis conn (endordertorediszset etquan etpr etimee curtime)  
 
         when (et == "init") $ do 
               logact logByteStringStdout $ B.pack $ show ("bef init!")
-              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee)
+              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
               logact logByteStringStdout $ B.pack $ show ("aft init!")
 
       --  when (et == "sinit") $ do 

@@ -75,8 +75,8 @@ instance Enum Ostate where
      fromEnum Ccancel     = 10   -- need to merge 
      fromEnum Done        = 11
 
-preorcpreordertorediszset :: Int -> Double  -> Integer -> Double -> Redis ()
-preorcpreordertorediszset sumres pr  stamp grid = do 
+preorcpreordertorediszset :: Int -> Double  -> Integer -> Double -> Double -> Redis ()
+preorcpreordertorediszset sumres pr  stamp grid insertstamp = do 
 -- quantity ,side ,price ,ostate
    let price  = pr :: Double
    let coin = "ADA" :: String
@@ -126,7 +126,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
            let mergebefquan = show (lastquan)  --totlolly quan  = shquant + mergebefquan
            --need more strict condition ,and double the quant`
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
-           void $ zadd abykeystr [(-stampi,abyvaluestr)]
+           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
        when (pr>= (lastpr-grid)) $ do
            let shstate =  show $ fromEnum HalfDone
@@ -134,7 +134,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
            let shquant = show (lastquan )
            let shprice = lastprr
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-           void $ zadd abykeystr [(-stampi,abyvaluestr)]
+           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
        let quanty = toInteger sumres
@@ -156,7 +156,7 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let lmergequan ="0" 
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-           void $ zadd abykeystr [(-stampi,abyvaluestr)]
+           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum HalfDone)) $ do -- if curpr orderpr  > grid   then append new order,and need merge
        let otype = "Oprep" :: String
@@ -170,10 +170,10 @@ preorcpreordertorediszset sumres pr  stamp grid = do
        let shgrid = showdouble  grid
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-           void $ zadd abykeystr [(-stampi,abyvaluestr)]
+           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
-proordertorediszset ::  Double -> Double -> Redis (Integer,(Bool,Double))
-proordertorediszset pr stamp = do 
+proordertorediszset ::  Double -> Double  -> Redis (Integer,(Bool,Double))
+proordertorediszset pr stamp  = do 
    -- alter the state 
    --res <- zrange abykeystr 0 1
    --let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
@@ -237,8 +237,8 @@ pcanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
                     return (0,True)
        False -> return (0,False)
 
-procproinitordertorediszset :: Integer -> Double -> String -> Int -> Redis ()
-procproinitordertorediszset quan pr ordid  stampi = do 
+procproinitordertorediszset :: Integer -> Double -> String -> Int -> Double -> Redis ()
+procproinitordertorediszset quan pr ordid  stampi insertstamp = do 
    let abykeystr = BL.fromString orderkey
    --let side = "BUY" :: String
    let coin = "ADA" :: String
@@ -266,11 +266,11 @@ procproinitordertorediszset quan pr ordid  stampi = do
    let shgrid = show lastgrid
    when (DL.any (== recordstate) [(show $ fromEnum Cprocess),(show $ fromEnum Process)] )  $ do 
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
 
-pexpandordertorediszset :: Integer -> Double -> Int -> Redis ()
-pexpandordertorediszset quan pr otimestamp = do 
+pexpandordertorediszset :: Integer -> Double -> Int -> Double -> Redis ()
+pexpandordertorediszset quan pr otimestamp insertstamp = do 
    -- this operation only append the order detail ,not alter the state
    let abykeystr = BL.fromString orderkey
    let otype = "Merge" :: String
@@ -314,11 +314,11 @@ pexpandordertorediszset quan pr otimestamp = do
        liftIO $ print (abyvaluestr)
        liftIO $ print ("bef pexpand add  is -------------------------")
        liftIO $ print (abyvaluestr)
-       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
        liftIO $ print ("aft pexpand add  is -------------------------")
 
-endordertorediszset :: Integer ->Double -> Int -> Redis ()
-endordertorediszset quan pr otimestamp  = do 
+endordertorediszset :: Integer ->Double -> Int -> Double -> Redis ()
+endordertorediszset quan pr otimestamp insertstamp = do 
    let abykeystr = BL.fromString orderkey
    let coin = "ADA" :: String
    let stamp    = fromIntegral otimestamp  :: Double
@@ -349,16 +349,16 @@ endordertorediszset quan pr otimestamp  = do
    when (DL.any (== recordstate) [(show $ fromEnum Proinit),(show $ fromEnum Ppartdone)] ) $ do
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----hlfdone--------")
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
-       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (DL.any (== recordstate) [(show $ fromEnum Cproinit),(show $ fromEnum Cpartdone)] ) $ do
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----done--------")
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
-       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+       void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
 
 
-cproordertorediszset :: Double -> Redis (Integer,(Bool,Double))
+cproordertorediszset :: Double  -> Redis (Integer,(Bool,Double))
 cproordertorediszset stamp  = do 
    let abykeystr = BL.fromString orderkey
    let side = "SELL" :: String
