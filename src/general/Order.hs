@@ -242,7 +242,7 @@ procproinitordertorediszset quan pr ordid  stampi = do
    let abykeystr = BL.fromString orderkey
    --let side = "BUY" :: String
    let coin = "ADA" :: String
-   let otype = "init" :: String
+   let otype = "Init" :: String
    res <- zrange abykeystr 0 0
    let tdata = case res of 
                     Right c -> c
@@ -273,7 +273,7 @@ pexpandordertorediszset :: Integer -> Double -> Int -> Redis ()
 pexpandordertorediszset quan pr otimestamp = do 
    -- this operation only append the order detail ,not alter the state
    let abykeystr = BL.fromString orderkey
-   let otype = "Taken" :: String
+   let otype = "Merge" :: String
    let stamp    = fromIntegral otimestamp  :: Double
    res <- zrange abykeystr 0 0
    let tdata = case res of 
@@ -294,8 +294,9 @@ pexpandordertorediszset quan pr otimestamp = do
    let orderid =  show stamp 
    let shprice =  show pr
    let shquant =  case lastordertype of 
-                    "Open"-> show quan
-                    "Taken"-> show (quan+ lastorderquant)
+                    "Init"-> show quan
+                    "Merge"-> show (quan+ lastorderquant)
+                    _ -> show 0
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "--------------pexpandorder--------------")
