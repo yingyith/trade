@@ -274,7 +274,7 @@ detailopHandler tbq = do
         let etimee = etime res
         let eordid = ordid res
 
-        when (et == "scancel") $ do 
+        when (et == "scancel") $  do 
               (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
               case res of 
                   True  -> cancelorder eordid
