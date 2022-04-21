@@ -306,10 +306,7 @@ pexpandordertorediszset quan pr otimestamp insertstamp = do
    let recordstate = DL.last recorditem
    let orderid =  show stamp 
    let shprice =  show pr
-   let shquant =  case lastordertype of 
-                    "Init"-> show quan
-                    "Merge"-> show (quan+ lastorderquant)
-                    _ -> show 0
+   let shquant =  show quan
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "--------------pexpandorder--------------")

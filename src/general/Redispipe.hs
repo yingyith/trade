@@ -454,7 +454,7 @@ opclHandler tbq conn channel  msg = do
                   --        let aevent = Opevent "sfill" curquanty 0  otimestamp
                   --        addeventtotbqueue aevent tbq
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
-                      let aevent = Opevent "init" curorquanty coriginpr otimestamp corderid
+                      let aevent = Opevent "init" curquanty coriginpr otimestamp corderid
                       addeventtotbqueue aevent tbq
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
