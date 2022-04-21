@@ -273,14 +273,9 @@ detailopHandler tbq = do
         let etpr = price res
         let etimee = etime res
         let eordid = ordid res
-        when (et == "bcancel") $ do 
-              (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
-              case res of 
-                  True  -> cancelorder eordid
-                  False -> return () 
 
         when (et == "scancel") $ do 
-              (lastquan,res) <- runRedis conn (pcanordertorediszset  curtime)
+              (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
               case res of 
                   True  -> cancelorder eordid
                   False -> return () 
@@ -297,6 +292,9 @@ detailopHandler tbq = do
 
         when (et == "merge") $ do 
               runRedis conn (pexpandordertorediszset etquan etpr etimee)
+
+        when (et == "reset") $ do 
+              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee)
 
         when (et == "fill") $ do 
               runRedis conn (endordertorediszset etquan etpr etimee)  
@@ -356,9 +354,6 @@ opclHandler tbq conn channel  msg = do
               let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
-         when (DL.any (== orderstate) [(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
-              let aevent = Opevent "bcancel" 0 0 0 ordid
-              addeventtotbqueue aevent tbq
               
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
@@ -454,6 +449,9 @@ opclHandler tbq conn channel  msg = do
                       let aevent = Opevent "init" curorquanty curorderpr otimestamp corderid
                       addeventtotbqueue aevent tbq
 
+              when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
+                      let aevent = Opevent "reset" curorquanty curorderpr otimestamp corderid
+                      addeventtotbqueue aevent tbq
                --   when (curside == "BUY" ) $ do 
                --       let aevent = Opevent "binit" curorquanty curorderpr otimestamp
                --       addeventtotbqueue aevent tbq

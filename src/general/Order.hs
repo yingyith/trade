@@ -100,10 +100,8 @@ preorcpreordertorediszset sumres pr  stamp grid = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"----preorcpre---------" )
-   when (DL.any (== recordstate) [(show $ fromEnum Ccancel)] )  $ do 
-       -- cancel state ==>if curpr < openpr-grid ,then to halfdone
-       -- cancel state ==>if curpr > openpr-grid ,then to prepare new quant    merge quant
-       --merge two order need add two record,add a field that record last quantity bef merge 
+   when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
+       --append new order after cancel
        let quanty = toInteger sumres
        let quantity = case compare quanty 10 of
                            LT -> quanty 
@@ -123,14 +121,14 @@ preorcpreordertorediszset sumres pr  stamp grid = do
 
        when (pr< (lastpr-grid)) $ do  
            let shstate =  show $ fromEnum Prepare
-           let shquant = show (lastquan )
+           let shquant = show (lastquan ) --new quan should equel to old quan ,then can double
            let shprice = showdouble pr
-           let lmergequan = show (lastquan+mergequan)
+           let mergebefquan = show (lastquan)  --totlolly quan  = shquant + mergebefquan
            --need more strict condition ,and double the quant`
-           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
            void $ zadd abykeystr [(-stampi,abyvaluestr)]
 
-       when (pr>= (lastpr+0.5*grid)) $ do
+       when (pr>= (lastpr-grid)) $ do
            let shstate =  show $ fromEnum HalfDone
            let lmergequan = show mergequan
            let shquant = show (lastquan )
