@@ -256,7 +256,9 @@ procproinitordertorediszset quan pr ordid  stampi = do
    let orderid   =  ordid 
    let shprice   =  showdouble pr
    let shquant   =  show quan
-   let shstate   =  show $ fromEnum Proinit
+   let shstate   =  case side of 
+                        "BUY" -> show $ fromEnum Proinit
+                        "SELL" -> show $ fromEnum Cproinit
    let lastgrid  = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let lmergequan = show mergequan
