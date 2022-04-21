@@ -120,6 +120,8 @@ getspotbalance = do
 
 cancelorder :: String -> IO ()
 cancelorder orderid = do
+   let symbol = "ADAUSDT"
+   let symboll = "ADAUSDT"
    curtimestamp <- getcurtimestamp
    runReq defaultHttpConfig $ do 
       let signature = BLU.fromString sk
@@ -129,10 +131,11 @@ cancelorder orderid = do
      --                            "SELL" -> sellorderid
       let origClientOrderId = orderid
       let params = 
-            ("timestamp" =: (curtimestamp :: Integer ))<>
-            ("origClientOrderId" =: (origClientOrderId ))
+            ("symbol" =: (symboll :: Text)) <>
+            ("origClientOrderId" =: (show origClientOrderId )) <> 
+            ("timestamp" =: (curtimestamp ))
 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("timestamp",show curtimestamp), ("origClientOrderId",origClientOrderId)] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("origClientOrderId",origClientOrderId),("timestamp",show curtimestamp)  ] 
       let ares = showDigest(hmacSha256 signature abody)
       let httpparams = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
