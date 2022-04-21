@@ -273,8 +273,14 @@ detailopHandler tbq = do
         let etpr = price res
         let etimee = etime res
         let eordid = ordid res
-        when (et == "cancel") $ do 
+        when (et == "bcancel") $ do 
               (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
+              case res of 
+                  True  -> cancelorder eordid
+                  False -> return () 
+
+        when (et == "scancel") $ do 
+              (lastquan,res) <- runRedis conn (pcanordertorediszset  curtime)
               case res of 
                   True  -> cancelorder eordid
                   False -> return () 
@@ -293,7 +299,7 @@ detailopHandler tbq = do
               runRedis conn (pexpandordertorediszset etquan etpr etimee)
 
         when (et == "fill") $ do 
-              runRedis conn (hlfendordertorediszset etquan etpr etimee)  
+              runRedis conn (endordertorediszset etquan etpr etimee)  
 
         when (et == "init") $ do 
               logact logByteStringStdout $ B.pack $ show ("bef init!")
@@ -346,12 +352,12 @@ opclHandler tbq conn channel  msg = do
               let aevent = Opevent "sopen" 0 curpr 0 ordid
               addeventtotbqueue aevent tbq
 
-         when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
-              let aevent = Opevent "cancel" 0 0 0 ordid
+         when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (2*ordergrid))  )  $ do 
+              let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
-         when (DL.any (== orderstate) [(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
-              let aevent = Opevent "cancel" 0 0 0 ordid
+         when (DL.any (== orderstate) [(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)] && ((orderpr-curpr)>ordergrid)  )  $ do 
+              let aevent = Opevent "bcancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
     when (dettype /= "adausdt@kline_1m") $ do 
