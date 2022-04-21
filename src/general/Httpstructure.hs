@@ -132,8 +132,8 @@ cancelorder orderid = do
       let origClientOrderId = orderid
       let params = 
             ("symbol" =: (symboll :: Text)) <>
-            ("origClientOrderId" =: (show origClientOrderId )) <> 
-            ("timestamp" =: (curtimestamp ))
+            ("origClientOrderId" =: origClientOrderId  ) <> 
+            ("timestamp" =: (show curtimestamp ))
 
       let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("origClientOrderId",origClientOrderId),("timestamp",show curtimestamp)  ] 
       let ares = showDigest(hmacSha256 signature abody)
