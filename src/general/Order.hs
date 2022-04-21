@@ -98,10 +98,10 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
    let lastquan = read (recorditem !! 4) :: Integer
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
+   let quanty = toInteger sumres
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"----preorcpre---------" )
    when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
        --append new order after cancel
-       let quanty = toInteger sumres
        let otype = "Reset" :: String
        let quantity = case compare quanty 10 of
                            LT -> quanty 
@@ -119,8 +119,8 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
        let shgrid = showdouble grid
        let lmergequan = show (lastquan+mergequan)
 
-       when (pr< (lastpr-grid)) $ do  
-           let shstate =  show $ fromEnum Prepare
+       when (pr<= (lastpr-grid)) $ do  
+           let shstate =  show $ fromEnum Done
            let shquant = show (lastquan ) --new quan should equel to old quan ,then can double
            let shprice = showdouble pr
            let mergebefquan = show (lastquan)  --totlolly quan  = shquant + mergebefquan
@@ -128,35 +128,48 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
-       when (pr>= (lastpr-grid)) $ do
-           let shstate =  show $ fromEnum HalfDone
-           let lmergequan = show mergequan
-           let shquant = show (lastquan )
-           let shprice = lastprr
-           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+     --  when (pr>= (lastpr-grid)) $ do
+     --      let shstate =  show $ fromEnum HalfDone
+     --      let lmergequan = show mergequan
+     --      let shquant = show (lastquan )
+     --      let shprice = lastprr
+     --      let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+     --      void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
-       let quanty = toInteger sumres
-       let otype = "Prep" :: String
-       let quantity = case compare quanty 10 of
-                           LT -> quanty 
-                           GT -> 10 
-                           _  -> 10
-       let orderid =  show stamp 
-       let side = "BUY" :: String
-       let shprice =  show pr
-       let minquan = (round (10/pr))+2 :: Integer
 
-       let shquant =  case compare quantity minquan of
-                           LT -> show minquan
-                           _  -> show quantity
-       let shstate =  show $ fromEnum Prepare
-       let shgrid = showdouble  grid
-       let lmergequan ="0" 
-       when (quantity > 0) $ do
+       when (mergequan == 0 && quanty > 0) $ do
+           let otype = "Prep" :: String
+           let quantity = case compare quanty 10 of
+                               LT -> quanty 
+                               GT -> 10 
+                               _  -> 10
+           let orderid =  show stamp 
+           let side = "BUY" :: String
+           let shprice =  show pr
+           let minquan = (round (10/pr))+2 :: Integer
+
+           let shquant =  case compare quantity minquan of
+                               LT -> show minquan
+                               _  -> show quantity
+           let shstate =  show $ fromEnum Prepare
+           let shgrid = showdouble  grid
+           let lmergequan ="0" 
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+
+       when (mergequan /= 0 && quanty > 0) $ do
+           let otype = "Prep" :: String
+           let orderid =  show stamp 
+           let side = "BUY" :: String
+           let shprice =  show pr
+           let shquant =  show lastquan 
+           let shstate =  show $ fromEnum Prepare
+           let shgrid = showdouble  grid
+           let lmergequan = show mergequan
+           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+
 
    when (recordstate == (show $ fromEnum HalfDone)) $ do -- if curpr orderpr  > grid   then append new order,and need merge
        let otype = "Oprep" :: String

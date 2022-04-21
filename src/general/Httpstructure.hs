@@ -142,11 +142,12 @@ cancelorder orderid = do
             ("signature" =: (T.pack ares :: Text ))
       let ouri = "https://fapi.binance.com/fapi/v1/order"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",orderid)
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req DELETE url (ReqBodyUrlEnc params) lbsResponse  httpparams
       response <- areq
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",response)
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",response,orderid)
       return ()
     --cancel all the order ,if  any more need can use api cancel detail order
    return () 
