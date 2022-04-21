@@ -412,6 +412,7 @@ opclHandler tbq conn channel  msg = do
               let corderid            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "c")
               logact logByteStringStdout $ B.pack  $ show ("b11eforderupdate1 ---------",cty,corderid)
               let cpr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
+              let coriginprstr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "p")
               logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",cpr)
               let corty          = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
               logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",corty)
@@ -420,6 +421,7 @@ opclHandler tbq conn channel  msg = do
               let curorderpr     = read cpr            :: Double
               let curquantyy     = read cty            :: Double
               let curortyy       = read corty          :: Double
+              let coriginpr       = read coriginprstr          :: Double
               let otimestamp     = read otimestampstr  :: Int
               --let otimestampd    = fromIntegral otimestamp  :: Double
               let curquanty      = round curquantyy    :: Integer
@@ -447,7 +449,7 @@ opclHandler tbq conn channel  msg = do
                   --        let aevent = Opevent "sfill" curquanty 0  otimestamp
                   --        addeventtotbqueue aevent tbq
               when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
-                      let aevent = Opevent "init" curorquanty curorderpr otimestamp corderid
+                      let aevent = Opevent "init" curorquanty coriginpr otimestamp corderid
                       addeventtotbqueue aevent tbq
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
