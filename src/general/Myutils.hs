@@ -31,7 +31,6 @@ import Data.Monoid ((<>))
 import Control.Monad
 import Control.Exception
 import Control.Monad.Trans (liftIO)
-import Httpstructure
 import Data.List.Split as DLT
 import Analysistructure as AS
 import Globalvar

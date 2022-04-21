@@ -52,6 +52,7 @@ import Data.Time.Clock.POSIX (getPOSIXTime)
 import Globalvar
 import Colog (LogAction,logByteStringStdout)
 import Logger
+import Myutils
 
 getorderitem :: IO ()
 getorderitem = runReq defaultHttpConfig $ do
@@ -158,7 +159,8 @@ takeorder a b c = do
                              "SELL" -> sellorderid
    let quantity = if b > 10 then b else 10 :: Integer
    
-   let price = c :: Double
+   let oprice = c :: Double
+   let price = (fromInteger $  round $ oprice * (10^4))/(10.0^^4)
 
    curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
    let curtimestamp = curtimestampl :: Integer
@@ -175,7 +177,7 @@ takeorder a b c = do
              "timeInForce" =: (timeinforcee :: Text) <>
              "timestamp" =: (curtimestamp)
 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",show price),("newClientOrderId",newClientOrderId),("timeInForce",timeinforce),("timestamp",show curtimestamp)] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",showdouble price),("newClientOrderId",newClientOrderId),("timeInForce",timeinforce),("timestamp",show curtimestamp)] 
       let ares = showDigest(hmacSha256 signature abody)
       let passwdtxt = BC.pack Passwd.passwd
       let httpparams = 
