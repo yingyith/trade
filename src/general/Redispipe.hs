@@ -448,13 +448,13 @@ opclHandler tbq conn channel  msg = do
                       addeventtotbqueue aevent tbq
 
          when (eventname == "ACCOUNT_UPDATE") $ do 
-              let usdtbalo    = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    ))    -- !!0  
+              let usdtbalo    = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    )).key "cw"    -- !!0  
               let orderposo   = detdata ^.. key "a" .key "P" .values.filtered (has (key "s"._String.only "ADAUSDT" )).key "pa"    -- !!0
               let orderpro    = detdata ^.. key "a" .key "P" .values.filtered (has (key "s"._String.only "ADAUSDT" )).key "ep"    -- !!0
               logact logByteStringStdout $ B.pack  $ show ("acupdate ---------",usdtbalo,orderposo,orderpro)
               --let usdtbalo    = read $ T.unpack $ outString $ fromJust usdtbalo  :: Int 
               let orderpos    = read $ T.unpack $ outString $ (!!0)  orderposo :: Integer
-              let usdtbal    = read $ T.unpack $ outString $ (!!0)  usdtbalo :: Int
+              let usdtbal     = read $ T.unpack $ outString $ (!!0)  usdtbalo :: Int
               let orderpr     = read $ T.unpack $ outString $ (!!0)  orderpro  :: Double
               let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
               addeventtotbqueue aevent tbq
