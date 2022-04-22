@@ -12,7 +12,6 @@ module Rediscache (
    getorderfromredis, 
    gettimefromredis, 
    getspotbaltoredis,
-   setkvfromredis,
    getmsgfromstr,
    getbalfromredis,
    Ordervar (..),
@@ -61,6 +60,7 @@ import System.Log.Formatter
 import Colog (LogAction,logByteStringStdout)
 import Data.Time.Format.ISO8601
 import Data.Time.Clock.POSIX
+import Redisutils
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -93,11 +93,6 @@ getbalfromredis = do
    usdtb <- get usdtname 
    return (adab,usdtb)
 
-setkvfromredis :: String -> String -> Redis ()
-setkvfromredis key value = do 
-   let keybs = BL.fromString key
-   let valuebs = BL.fromString value
-   void $ set keybs valuebs
 
 liskeytoredis :: String -> Integer -> Redis ()
 liskeytoredis a b = do 

@@ -15,7 +15,9 @@ module Globalvar (
     timekey,
     sellorderid,
     buyorderid,
-    secondstick
+    secondstick,
+    holdprkey,
+    holdposkey
 ) where
 
 defintervallist :: [String]
@@ -31,6 +33,8 @@ secondkey = "1s"
 
 adakey = "Ada"
 usdtkey = "Usdt"
+holdprkey = "Holdpr"
+holdposkey = "Holdpos"
 liskey = "liskey"
 secondstick = 60 :: Integer
 sellorderid = "Sellorder20"

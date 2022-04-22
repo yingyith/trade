@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 45e9f5cccf21de93b962ec13dda41f31b49d782b5b1a7e2e9369a543fe7b0d2a
+-- hash: b7946f71fd12052cf952f82c814be62ca53bb47ba834e08e883f613e5fc6c2f9
 
 name:           trade
 version:        0.1.0.0
@@ -55,6 +55,7 @@ library
       Passwd
       Rediscache
       Redispipe
+      Redisutils
       Sndsrule
       Strategy
       Events

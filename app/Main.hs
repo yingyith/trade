@@ -236,7 +236,6 @@ ws connection = do
            void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
            void $ addChannels ctrll [] [("order:*"    , opclHandler  q connn   )]
-           void $ addChannels ctrll [] [("ac:*"       , acupdHandler      )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            threadDelay 1000000
         --threadDelay 1000000

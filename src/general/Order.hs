@@ -13,6 +13,7 @@ module Order (
     cproordertorediszset,
     ccanordertorediszset,
     pcanordertorediszset,
+    acupdtorediszset,
     cendordertorediszset,
     ctestendordertorediszset,
     pexpandordertorediszset
@@ -47,6 +48,7 @@ import Data.Typeable
 import Logger
 import Myutils
 import Colog (LogAction,logByteStringStdout)
+import Redisutils
 
 data Ostate = Prepare | Process |Proinit | Ppartdone | Pcancel | HalfDone | Cprepare | Cprocess | Cproinit | Cpartdone | Ccancel | Done
 instance Enum Ostate where 
@@ -345,13 +347,12 @@ endordertorediszset quan pr otimestamp insertstamp = do
    let otype =  case side of 
                     "BUY" -> "Hdone" 
                     "SELL" -> "Done"
-   --let pr = recorditem !! 5
+   holdpospr <- getkvfromredis holdprkey
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    let orderid =  lastorderid
-   let shprice = show pr
    let shquant =  show quan
    let shstate =  case side of 
                     "BUY" -> show $ fromEnum HalfDone
@@ -359,11 +360,13 @@ endordertorediszset quan pr otimestamp insertstamp = do
    let shgrid  = showdouble lastgrid
 
    when (DL.any (== recordstate) [(show $ fromEnum Proinit),(show $ fromEnum Ppartdone)] ) $ do
+       let shprice = holdpospr 
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----hlfdone--------")
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (DL.any (== recordstate) [(show $ fromEnum Cproinit),(show $ fromEnum Cpartdone)] ) $ do
+       let shprice = show pr
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----done--------")
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
@@ -381,8 +384,6 @@ cproordertorediszset stamp  = do
                     Right c -> c
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
-   --liftIO $ print ("bef cpro record is -------------------------")
-   --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let lastgrid = read (recorditem !! 6) :: Double
    let lastquan = read (recorditem !! 4) :: Integer
@@ -488,7 +489,7 @@ cendordertorediszset quan  otimestamp = do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
-ctestendordertorediszset :: Integer->Double  -> Double -> Redis ()
+ctestendordertorediszset :: Integer-> Double  -> Double -> Redis ()
 ctestendordertorediszset quan pr  stamp = do 
    let abykeystr = BL.fromString orderkey
    let side = "SELL" :: String
@@ -516,3 +517,8 @@ ctestendordertorediszset quan pr  stamp = do
    when (recordstate == (show $ fromEnum Cprepare) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
+
+acupdtorediszset :: Integer -> Double  -> Int -> Redis ()
+acupdtorediszset quan pr  usdtbal = do 
+   setkvfromredis holdposkey $ show quan
+   setkvfromredis holdprkey $ showdouble pr
