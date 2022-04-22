@@ -145,8 +145,8 @@ cancelorder orderid  = do
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req DELETE url (ReqBodyUrlEnc params) ignoreResponse  httpparams
-      response <- areq
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",response,orderid)
+      _ <- areq
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",orderid)
       return ()
     --cancel all the order ,if  any more need can use api cancel detail order
    return () 

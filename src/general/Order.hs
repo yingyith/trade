@@ -268,7 +268,9 @@ procproinitordertorediszset quan pr ordid  stampi insertstamp = do
    let lastquan  = read (recorditem !! 4) :: Integer
    let orderid   =  ordid 
    let shprice   =  showdouble pr
-   let shquant   =  show quan
+   let shquant   =  case side of 
+                       "BUY"  -> show quan
+                       "SELL" -> show lastquan 
    let shstate   =  case side of 
                         "BUY" -> show $ fromEnum Proinit
                         "SELL" -> show $ fromEnum Cproinit
