@@ -33,5 +33,5 @@ adakey = "Ada"
 usdtkey = "Usdt"
 liskey = "liskey"
 secondstick = 60 :: Integer
-sellorderid = "Sellorderid202204"
-buyorderid = "Buyyorderid202204"
+sellorderid = "Sellorder20"
+buyorderid = "Buyyorder20"
