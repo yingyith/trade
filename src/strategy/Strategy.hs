@@ -96,13 +96,13 @@ crossminstra abc pr = do
     let fallklineindex = maxindex+itemlen-1
 
     let gridspan = snd $ fst $ (!! (fallklineindex)) abc   --transfer this grid to the redis order record can be used as 
-    let grid = 0.17* ((fst gridspan) - (snd gridspan))
+    let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
     let openpredi = maxindexpredi && itempredi && lowpredi 
-    let newgrid = grid - (pr-lowp)
-    logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,newgrid,"cross def")
+    let newgrid = max (grid - (pr-lowp)) 0.0001
+    logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,pr,lowp,newgrid,"cross def")
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 

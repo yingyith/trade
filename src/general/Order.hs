@@ -105,10 +105,10 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
    when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
        --append new order after cancel
        let otype = "Reset" :: String
-       let quantity = case compare quanty 10 of
+       let quantity = case compare quanty 200 of
                            LT -> quanty 
-                           GT -> 10 
-                           _  -> 100
+                           GT -> 200 
+                           _  -> 200
        let orderid =  lastorderid 
        let side = "BUY" :: String
        let shprice =  showdouble lastpr
@@ -142,10 +142,10 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
 
        when (mergequan == 0 && quanty > 0) $ do
            let otype = "Prep" :: String
-           let quantity = case compare quanty 10 of
+           let quantity = case compare quanty 200 of
                                LT -> quanty 
-                               GT -> 10 
-                               _  -> 10
+                               GT -> 200 
+                               _  -> 200
            let orderid =  show stamp 
            let side = "BUY" :: String
            let shprice =  show pr
