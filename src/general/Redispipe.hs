@@ -29,7 +29,7 @@ import Data.Time
 import GHC.Generics
 --import GHC.Records(getField)
 import Control.Monad
-import Control.Exception
+import Control.Exception as CE
 import Control.Monad.Trans (liftIO)
 import Control.Concurrent
 import Control.Lens
@@ -278,8 +278,10 @@ detailopHandler tbq = do
         when (et == "scancel") $  do 
               (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
               case res of 
-                  True  -> cancelorder eordid
-                  False -> return () 
+                  True  ->  do 
+                               CE.catch (cancelorder eordid) ( \e -> do 
+                                                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException)))
+                  False ->  return () 
         when (et == "bopen") $ do 
               logact logByteStringStdout $ B.pack $ show ("bef bopen!")
               (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
@@ -300,7 +302,9 @@ detailopHandler tbq = do
               runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
         when (et == "acupd") $ do 
+              logact logByteStringStdout $ B.pack $ show ("befacupd!")
               runRedis conn (acupdtorediszset etquan etpr etimee )
+              logact logByteStringStdout $ B.pack $ show ("aftacupd!")
 
         when (et == "fill") $ do 
               runRedis conn (endordertorediszset etquan etpr etimee curtime)  
