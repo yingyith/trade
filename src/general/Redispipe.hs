@@ -344,7 +344,7 @@ opclHandler tbq conn channel  msg = do
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
          logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
-         --when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do  if < ,reset to origin
+        -- when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do  if < ,reset to origin
          when ((orderstate == (show $ fromEnum Prepare)) )$ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               let aevent = Opevent "bopen"  0 pr 0 ordid
