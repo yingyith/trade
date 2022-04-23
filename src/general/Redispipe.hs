@@ -458,8 +458,11 @@ opclHandler tbq conn channel  msg = do
               logact logByteStringStdout $ B.pack  $ show ("acupdate ---------",usdtbalo,orderposo,orderpro)
               --let usdtbalo    = read $ T.unpack $ outString $ fromJust usdtbalo  :: Int 
               let orderpos    = read $ T.unpack $ outString $ (!!0)  orderposo :: Integer
-              let usdtbal     = read $ T.unpack $ outString $ (!!0)  usdtbalo :: Int
+              logact logByteStringStdout $ B.pack  $ show ("acupdate1 ---------")
+              let usdtbal     = round (read $ T.unpack $ outString $ (!!0)  usdtbalo :: Double) :: Int
+              logact logByteStringStdout $ B.pack  $ show ("acupdate2 ---------")
               let orderpr     = read $ T.unpack $ outString $ (!!0)  orderpro  :: Double
+              logact logByteStringStdout $ B.pack  $ show ("acupdate3 ---------")
               let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
               addeventtotbqueue aevent tbq
 
