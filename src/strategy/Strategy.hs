@@ -103,11 +103,11 @@ crossminstra abc pr = do
     let openpredi = maxindexpredi && itempredi && lowpredi 
     let newgrid = max (grid - (pr-lowp)) 0.001
     logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,pr,lowp,newgrid,"cross def")
-    case (openpredi) of 
-          True    -> return (resquan,newgrid)
-          False   -> return ((min 0 resbquan) ,newgrid) 
+   -- case (openpredi) of 
+   --       True    -> return (resquan,newgrid)
+   --       False   -> return ((min 0 resbquan) ,newgrid) 
           --(False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
-    --return (130,0.0002)
+    return (130,0.0005)
                                           
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode

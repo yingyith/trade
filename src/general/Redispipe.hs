@@ -276,12 +276,13 @@ detailopHandler tbq = do
         let eordid = ordid res
 
         when (et == "scancel") $  do 
-              (lastquan,res) <- runRedis conn (ccanordertorediszset  curtime)
-              case res of 
-                  True  ->  do 
-                               CE.catch (cancelorder eordid) ( \e -> do 
-                                                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException)))
-                  False ->  return () 
+              --shared <- atomically $ newTVar 0 
+              --before <- atomically shared
+              runRedis conn (ccanordertorediszset  curtime)
+              CE.catch (cancelorder eordid) ( \e -> do 
+                                 logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException)))
+              --after <- atomRead shared
+
         when (et == "bopen") $ do 
               logact logByteStringStdout $ B.pack $ show ("bef bopen!")
               (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
@@ -356,7 +357,7 @@ opclHandler tbq conn channel  msg = do
               let aevent = Opevent "sopen" 0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
-         when (DL.any (== orderstate) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (2*ordergrid))  )  $ do 
+         when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (2*ordergrid))  )  $ do 
               let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
