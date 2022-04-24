@@ -12,6 +12,7 @@
 
 import Control.Concurrent.STM.TBQueue
 import Control.Concurrent.STM
+import Data.List as DL
 import GHC.Generics
 
 data Opevent = Opevent {
@@ -26,6 +27,13 @@ addeventtotbqueue :: Opevent -> TBQueue Opevent -> IO ()
 addeventtotbqueue evt tbq = do 
    atomically $  do 
                   res <- isFullTBQueue tbq
-                  case (res) of 
-                     False  -> writeTBQueue tbq evt
-                     True   -> return ()
+                  befevt <- tryPeekTBQueue tbq
+                  case befevt of 
+                     Nothing -> writeTBQueue tbq evt
+                     Just l  -> do 
+                                  let befevttype = etype l
+                                  let befevtmatchpredi  =  (etype l == etype evt) && (DL.any (== befevttype ) ["bopen","sopen"])
+                                  let respredi = res && befevtmatchpredi
+                                  case respredi of 
+                                     False   -> writeTBQueue tbq evt
+                                     True    -> return () 
