@@ -24,6 +24,7 @@ dependencies:
 - req 
 - wuss 
 - aeson 
+- monad-loops
 - text
   #  --- websockets
 - bytestring 

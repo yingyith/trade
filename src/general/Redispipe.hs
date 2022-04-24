@@ -30,6 +30,7 @@ import GHC.Generics
 --import GHC.Records(getField)
 import Control.Monad
 import Control.Exception as CE
+import Control.Monad.Loops
 import Control.Monad.Trans (liftIO)
 import Control.Concurrent
 import Control.Lens
@@ -259,10 +260,10 @@ handlerThread conn ctrl tvar = do
 --listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
 --
 
-detailopHandler :: TBQueue Opevent -> IO () 
+detailopHandler :: TBQueue Opevent  -> IO () 
 detailopHandler tbq = do 
     conn <- (connect defaultConnectInfo)
-    forever $  do
+    iterateM_  ( \lastetype -> do
         logact logByteStringStdout $ B.pack $ show ("killbef thread!")
         res <- atomically $ readTBQueue tbq
         tbqlen <- atomically $ lengthTBQueue tbq
@@ -281,20 +282,26 @@ detailopHandler tbq = do
               runRedis conn (ccanordertorediszset  curtime)
               CE.catch (cancelorder eordid) ( \e -> do 
                                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException)))
-              --after <- atomRead shared
 
         when (et == "bopen") $ do 
               logact logByteStringStdout $ B.pack $ show ("bef bopen!")
-              (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
-              logact logByteStringStdout $ B.pack $ show ("aft bopen!")
-              case res of 
-                  True  -> takeorder "BUY" lastquan apr
-                  False -> return () 
+              case (et == lastetype) of  
+                 False -> do
+                            (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
+                            logact logByteStringStdout $ B.pack $ show ("aft bopen!")
+                            case res of 
+                               True  -> takeorder "BUY" lastquan apr
+                               False -> return () 
+                 True  -> return ()
+
         when (et == "sopen") $ do 
               (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
-              case res of 
-                  True  -> takeorder "SELL" lastquan apr
-                  False -> return () 
+              case (et == lastetype) of  
+                 False -> do
+                              case res of 
+                                 True  -> takeorder "SELL" lastquan apr
+                                 False -> return () 
+                 True  -> return ()
 
         when (et == "merge") $ do 
               runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
@@ -319,7 +326,7 @@ detailopHandler tbq = do
       --        runRedis conn (cproinitordertorediszset etquan etpr etimee)
 
         logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
-        return ()
+        return et)  ""
         
 
 opclHandler :: TBQueue Opevent -> R.Connection -> RedisChannel -> ByteString -> IO ()

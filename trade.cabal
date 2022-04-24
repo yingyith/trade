@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b7946f71fd12052cf952f82c814be62ca53bb47ba834e08e883f613e5fc6c2f9
+-- hash: 947fc1d12d353cde18ffe2efe763c84014f44b1e3f7ffcbb9cd34b550ed73495
 
 name:           trade
 version:        0.1.0.0
@@ -89,6 +89,7 @@ library
     , lens
     , lens-aeson
     , modern-uri
+    , monad-loops
     , mtl
     , network
     , parallel
@@ -140,6 +141,7 @@ executable trade-exe
     , lens
     , lens-aeson
     , modern-uri
+    , monad-loops
     , mtl
     , network
     , parallel
@@ -193,6 +195,7 @@ test-suite trade-test
     , lens
     , lens-aeson
     , modern-uri
+    , monad-loops
     , mtl
     , network
     , parallel
