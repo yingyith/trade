@@ -105,10 +105,10 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
    when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
        --append new order after cancel
        let otype = "Reset" :: String
-       let quantity = case compare quanty 200 of
+       let quantity = case compare quanty 20 of
                            LT -> quanty 
-                           GT -> 200 
-                           _  -> 200
+                           GT -> 20
+                           _  -> 20
        let orderid =  lastorderid 
        let side = "BUY" :: String
        let shprice =  showdouble lastpr
@@ -142,10 +142,10 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
 
        when (mergequan == 0 && quanty > 0) $ do
            let otype = "Prep" :: String
-           let quantity = case compare quanty 200 of
+           let quantity = case compare quanty 20 of
                                LT -> quanty 
-                               GT -> 200 
-                               _  -> 200
+                               GT -> 20
+                               _  -> 20
            let orderid =  show stamp 
            let side = "BUY" :: String
            let shprice =  show pr
@@ -281,7 +281,7 @@ procproinitordertorediszset quan pr ordid  stampi insertstamp = do
    let lmergequan = show mergequan
    let stamp = fromIntegral stampi :: Double
    let shgrid = show lastgrid
-   when (DL.any (== recordstate) [(show $ fromEnum Cprocess),(show $ fromEnum Process)] )  $ do 
+   when (DL.any (== recordstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Process)] )  $ do 
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 

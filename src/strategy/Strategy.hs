@@ -101,7 +101,7 @@ crossminstra abc pr = do
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
     let openpredi = maxindexpredi && itempredi && lowpredi 
-    let newgrid = max (grid - (pr-lowp)) 0.0001
+    let newgrid = max (grid - (pr-lowp)) 0.001
     logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,pr,lowp,newgrid,"cross def")
     case (openpredi) of 
           True    -> return (resquan,newgrid)
