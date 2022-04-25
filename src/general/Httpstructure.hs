@@ -12,6 +12,7 @@ module Httpstructure
       sticks,
       getmsilist,
       queryorder,
+      queryforder,
       pinghandledo,
       getintervalfrpair,
       getspotbalance,
