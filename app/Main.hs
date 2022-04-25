@@ -231,6 +231,7 @@ ws connection = do
     let bqryord = fst qryord
     let sqryord = snd qryord
     currtime <- getcurtimestamp 
+    liftIO $ print ("fork async now!")
     let curtime = fromInteger currtime ::Double
     case (qrypos,bqryord,sqryord) of 
        ([] ,[] ,[] ) ->  do
