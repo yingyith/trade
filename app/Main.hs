@@ -233,7 +233,7 @@ ws connection = do
     currtime <- getcurtimestamp 
     liftIO $ print ("fork async now!",currtime)
     let curtime = fromInteger currtime ::Double
-    liftIO $ print ("fork async now!")
+    liftIO $ print ("fork async now!",qrypos,bqryord,sqryord)
     case (qrypos,bqryord,sqryord) of 
        ([] ,[] ,[] ) ->  do
                              let astate = show $ fromEnum Done
