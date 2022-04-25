@@ -500,7 +500,6 @@ settodefredisstate side otype state orderid  pr quan grid  mergequan stamp = do
    liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shmergequan =  show mergequan
    liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
-   let orderid = orderid
    liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
