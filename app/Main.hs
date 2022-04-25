@@ -280,6 +280,7 @@ ws connection = do
                              return ()
 
 
+    liftIO $ print ("fork async nowi2!")
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     liftIO $ print ("fork async nowi2!")
