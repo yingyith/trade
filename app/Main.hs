@@ -282,6 +282,7 @@ ws connection = do
 
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
+    liftIO $ print ("fork async nowi2!")
     sendthid <- myThreadId 
     liftIO $ print ("fork async nowi2!")
     q <- newTBQueueIO 30 :: IO (TBQueue Opevent)
