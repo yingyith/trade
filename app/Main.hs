@@ -237,6 +237,7 @@ ws connection = do
        ([] ,[] ,[] ) ->  do
                              let astate = show $ fromEnum Done
                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      0  0  curtime)-- set to Done prepare 
+                             liftIO $ print ("fork async now!")
        ([] ,_  ,[] ) ->  do -- cancel the order ,set to prepare
                              let astate = show $ fromEnum Done
                              mapM_ funcgetorderid  sqryord
