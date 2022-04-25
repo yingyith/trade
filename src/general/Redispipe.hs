@@ -279,9 +279,14 @@ detailopHandler tbq = do
         when (et == "scancel") $  do 
               --shared <- atomically $ newTVar 0 
               --before <- atomically shared
-              runRedis conn (ccanordertorediszset  curtime)
-              CE.catch (cancelorder eordid) ( \e -> do 
+              qryord <- queryorder
+              let sqryord = snd qryord
+              case sqryord of 
+                  [] ->  return ()
+                  _  ->  do 
+                             CE.catch (mapM_ funcgetorderid  sqryord) ( \e -> do 
                                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException)))
+                             runRedis conn (ccanordertorediszset  curtime)
 
         when (et == "bopen") $ do 
               logact logByteStringStdout $ B.pack $ show ("bef bopen!")

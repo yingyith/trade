@@ -39,7 +39,10 @@ import Numeric
 outString :: Value -> Text
 outString a =  case a of 
                    DAT.String l -> l
-                   DAT.Number l -> T.pack $ show $ fromRight 0 $ floatingOrInteger  (l::Scientific)
+                   DAT.Number l -> case floatingOrInteger (l :: Scientific) of 
+                                        Right k ->  T.pack $ show k
+                                        Left  g ->  T.pack $ showdouble g 
+                             --T.pack $ show $ fromRight 0 $ floatingOrInteger  (l::Scientific)
 
 showdouble :: Double -> String
 showdouble x = showFFloat (Just 4) x "" 

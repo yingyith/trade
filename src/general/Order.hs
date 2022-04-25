@@ -14,8 +14,10 @@ module Order (
     ccanordertorediszset,
     pcanordertorediszset,
     acupdtorediszset,
+    funcgetorderid,
+    funcgetposinf,
     cendordertorediszset,
-    ctestendordertorediszset,
+    settodefredisstate,
     pexpandordertorediszset
 ) where
 
@@ -37,9 +39,12 @@ import Database.Redis
 import GHC.Generics
 import Data.Monoid ((<>))
 import Control.Monad
+import Control.Lens
 import Control.Exception
 import Control.Monad.Trans (liftIO)
+import Data.Text  as T
 import Httpstructure
+import Data.Aeson.Lens
 import Data.List.Split as DLT
 import Analysistructure as AS
 import Numeric
@@ -117,7 +122,6 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
        let addquant =  case compare quantity minquan of
                            LT -> show minquan
                            _  -> show quantity
-       --liftIO $ print (shquant)
        let shgrid = showdouble grid
        let lmergequan = show (lastquan+mergequan)
 
@@ -129,14 +133,6 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            --need more strict condition ,and double the quant`
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
-
-     --  when (pr>= (lastpr-grid)) $ do
-     --      let shstate =  show $ fromEnum HalfDone
-     --      let lmergequan = show mergequan
-     --      let shquant = show (lastquan )
-     --      let shprice = lastprr
-     --      let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-     --      void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
 
@@ -404,7 +400,7 @@ cproordertorediszset stamp  = do
                   return (lastquan,(True,lastpr+lastgrid))
        False -> return (0,(False,0))
 
-ccanordertorediszset :: Double -> Redis (Integer,Bool)
+ccanordertorediszset :: Double -> Redis ()
 ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, then after weboscket recieve order cancel event,then can merge order/append new pos,then set to halfdone
    let abykeystr = BL.fromString orderkey
    let side = "SELL" :: String
@@ -430,8 +426,7 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
        True  ->  do 
                      let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
                      void $ zadd abykeystr [(-stamp,abyvaluestr)]
-                     return (0,True)
-       False -> return (0,False) 
+       False -> return () 
 
 cproinitordertorediszset :: Integer -> Double -> Int -> Redis ()
 cproinitordertorediszset quan pr stampi = do 
@@ -489,36 +484,37 @@ cendordertorediszset quan  otimestamp = do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
-ctestendordertorediszset :: Integer-> Double  -> Double -> Redis ()
-ctestendordertorediszset quan pr  stamp = do 
+settodefredisstate :: String -> String  -> String -> String -> Double ->Integer -> Double -> Int -> Double -> Redis ()
+settodefredisstate side otype state orderid  pr quan grid  mergequan stamp = do 
    let abykeystr = BL.fromString orderkey
-   let side = "SELL" :: String
    let coin = "ADA" :: String
-   let otype = "Done" :: String
-   res <- zrange abykeystr 0 0
-   let tdata = case res of 
-                    Right c -> c
-   let lastrecord = BL.toString $ tdata !!0
-   let recorditem = DLT.splitOn "|" lastrecord
-   --liftIO $ print ("bef end record is -------------------------")
-   --liftIO $ print (recorditem)
-   let lastorderid = recorditem !! 3
-   let pr = recorditem !! 5
-   let recordstate = DL.last recorditem
-   let lastgrid = read (recorditem !! 6) :: Double
-   let shgrid = show lastgrid
-   let orderid =  show lastorderid ::String
-   let shprice =  show pr
+   let shgrid = showdouble grid
+   let shprice =  showdouble pr
    let shquant =  show quan
-   let shstate =  show $ fromEnum Done
-   let mergequan = read (recorditem !! 7) :: Integer
+   let shstate =  state
    let shmergequan =  show mergequan
-   liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord )
-   when (recordstate == (show $ fromEnum Cprepare) ) $ do
-       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
-       void $ zadd abykeystr [(-stamp,abyvaluestr)]
+   let orderid = orderid
+   let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
+   void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
 acupdtorediszset :: Integer -> Double  -> Int -> Redis ()
 acupdtorediszset quan pr  usdtbal = do 
    setkvfromredis holdposkey $ show quan
    setkvfromredis holdprkey $ showdouble pr
+
+
+funcgetorderid :: Value -> IO ()
+funcgetorderid avalue = do 
+    let aorderidobj = avalue ^? key "orderId"
+    let aorderid            = T.unpack $ outString $ fromJust aorderidobj 
+    cancelorder aorderid
+    
+
+funcgetposinf :: [Value] -> IO (Integer,Double)
+funcgetposinf avalues = do 
+    let avalue = avalues !! 0 
+    let holdposstr = avalue ^? key "positionAmt"
+    let holdprstr  = avalue ^? key "entryPrice"
+    let holdpos            =  read $ T.unpack $ outString $ fromJust holdposstr :: Integer
+    let holdpr            = read $ T.unpack $ outString $ fromJust holdprstr  :: Double
+    return (holdpos,holdpr)

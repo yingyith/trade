@@ -120,7 +120,7 @@ getspotbalance = do
       --liftIO $ print ("[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]")
       return (adaball,usdtball)
 
-queryorder :: IO ()
+queryorder :: IO ([Value],[Value])
 queryorder = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
@@ -146,9 +146,9 @@ queryorder = do
       let borders = (result^..values.filtered (has (key "side"._String.only "BUY"))) 
       let sorders = (result^..values.filtered (has (key "side"._String.only "SELL"))) 
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
-      return ()
+      return (borders,sorders)
 
-querypos :: IO ()
+querypos :: IO ([Value])
 querypos = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
@@ -173,7 +173,7 @@ querypos = do
       let result = responseBody response :: Value
       let borders = (result^..values.filtered (has (key "symbol"._String.only "ADAUSDT"))) 
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querypos ----",borders,"+++++")
-      return ()
+      return borders
 
 queryforder :: IO ()
 queryforder = do
