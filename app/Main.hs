@@ -233,6 +233,7 @@ ws connection = do
     currtime <- getcurtimestamp 
     liftIO $ print ("fork async now!")
     let curtime = fromInteger currtime ::Double
+    liftIO $ print ("fork async now!")
     case (qrypos,bqryord,sqryord) of 
        ([] ,[] ,[] ) ->  do
                              let astate = show $ fromEnum Done
@@ -280,14 +281,10 @@ ws connection = do
                              return ()
 
 
-    liftIO $ print ("fork async nowi2!")
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
-    liftIO $ print ("fork async nowi2!")
     sendthid <- myThreadId 
-    liftIO $ print ("fork async nowi2!")
     q <- newTBQueueIO 30 :: IO (TBQueue Opevent)
-    liftIO $ print ("fork async nowi3!")
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
         --threadDelay 4000000
