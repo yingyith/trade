@@ -283,8 +283,9 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
-    q <- newTBQueueIO 30 :: IO (TBQueue Opevent)
     liftIO $ print ("fork async nowi2!")
+    q <- newTBQueueIO 30 :: IO (TBQueue Opevent)
+    liftIO $ print ("fork async nowi3!")
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
         --threadDelay 4000000
