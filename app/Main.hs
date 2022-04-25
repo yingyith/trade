@@ -260,6 +260,7 @@ ws connection = do
                              (quan,pr) <- funcgetposinf qrypos
                              liftIO $ print ("fork async now!!!",quan,pr)
                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
+                             liftIO $ print ("fork async now!!!------",quan,pr)
                              return ()
        (_  ,[] ,_  ) ->  do-- set to cproinit --detail judge merge or init
                              let astate = show $ fromEnum HalfDone
