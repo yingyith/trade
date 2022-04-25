@@ -146,6 +146,35 @@ queryorder = do
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,sorders)
       return ()
 
+queryforder :: IO ()
+queryforder = do
+   let symbol = "ADAUSDT"
+   let symboll = "ADAUSDT"
+   curtimestamp <- getcurtimestamp
+   runReq defaultHttpConfig $ do 
+      let signature = BLU.fromString sk
+      let passwdtxt = BC.pack Passwd.passwd
+
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("limit","10"),("timestamp",show curtimestamp)  ] 
+      let ares = showDigest(hmacSha256 signature abody)
+      let httpparams = 
+            (header "X-MBX-APIKEY" passwdtxt ) <>
+            ("symbol" =: (symboll :: Text)) <>
+            ("timestamp" =: (curtimestamp :: Integer )) <>
+            ("limit" =: (10 :: Integer )) <>
+            ("signature" =: (T.pack ares :: Text ))
+      let ouri = "https://fapi.binance.com/fapi/v1/allOrders"  
+      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      uri <- URI.mkURI auri 
+      let (url, options) = fromJust (useHttpsURI uri)
+      let areq = req GET url NoReqBody jsonResponse  httpparams
+      response  <- areq
+      let result = responseBody response :: Value
+      let borders = (result^..values.filtered (has (key "side"._String.only "BUY"))) 
+      let sorders = (result^..values.filtered (has (key "side"._String.only "SELL"))) 
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,sorders)
+      return ()
+
 cancelorder :: String -> IO ()
 cancelorder orderid  = do
    let symbol = "ADAUSDT"
