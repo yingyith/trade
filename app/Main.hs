@@ -220,6 +220,7 @@ ws connection = do
     conn <- connect defaultConnectInfo
     connn <- connect defaultConnectInfo
     connnn <- connect defaultConnectInfo
+    qryord <- queryorder
     --add init order for if websocket lost connection ,u shoulf reinit,or the state of the order filled is not complete ,both contain the quant and state 
     --first find the order redis record,match with api ,then alter it .insert new record to make up
 

@@ -11,6 +11,7 @@ module Httpstructure
       DpairMserie,
       sticks,
       getmsilist,
+      queryorder,
       pinghandledo,
       getintervalfrpair,
       getspotbalance,
@@ -117,6 +118,28 @@ getspotbalance = do
       --liftIO $ print ("[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]")
       return (adaball,usdtball)
 
+queryorder :: IO ()
+queryorder = do
+   let symbol = "ADAUSDT"
+   let symboll = "ADAUSDT"
+   curtimestamp <- getcurtimestamp
+   runReq defaultHttpConfig $ do 
+      let signature = BLU.fromString sk
+      let passwdtxt = BC.pack Passwd.passwd
+
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("timestamp",show curtimestamp)  ] 
+      let ares = showDigest(hmacSha256 signature abody)
+      let httpparams = 
+            (header "X-MBX-APIKEY" passwdtxt ) <>
+            ("signature" =: (T.pack ares :: Text ))
+      let ouri = "https://fapi.binance.com/fapi/v1/openOrders"  
+      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      uri <- URI.mkURI auri 
+      let (url, options) = fromJust (useHttpsURI uri)
+      let areq = req GET url NoReqBody lbsResponse  httpparams
+      response  <- areq
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",response)
+      return ()
 
 cancelorder :: String -> IO ()
 cancelorder orderid  = do
