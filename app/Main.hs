@@ -231,56 +231,41 @@ ws connection = do
     let bqryord = fst qryord
     let sqryord = snd qryord
     currtime <- getcurtimestamp 
-    liftIO $ print ("fork async now!",currtime)
     let curtime = fromInteger currtime ::Double
-    liftIO $ print ("fork async now!",qrypos,bqryord,sqryord)
-    case (qrypos,bqryord,sqryord) of 
-       ([] ,[] ,[] ) ->  do
+    (quan,pr) <- funcgetposinf qrypos
+    case (quan==0,bqryord,sqryord) of 
+       (True  ,[] ,[] ) ->  do
                              let astate = show $ fromEnum Done
                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      0  0  curtime)-- set to Done prepare 
-                             liftIO $ print ("fork async now!")
-       ([] ,_  ,[] ) ->  do -- cancel the order ,set to prepare
+       (True  ,_  ,[] ) ->  do -- cancel the order ,set to prepare
                              let astate = show $ fromEnum Done
                              mapM_ funcgetorderid  sqryord
                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      0  0  curtime)-- set to Done prepare 
-                             return () 
-       ([] ,[] ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare 
+       (True  ,[] ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare 
                              let astate = show $ fromEnum Done
                              mapM_ funcgetorderid  bqryord
                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      0  0  curtime)-- set to Done prepare 
-                             return ()
-       ([] ,_  ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare
+       (True  ,_  ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare
                              let astate = show $ fromEnum Done
                              mapM_ funcgetorderid  bqryord
                              mapM_ funcgetorderid  sqryord
                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      0  0  curtime)-- set to Done prepare 
-                             return ()
-       (_  ,[] ,[] ) ->  do -- set to halfdone
+       (False ,[] ,[] ) ->  do -- set to halfdone
                              let astate = show $ fromEnum HalfDone
-                             (quan,pr) <- funcgetposinf qrypos
-                             liftIO $ print ("fork async now!!!",quan,pr)
                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
-                             liftIO $ print ("fork async now!!!------",quan,pr)
-                             return ()
-       (_  ,[] ,_  ) ->  do-- set to cproinit --detail judge merge or init
+       (False ,[] ,_  ) ->  do-- set to cproinit --detail judge merge or init
                              let astate = show $ fromEnum HalfDone
                              mapM_ funcgetorderid  bqryord
-                             (quan,pr) <- funcgetposinf qrypos
                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
-                             return ()
-       (_  ,_  ,[] ) ->  do-- set to promerge
+       (False ,_  ,[] ) ->  do-- set to promerge
                              let astate = show $ fromEnum HalfDone
                              mapM_ funcgetorderid  sqryord
-                             (quan,pr) <- funcgetposinf qrypos
                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
-                             return ()
-       (_  ,_  ,_  ) ->  do-- not allow to appear,cancel the border and sorder,set state to hlddone 
+       (False ,_  ,_  ) ->  do-- not allow to appear,cancel the border and sorder,set state to hlddone 
                              let astate = show $ fromEnum HalfDone
                              mapM_ funcgetorderid  bqryord
                              mapM_ funcgetorderid  sqryord
-                             (quan,pr) <- funcgetposinf qrypos
                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
-                             return ()
 
 
     let ordervari = Ordervar True 0 0 0
