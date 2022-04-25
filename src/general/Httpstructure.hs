@@ -138,9 +138,12 @@ queryorder = do
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
-      let areq = req GET url NoReqBody lbsResponse  httpparams
+      let areq = req GET url NoReqBody jsonResponse  httpparams
       response  <- areq
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",response)
+      let result = responseBody response :: Value
+      let borders = (result^..values.filtered (has (key "side"._String.only "BUY"))) 
+      let sorders = (result^..values.filtered (has (key "side"._String.only "SELL"))) 
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,sorders)
       return ()
 
 cancelorder :: String -> IO ()
