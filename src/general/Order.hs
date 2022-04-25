@@ -484,15 +484,22 @@ cendordertorediszset quan  otimestamp = do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
-settodefredisstate :: String -> String  -> String -> String -> Double ->Integer -> Double -> Int -> Double -> Redis ()
+settodefredisstate :: String -> String  -> String -> String -> Double -> Integer -> Double -> Int -> Double -> Redis ()
 settodefredisstate side otype state orderid  pr quan grid  mergequan stamp = do 
    let abykeystr = BL.fromString orderkey
+   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let coin = "ADA" :: String
+   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shgrid = showdouble grid
+   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shprice =  showdouble pr
+   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shquant =  show quan
+   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shstate =  state
+   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shmergequan =  show mergequan
+   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let orderid = orderid
    liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
