@@ -131,8 +131,8 @@ queryorder = do
       let ares = showDigest(hmacSha256 signature abody)
       let httpparams = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
-            ("timestamp" =: (curtimestamp :: Integer ))<>
-            ("signature" =: (T.pack ares :: Text ))
+            ("symbol" =: (symboll :: Text)) <>
+            ("timestamp" =: (curtimestamp :: Integer ))
       let ouri = "https://fapi.binance.com/fapi/v1/openOrders"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       uri <- URI.mkURI auri 
