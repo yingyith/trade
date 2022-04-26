@@ -344,12 +344,14 @@ endordertorediszset quan pr otimestamp insertstamp = do
                     "BUY" -> "Hdone" 
                     "SELL" -> "Done"
    holdpospr <- getkvfromredis holdprkey
+   holdposquan <- getkvfromredis holdposkey
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    let orderid =  lastorderid
-   let shquant =  show quan
+   --let shquant =  show quan
+   let shquant =  holdposquan
    let shstate =  case side of 
                     "BUY" -> show $ fromEnum HalfDone
                     "SELL" -> show $ fromEnum Done

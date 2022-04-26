@@ -314,8 +314,8 @@ detailopHandler tbq = do
         when (et == "reset") $ do 
               qrypos <- querypos
               (quan,pr) <- funcgetposinf qrypos
-              let astate = show $ fromEnum HalfDone
-              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
+              let astate = show $ fromEnum Done
+              runRedis conn (settodefredisstate "BUY" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
              -- runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
         when (et == "acupd") $ do 
