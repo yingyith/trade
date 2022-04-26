@@ -152,7 +152,7 @@ analysistrdo aa bb = do
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      let lentdata = DL.length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
-     liftIO $ logact logByteStringStdout $ BC.pack  $ show ("check index -------",DL.length rehllist)
+     --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("check index -------",DL.length rehllist)
      quantylist <- minrule rehllist curpr interval 
 
      return quantylist
@@ -218,25 +218,23 @@ mseriesFromredis conn msg =
    do
      res <- runRedis conn (getdiffintervalflow) 
      kline <- parsetokline msg
-     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error3 --------------------------------------")
      let dcp = read $ kclose kline :: Double
-     --liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp 
-     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error4 --------------------------------------")
      logact logByteStringStdout $ BC.pack  (show bigintervall)
 
      biginterval <- crossminstra bigintervall dcp
-     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error5 --------------------------------------")
 
      sndinterval <- getsndkline (snd res) 
-     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error6 --------------------------------------")
      case sndinterval of 
         [] -> return ()
         _  -> do 
+                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error61 --------------------------------------")
                   secondnum <- secondrule sndinterval
-                  --liftIO $ print ("start pre or cpre --------------------------------------")
+                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error7 --------------------------------------")
                   timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
+                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error8 --------------------------------------")
                   let sumres = (fst biginterval) + secondnum
+                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error9 --------------------------------------")
                   logact logByteStringStdout $ BC.pack $ (show ("++--",timecurtime,biginterval,secondnum,sumres))
                   curtimestampi <- getcurtimestamp
                   let curtime = fromInteger curtimestampi ::Double
