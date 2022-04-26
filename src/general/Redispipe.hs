@@ -312,7 +312,11 @@ detailopHandler tbq = do
               runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
 
         when (et == "reset") $ do 
-              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
+              qrypos <- querypos
+              (quan,pr) <- funcgetposinf qrypos
+              let astate = show $ fromEnum HalfDone
+              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
+             -- runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
         when (et == "acupd") $ do 
               logact logByteStringStdout $ B.pack $ show ("befacupd!")
