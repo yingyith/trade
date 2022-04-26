@@ -73,13 +73,7 @@ minrisksheet = fromList [
 
 crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO (Int,Double)
 crossminstra abc pr = do 
-    --3m ,5m,15m,1h,4h  if all up ,then double up 
-    --3m ,5m,15m,1h,4h  if all down ,then double down 
-    --accroding to the continuous kline ,the largest interval go against others is the risk number(append rule)
-  --find  the near "up" "uf" "do" "df"
-  --find the largest weight factor line ,use this line to set the benefit price 
     let uppredi  = \x -> ((> 50) $ fst $ fst x) && ( (== 'u') $ (!!0) $ fst $ snd  x )
-    -- get the continuous longest up interval ,
     let lhsheet = DT.map uppredi abc
     let trueresl = DL.group lhsheet --[true,false,true ,false]
     let grouplist = DT.map length trueresl
@@ -102,7 +96,6 @@ crossminstra abc pr = do
     let fallkline = (!!fallklineindex) abc 
     let openpredi = maxindexpredi && itempredi && lowpredi 
     let newgrid = max (grid - (pr-lowp)) 0.001
-    --logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,pr,lowp,newgrid,"cross def")
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
@@ -133,7 +126,6 @@ genehighlowsheet index hl key = do
                   (False,False) ->  (AS.Hlnode curitemt curitemhp 0             0 "high"   key curitemcp)
                   (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "wbig"   key curitemcp)
                   (True,False)  ->  (AS.Hlnode curitemt 0         0             0 "wsmall" key curitemcp)
-    --liftIO $ print "____________hlsheet--------"
     return res
 
 minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,(Double,Double)),(String,Int))
@@ -216,28 +208,23 @@ gethlsheetsec index kll =  do
 
 secondrule :: [Klinedata] -> IO Int
 secondrule records = do 
-                        case records of 
-                            [] -> return 0
-                            _  -> do     
-                                      rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..15] :: IO [AS.Hlnode]
-                                      rsiindexx <- getrsi rehllist 14
-                                      let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
-                                      let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
-                                      let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
-                                      let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")] where xlist = reslist
-                                      let highgrid = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y ) (highsheet!!0) highsheet
-                                      let lowgrid  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y ) (lowsheet!!0)  lowsheet 
-                                      let highpr = fst highgrid 
-                                      let lowpr = fst lowgrid 
-                                      let diff = highpr - lowpr
-                                      let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
-                                      let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
-                                      let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
-                                      let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
-                                      --liftIO $ print ("rsi is----",highpr,lowpr,wavediffpredi,hlpredi,prlocpredi,lastjumppredi,rsiindexx)
-                                      --rsiindexres <-  getrsi rehllist 64
-                                      case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
-                                          (True ,_    ,_    ,_    )-> return (-15) 
-                                          (False,True ,True ,False)-> return 70 
-                                          (False,_    ,_    ,True )-> return 250
-                                          (False,_    ,_    ,_    )-> return (-30)
+                          rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..15] :: IO [AS.Hlnode]
+                          rsiindexx <- getrsi rehllist 14
+                          let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
+                          let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
+                          let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
+                          let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")] where xlist = reslist
+                          let highgrid = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y ) (highsheet!!0) highsheet
+                          let lowgrid  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y ) (lowsheet!!0)  lowsheet 
+                          let highpr = fst highgrid 
+                          let lowpr = fst lowgrid 
+                          let diff = highpr - lowpr
+                          let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
+                          let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
+                          let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
+                          let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
+                          case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
+                              (True ,_    ,_    ,_    )-> return (-15) 
+                              (False,True ,True ,False)-> return 70 
+                              (False,_    ,_    ,True )-> return 250
+                              (False,_    ,_    ,_    )-> return (-30)

@@ -15,7 +15,7 @@ module Redispipe
       mintocacheHandler,
       showChannels,
       sndtocacheHandler,
-      acupdHandler,
+      detailanalysHandler,
       detailopHandler,
       analysisHandler
 
@@ -94,13 +94,10 @@ ispinginvalid     ::         Bool
 ispinginvalid = True
 isstrategyinvalid ::         Bool  
 isstrategyinvalid = True
---the predications of rule system 
-
 
 msgcacheandpingtempdo :: Integer -> ByteString -> NC.Connection-> Redis ()
 msgcacheandpingtempdo a msg wc = do
         case compare a 60000 of -- 300000= 5min
-        --case compare a 300000 of -- 300000= 5min
             GT -> do 
               void $ publish "minc:1" ("cache" <> msg)
               void $ publish "listenkey:1" ("listenkey" <> msg)
@@ -113,7 +110,6 @@ msgcacheandpingtempdo a msg wc = do
 
 sendpongdo :: Integer -> NC.Connection -> IO ()
 sendpongdo a conn = do
-        --liftIO $ print ("send Pong")
         case compare a 60000 of -- 300000= 5min
             GT -> do 
                   sendPong conn (T.pack $ show "")
@@ -133,7 +129,6 @@ matchmsgfun msg = do
     let  matchacmsg = BLU.fromString "ACCOUNT_UPDATE"
     let  matchorevent = DB.drop 90 $ DB.take 108 msg 
     let  matchormsg = BLU.fromString "ORDER_TRADE_UPDATE"
-   -- liftIO $ logact logByteStringStdout $ B.pack $  show (msg)                         
     liftIO $ logact logByteStringStdout $ B.pack $  show (matchacevent,matchorevent)                         
     let klinepredi = matchkline == matchkmsg
     let acpredi = matchacevent == matchacmsg
@@ -150,15 +145,11 @@ msgordertempdo msg osdetail =  do
     let orderorigin = BLU.toString osdetail
     let order = DLT.splitOn "|" orderorigin 
     let orderstate = DL.last order
-    --liftIO $ print (orderorigin)
     let orderquan =  read $ order!!4 :: Integer
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
-   -- liftIO $ logact logByteStringStdout mmsg                          
     matchevent <- matchmsgfun msg
     liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchevent)                         
-
-    --when (((orderstate == "0")||(orderstate == "3")) && orderquan > 0 ) $ do 
 
     when (DL.any (== orderstate) [(show $ fromEnum Cprepare),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
                                   (show $ fromEnum Prepare),(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)]  )  $ do 
@@ -168,19 +159,6 @@ msgordertempdo msg osdetail =  do
     when (matchevent == "ac" ) $ do 
         liftIO $ logact logByteStringStdout "take order partit"                             
         void $ publish "ac:1" ("ac" <> mmsg )
-
-   -- when (matchevent == "or" ) $ do 
-   --     liftIO $ logact logByteStringStdout "take order partit"                             
-   --     void $ publish "order:1" ("order" <> mmsg )
-
-generatehlsheet :: ByteString -> IO ()
-generatehlsheet msg = do 
-    conn <- connect defaultConnectInfo
-    mseriesFromredis conn msg--get all mseries from redis 
-    --liftIO $ print "stop highlowsheet"
-    ---generate high low point spreet
-    ---quant analysis under high low (risk spreed) 
-    ---return open/close event to redis 
 
 msgsklinetoredis :: ByteString -> Integer -> Redis ()
 msgsklinetoredis msg stamp = do
@@ -193,10 +171,7 @@ msgsklinetoredis msg stamp = do
       let stamptime = fromInteger stamp :: Double
       void $ zadd abykeystr [(-stamptime,abyvaluestr)]
       void $ zremrangebyrank abykeystr 150 1000
-      --add kline to redis zset for 1second
-      --let test = A.decode msg :: Maybe Klinedata --Klinedata
-      --liftIO $ print (test)
-      -- store to kline seconds in  redis key as  1m 
+
 msganalysistoredis :: ByteString -> Redis ()
 msganalysistoredis msg = do
     matchevent <- matchmsgfun msg
@@ -227,10 +202,6 @@ publishThread rc wc tvar ptid = do
       let replydores = (read (replydomarray !! 0)) :: Integer
       let timediff = curtimestamp-replydores
       
-      --decide which event now is
-      --1.check redis cache ,if cache valid time pass ,then send update command,detail two,one for stick update,one for put listenkey every 30min
-      --2.check all open and close condition ,if match ,send open/close command
-      --dispatch event to detail command
       runRedis rc $ do 
          msgcacheandpingtempdo timediff message wc 
          msgsklinetoredis message curtimestamp
@@ -336,7 +307,6 @@ opclHandler tbq conn channel  msg = do
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
     let detdata = wsdata $ fromJust restmsg
     let dettype = wstream $ fromJust restmsg
-    --async $ (atomically $ writeTBQueue tbq "nownow" ) 
     when (dettype == "adausdt@kline_1m") $ do 
          let msgorigin = BLU.toString msg
          let msgitem = DLT.splitOn ":::" msgorigin 
@@ -355,7 +325,6 @@ opclHandler tbq conn channel  msg = do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               let aevent = Opevent "bopen"  0 pr 0 ordid
               addeventtotbqueue aevent tbq
-              logact logByteStringStdout $ B.pack  ("aftentertake order do ---------------------")
 
          when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
@@ -420,45 +389,23 @@ opclHandler tbq conn channel  msg = do
               let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
               addeventtotbqueue aevent tbq
 
+detailanalysHandler :: TBQueue Cronevent  -> IO () 
+detailanalysHandler tbq = do 
+    conn <- (connect defaultConnectInfo)
+    iterateM_  ( \lastetype -> do
+        logact logByteStringStdout $ B.pack $ show ("analys thread!")
+        res <- atomically $ readTBQueue tbq
+        tbqlen <- atomically $ lengthTBQueue tbq
+        logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
+        currtime <- getcurtimestamp 
+        let curtime = fromInteger currtime ::Double
+        let et = ectype res
+        let etcont = eccont res
 
+        when (et == "forward") $  do 
+              mseriesFromredis conn etcont--get all mseries from redis 
 
-
-acupdHandler :: RedisChannel -> ByteString -> IO ()
-acupdHandler channel  msg = do
-    conn <- connect defaultConnectInfo
-    logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
-    let seperatemark = BLU.fromString ":::"
-    let strturple = BL.fromStrict $ B.drop 3 $ snd $  B.breakSubstring seperatemark msg
-    let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
-    let detdata = wsdata $ fromJust restmsg
-    let dettype = wstream $ fromJust restmsg
-    logact logByteStringStdout $ B.pack  $ show ("beforderupdate00 ---------",show dettype,show detdata)
-    when (dettype /= "adausdt@kline_1m") $ do 
-         let eventstr = fromJust $ detdata ^? key "e"
-         let eventname = outString eventstr 
-         currtime <- getcurtimestamp 
-         let curtime = fromInteger currtime ::Double
-         logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
-         when (eventname == "ACCOUNT_UPDATE") $ do 
-              let eventstr = fromJust $ detdata ^? key "e"
-              let usdtcurballll = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    ))    -- !!0  
-              let orderballll   = detdata ^.. key "a" .key "P" .values.filtered (has (key "a"._String.only "ADAUSDT" ))    -- !!0
-              let usdtcurball = usdtcurballll !! 0
-              let ordercurball = orderballll !! 0
-              let usdtcurballl = fromJust $ usdtcurball ^? key "f" 
-              let usdtcurbal = read $ T.unpack $ outString usdtcurballl :: Double
-              let adacurbal = read $ T.unpack $ outString ordercurball :: Integer
-              runRedis conn $ do  
-                 balres <- getbalfromredis
-                 orderres <- getorderfromredis
-                 let adabal = read $ BLU.toString $ fromJust $ fromRight Nothing $ fst balres :: Double
-                 let usdtbal = read $ BLU.toString $ fromJust $ fromRight Nothing $ snd balres :: Double
-                 let quantyl =  fromRight [DB.empty] orderres
-                 let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
-                 let quantylll = read $ (quantyll !! 4) :: Integer
-                 let quantdouble = read $ (quantyll !! 4) :: Double
-                 setkvfromredis adakey $ show adacurbal 
-                 setkvfromredis usdtkey $ show usdtcurbal 
+        return et)  ""
 
 sndklinetoredis :: ByteString -> Redis ()
 sndklinetoredis msg  = do 
@@ -479,23 +426,17 @@ sndklinetoredis msg  = do
                     
     void $ zadd abykeystr [(-kt,abyvaluestr)]
     void $ zremrangebyrank abykeystr 150 1000
-      --let msg = BL.fromStrict message
-      --let test = A.decode msg :: Maybe Klinedata --Klinedata
       
 sndtocacheHandler :: RedisChannel -> ByteString -> IO ()
 sndtocacheHandler channel msg = do 
       conn <- connect defaultConnectInfo
       runRedis conn (sndklinetoredis msg )
       debugtime
-
       
-analysisHandler :: RedisChannel -> ByteString -> IO ()
-analysisHandler channel msg = do 
-      --conn <- connect defaultConnectInfo
-      --liftIO $ print ("start analysis ++++++++++++++++++++++++++++++++++++++++++++")
-      generatehlsheet msg
-      debugtime
-      --liftIO $ print ("end analysis ++++++++++++++++++++++++++++++++++++++++++++")
+analysisHandler :: TBQueue Cronevent -> R.Connection ->  RedisChannel -> ByteString -> IO ()
+analysisHandler tbq conn  channel msg = do 
+      let aevent = Cronevent "forward" msg 
+      addoeventtotbqueue aevent tbq
 
 mintocacheHandler :: RedisChannel -> ByteString -> IO ()
 mintocacheHandler channel msg = do 

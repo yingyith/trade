@@ -7,11 +7,14 @@
 {-# LANGUAGE DataKinds #-}
   module Events (
        Opevent (etype,price,quant,etime,ordid,Opevent),
-       addeventtotbqueue
+       Cronevent (ectype,eccont,Cronevent),
+       addeventtotbqueue,
+       addoeventtotbqueue
 ) where
 
 import Control.Concurrent.STM.TBQueue
 import Control.Concurrent.STM
+import qualified Data.ByteString.UTF8 as BL
 import Data.List as DL
 import GHC.Generics
 
@@ -37,3 +40,21 @@ addeventtotbqueue evt tbq = do
                                   case respredi of 
                                      False   -> writeTBQueue tbq evt
                                      True    -> return () 
+
+
+data Cronevent = Cronevent {
+                  ectype :: String,
+                  eccont :: BL.ByteString      
+}  deriving (Show,Generic) 
+
+addoeventtotbqueue :: Cronevent -> TBQueue Cronevent -> IO ()
+addoeventtotbqueue evt tbq = do 
+   atomically $  do 
+                  res <- isFullTBQueue tbq
+                  befevt <- tryPeekTBQueue tbq
+                  case befevt of 
+                     Nothing -> writeTBQueue tbq evt
+                     Just l  -> case res of 
+                                   False -> writeTBQueue tbq evt
+                                   True  -> return ()
+
