@@ -225,7 +225,7 @@ mseriesFromredis conn msg =
      bigintervall <- analysismindo (fst res ) dcp 
      liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error4 --------------------------------------",bigintervall)
      logact logByteStringStdout $ BC.pack  (show bigintervall)
-     --liftIO $ print bigintervall
+
      biginterval <- crossminstra bigintervall dcp
      liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error5 --------------------------------------",biginterval)
 
@@ -244,8 +244,10 @@ mseriesFromredis conn msg =
                   when (fst biginterval > 50) $ do 
                       runRedis conn $ do
                          preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval) curtime
+              `catch` (\(e :: SomeException) -> do
+                      SI.hPutStrLn stderr $ "Goterror2: " ++ show e)
    `catch` (\(e :: SomeException) -> do
-                SI.hPutStrLn stderr $ "Got error1: " ++ show e)
+                SI.hPutStrLn stderr $ "Goterror1: " ++ show e)
   
      --genposgrid hlsheet dcp
   --write order command to zset

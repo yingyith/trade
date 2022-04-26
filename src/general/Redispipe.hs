@@ -208,7 +208,6 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
-    --threadDelay 1300000
     forever $ do
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
@@ -273,8 +272,6 @@ detailopHandler tbq = do
         let eordid = ordid res
 
         when (et == "scancel") $  do 
-              --shared <- atomically $ newTVar 0 
-              --before <- atomically shared
               qryord <- queryorder
               let sqryord = snd qryord
               case sqryord of 
