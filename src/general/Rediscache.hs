@@ -216,16 +216,21 @@ getdiffintervalflow = do
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
 mseriesFromredis conn msg = 
    do
-     res <- runRedis conn (getdiffintervalflow)
+     res <- runRedis conn (getdiffintervalflow) 
+     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error2 --------------------------------------",res)
      kline <- parsetokline msg
+     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error3 --------------------------------------",kline)
      let dcp = read $ kclose kline :: Double
      --liftIO $ print ("start analysis min --------------------------------------")
      bigintervall <- analysismindo (fst res ) dcp 
+     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error4 --------------------------------------",bigintervall)
      logact logByteStringStdout $ BC.pack  (show bigintervall)
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall dcp
+     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error5 --------------------------------------",biginterval)
 
      sndinterval <- getsndkline (snd res) 
+     liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error6 --------------------------------------",sndinterval)
      case sndinterval of 
         [] -> return ()
         _  -> do 

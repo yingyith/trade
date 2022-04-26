@@ -102,7 +102,7 @@ crossminstra abc pr = do
     let fallkline = (!!fallklineindex) abc 
     let openpredi = maxindexpredi && itempredi && lowpredi 
     let newgrid = max (grid - (pr-lowp)) 0.001
-    logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,pr,lowp,newgrid,"cross def")
+    --logact logByteStringStdout $ B.pack $ show (trueresl,resquan,resbquan,maxindex,grid,pr,lowp,newgrid,"cross def")
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
@@ -141,13 +141,13 @@ minrule ahll pr interval  = do
    let ahl = DT.take 11 ahll
 
    let reslist   =  [(xlist!!x,x)|x<-[1..(length xlist-2)]] where xlist = ahl
-   logact logByteStringStdout $ B.pack  ("enter min do ---------------------")
+   --logact logByteStringStdout $ B.pack  ("enter min do ---------------------")
    let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
    let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  ] where xlist = reslist
    let maxhigh   =   DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak,highsheet] 
    let minlow    =   DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak,lowsheet] 
-   logact logByteStringStdout $ B.pack $ show ("index show==========",highsheet,lowsheet,hlbak,maxhigh,minlow)
+   --logact logByteStringStdout $ B.pack $ show ("index show==========",highsheet,lowsheet,hlbak,maxhigh,minlow)
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
