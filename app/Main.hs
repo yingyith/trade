@@ -271,19 +271,20 @@ ws connection = do
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
-    q <- newTBQueueIO 30 :: IO (TBQueue Opevent)
+    qord <- newTBQueueIO 30 :: IO (TBQueue Opevent)
+    qanalys <- newTBQueueIO 30 :: IO (TBQueue Opevent)
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
         --threadDelay 4000000
         withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
            void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler )]
            void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler )]
+           void $ addChannels ctrll [] [("order:*"    , opclHandler  qord connn   )]
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler   )]
-           void $ addChannels ctrll [] [("order:*"    , opclHandler  q connn   )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler  )]
            threadDelay 1000000
         --threadDelay 1000000
-           forkIO $ detailopHandler q 
+           forkIO $ detailopHandler qord
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000

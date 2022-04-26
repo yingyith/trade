@@ -152,7 +152,7 @@ analysistrdo aa bb = do
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      let lentdata = DL.length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
-     liftIO $ logact logByteStringStdout $ BC.pack  $ show ("check index -------",rehllist)
+     liftIO $ logact logByteStringStdout $ BC.pack  $ show ("check index -------",DL.length rehllist)
      quantylist <- minrule rehllist curpr interval 
 
      return quantylist
