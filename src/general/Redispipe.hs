@@ -255,11 +255,6 @@ handlerThread conn ctrl tvar = do
          `catch` (\(e :: SomeException) -> do
            SI.hPutStrLn stderr $ "Got error: " ++ show e
            )
---- do command detail operation here
--- multi command operation now
---listenkeyHandler :: ByteString -> IO ()
---listenkeyHandler msg = SI.hPutStrLn stderr $ "Saw msg: " ++ unpack (decodeUtf8 msg)
---
 
 detailopHandler :: TBQueue Opevent  -> IO () 
 detailopHandler tbq = do 
@@ -332,8 +327,6 @@ detailopHandler tbq = do
               runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
               logact logByteStringStdout $ B.pack $ show ("aft init!")
 
-      --  when (et == "sinit") $ do 
-      --        runRedis conn (cproinitordertorediszset etquan etpr etimee)
 
         logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
         return et)  ""
@@ -372,7 +365,7 @@ opclHandler tbq conn channel  msg = do
               let aevent = Opevent "sopen" 0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
-         when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (2*ordergrid))  )  $ do 
+         when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (3*ordergrid))  )  $ do 
               let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               

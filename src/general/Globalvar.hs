@@ -17,6 +17,7 @@ module Globalvar (
     buyorderid,
     secondstick,
     holdprkey,
+    minquan,
     holdposkey
 ) where
 
@@ -39,3 +40,4 @@ liskey = "liskey"
 secondstick = 60 :: Integer
 sellorderid = "Sellorder20"
 buyorderid = "Buyyorder20"
+minquan = 200 

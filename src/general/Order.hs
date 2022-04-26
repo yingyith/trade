@@ -110,10 +110,10 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
    when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
        --append new order after cancel
        let otype = "Reset" :: String
-       let quantity = case compare quanty 20 of
+       let quantity = case compare quanty minquan of
                            LT -> quanty 
-                           GT -> 20
-                           _  -> 20
+                           GT -> minquan
+                           _  -> minquan
        let orderid =  lastorderid 
        let side = "BUY" :: String
        let shprice =  showdouble lastpr
@@ -138,14 +138,13 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
 
        when (mergequan == 0 && quanty > 0) $ do
            let otype = "Prep" :: String
-           let quantity = case compare quanty 20 of
+           let quantity = case compare quanty minquan of
                                LT -> quanty 
-                               GT -> 20
-                               _  -> 20
+                               GT -> minquan
+                               _  -> minquan
            let orderid =  show stamp 
            let side = "BUY" :: String
            let shprice =  show pr
-           let minquan = (round (10/pr))+2 :: Integer
 
            let shquant =  case compare quantity minquan of
                                LT -> show minquan
@@ -487,21 +486,12 @@ cendordertorediszset quan  otimestamp = do
 settodefredisstate :: String -> String  -> String -> String -> Double -> Integer -> Double -> Int -> Double -> Redis ()
 settodefredisstate side otype state orderid  pr quan grid  mergequan stamp = do 
    let abykeystr = BL.fromString orderkey
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let coin = "ADA" :: String
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shgrid = showdouble grid
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shprice =  showdouble pr
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shquant =  show quan
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shstate =  state
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let shmergequan =  show mergequan
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
-   liftIO $ logact logByteStringStdout $ BC.pack $ ("-------settoredis---------"++orderid )
    let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
    void $ zadd abykeystr [(-stamp,abyvaluestr)]
 

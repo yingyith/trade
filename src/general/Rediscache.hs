@@ -117,12 +117,6 @@ liskeytoredis a b = do
    ---delete other key
 
 
----liskeygetredis  ::  Redis ([Maybe BL.ByteString])
----liskeygetredis  = do 
----    --string to bytestring
----   let key = BL.fromString "liskey"
----   value <- get key
----   return value
 getspotbaltoredis :: R.Connection ->  IO ()
 getspotbaltoredis conn = do 
     bal <- getspotbalance 
@@ -158,15 +152,7 @@ analysistrdo aa bb = do
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      let lentdata = DL.length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
-     --liftIO $ print (rehllist)
-     --liftIO $ print ("hlsheet 1--------------------------")
-  --   let reslist = [(xlist!!x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall") ] where xlist = rehllist
-  --  -- liftIO $ print ("hlsheet 2--------------------------")
-  --   let highsheet = [(hprice $ xlist!!x)| x<-[1..(length xlist)-2],((hprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
-  --   let lowsheet = [(lprice $ xlist!!x)| x<-[1..(length xlist)-2] ,((lprice $ xlist!!x) > 0.1)  ] where xlist = rehllist
-  --   let highgrid = maximum highsheet
-  --   let lowgrid = minimum lowsheet
-  --   let diff = (highgrid-lowgrid)/3 
+     liftIO $ logact logByteStringStdout $ BC.pack  $ show ("check index -------",rehllist)
      quantylist <- minrule rehllist curpr interval 
 
      return quantylist
@@ -174,12 +160,7 @@ analysistrdo aa bb = do
 parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
      let mmsg = BLL.fromStrict msg
-    -- liftIO $ print (msg)
-     
      let test = A.decode mmsg :: Maybe Klinedata --Klinedata
-     --case test of 
-     --    Nothing -> do liftIO $ print (msg)
-     --    _ -> return ()
      case test of 
         Nothing -> do
                       logact logByteStringStdout $ BC.pack  (show msg)
@@ -259,7 +240,7 @@ mseriesFromredis conn msg =
                       runRedis conn $ do
                          preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval) curtime
    `catch` (\(e :: SomeException) -> do
-                SI.hPutStrLn stderr $ "Got error: " ++ show e)
+                SI.hPutStrLn stderr $ "Got error1: " ++ show e)
   
      --genposgrid hlsheet dcp
   --write order command to zset
