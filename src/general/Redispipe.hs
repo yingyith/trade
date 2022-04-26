@@ -133,7 +133,7 @@ matchmsgfun msg = do
     let  matchacmsg = BLU.fromString "ACCOUNT_UPDATE"
     let  matchorevent = DB.drop 90 $ DB.take 108 msg 
     let  matchormsg = BLU.fromString "ORDER_TRADE_UPDATE"
-    liftIO $ logact logByteStringStdout $ B.pack $  show (msg)                         
+   -- liftIO $ logact logByteStringStdout $ B.pack $  show (msg)                         
     liftIO $ logact logByteStringStdout $ B.pack $  show (matchacevent,matchorevent)                         
     let klinepredi = matchkline == matchkmsg
     let acpredi = matchacevent == matchacmsg
@@ -154,7 +154,7 @@ msgordertempdo msg osdetail =  do
     let orderquan =  read $ order!!4 :: Integer
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
-    liftIO $ logact logByteStringStdout mmsg                          
+   -- liftIO $ logact logByteStringStdout mmsg                          
     matchevent <- matchmsgfun msg
     liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchevent)                         
 
@@ -169,9 +169,9 @@ msgordertempdo msg osdetail =  do
         liftIO $ logact logByteStringStdout "take order partit"                             
         void $ publish "ac:1" ("ac" <> mmsg )
 
-    when (matchevent == "or" ) $ do 
-        liftIO $ logact logByteStringStdout "take order partit"                             
-        void $ publish "order:1" ("order" <> mmsg )
+   -- when (matchevent == "or" ) $ do 
+   --     liftIO $ logact logByteStringStdout "take order partit"                             
+   --     void $ publish "order:1" ("order" <> mmsg )
 
 generatehlsheet :: ByteString -> IO ()
 generatehlsheet msg = do 
@@ -217,6 +217,7 @@ publishThread rc wc tvar ptid = do
       --let aa = (1/0) 
       let orderitem = snd res
       let klineitem = fst res
+      logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem,orderitem)
       let cachetime = case klineitem of
             Left _  ->  "some error"
             Right v ->   (v!!0)
@@ -340,8 +341,6 @@ detailopHandler tbq = do
 
 opclHandler :: TBQueue Opevent -> R.Connection -> RedisChannel -> ByteString -> IO ()
 opclHandler tbq conn channel  msg = do
-    --conn <- (connect defaultConnectInfo)
-    --logact logByteStringStdout $ B.pack  $ show ("beforderupdate--00 ---------")
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict  $ B.drop 3 $ snd $  B.breakSubstring seperatemark  msg
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
@@ -382,65 +381,17 @@ opclHandler tbq conn channel  msg = do
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = T.unpack $ outString eventstr 
          logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
-        -- when (eventname == "outboundAccountPosition") $ do 
-        --      let eventstr = fromJust $ detdata ^? key "e"
-        --      let usdtcurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "USDT"))) !!0  
-        --      let adacurball = (detdata ^.. key "B" .values.filtered (has (key "a"._String.only "ADA"))) !!0
-        --      let usdtcurballl = fromJust $ usdtcurball ^? key "f" 
-        --      let adacurballl = fromJust $ adacurball ^? key "f" 
-        --      let usdtcurbal = read $ T.unpack $ outString usdtcurballl :: Double
-        --      let adacurbal = read $ T.unpack $ outString adacurballl :: Double
-        --      runRedis conn $ do  
-        --         balres <- getbalfromredis
-        --         orderres <- getorderfromredis
-        --         let adabal = read $ BLU.toString $ fromJust $ fromRight Nothing $ fst balres :: Double
-        --         let usdtbal = read $ BLU.toString $ fromJust $ fromRight Nothing $ snd balres :: Double
-        --         let quantyl =  fromRight [DB.empty] orderres
-        --         let quantyll = DLT.splitOn "|" $ BLU.toString  $ (quantyl !! 0 )
-        --         let quantylll = read $ (quantyll !! 4) :: Integer
-        --         let quantdouble = read $ (quantyll !! 4) :: Double
-        --         let adanum = floor adacurbal :: Integer
-        --         when (usdtcurbal < usdtbal-0.1) $ do   -- that is now < past ,means to buy 
-        --             when (abs (adabal+ quantdouble-adacurbal) < 1 ) $ do -- record as end, current 1 : fee .need to business it after logic build
-        --                 hlfendordertorediszset adanum curtime  
-        --                 setkvfromredis adakey $ show adacurbal 
-        --                 setkvfromredis usdtkey $ show usdtcurbal 
-        --         when (usdtcurbal >= usdtbal-0.1) $ do   -- that is now >= past ,means to sell
-        --             when (abs (adacurbal+ quantdouble-adabal)< 1 ) $ do -- record as end
-        --                 cendordertorediszset quantylll curtime  
-        --                 setkvfromredis adakey $ show adacurbal 
-        --                 setkvfromredis usdtkey $ show usdtcurbal 
-        -- when (eventname == "executionReport" ) $ do 
-        --      let curorderstate = T.unpack $ outString $ fromJust $ detdata ^? key "X" 
-        --      when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
-        --          let cpr = T.unpack $ outString $ fromJust $ detdata ^? key "L" 
-        --          let cty = T.unpack $ outString $ fromJust $ detdata ^? key "l"
-        --          let curorderpr = read cpr :: Double
-        --          let curquantyy = read cty :: Double
-        --          let curquanty = round curquantyy :: Integer
-        --          let curside = T.unpack $ outString $ fromJust $ detdata ^? key "S"
-        --          let curcoin = T.unpack $ outString $ fromJust $ detdata ^? key "N" 
-        --          when (curside == "BUY" && curcoin == "ADA") $ do 
-        --               runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
-        --          when (curside == "SELL" && curcoin == "ADA") $ do 
-        --               runRedis conn (pexpandordertorediszset curside curquanty curorderpr curtime)
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               --logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
               let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
-              logact logByteStringStdout $ B.pack  $ show ("beforderupdate1 ---------",detdata,curorderstate,curorderstate == "NEW",curside,curside=="SELL",curside=="BUY")
               let cty            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
-              logact logByteStringStdout $ B.pack  $ show ("b11eforderupdate1 ---------",cty)
               let ccliorderid            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "c")
-              logact logByteStringStdout $ B.pack  $ show ("b11eforderupdate1 ---------",cty)
               let cpr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
               let coriginprstr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "p")
-              logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",cpr)
               let corty          = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
-              logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",corty)
               let otimestampstr  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "T")
               let corderid  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "i")
-              logact logByteStringStdout $ B.pack  $ show ("b22eforderupdate1 ---------",cpr,corty,otimestampstr)
               let curorderpr     = read cpr            :: Double
               let curquantyy     = read cty            :: Double
               let curortyy       = read corty          :: Double
@@ -448,7 +399,6 @@ opclHandler tbq conn channel  msg = do
               let otimestamp     = read otimestampstr  :: Int
               let curquanty      = round curquantyy    :: Integer
               let curorquanty    = round curortyy      :: Integer
-              logact logByteStringStdout $ B.pack $ show (curorderstate,curside,cty,cpr,corty,otimestampstr)
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                        let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
                        when (curquanty < curorquanty)  $ do 
@@ -475,11 +425,8 @@ opclHandler tbq conn channel  msg = do
               logact logByteStringStdout $ B.pack  $ show ("acupdate ---------",usdtbalo,orderposo,orderpro)
               --let usdtbalo    = read $ T.unpack $ outString $ fromJust usdtbalo  :: Int 
               let orderpos    = read $ T.unpack $ outString $ (!!0)  orderposo :: Integer
-              logact logByteStringStdout $ B.pack  $ show ("acupdate1 ---------")
               let usdtbal     = round (read $ T.unpack $ outString $ (!!0)  usdtbalo :: Double) :: Int
-              logact logByteStringStdout $ B.pack  $ show ("acupdate2 ---------")
               let orderpr     = read $ T.unpack $ outString $ (!!0)  orderpro  :: Double
-              logact logByteStringStdout $ B.pack  $ show ("acupdate3 ---------")
               let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
               addeventtotbqueue aevent tbq
 

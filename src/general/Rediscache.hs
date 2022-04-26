@@ -61,6 +61,7 @@ import Colog (LogAction,logByteStringStdout)
 import Data.Time.Format.ISO8601
 import Data.Time.Clock.POSIX
 import Redisutils
+import System.IO as SI
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -232,16 +233,13 @@ getdiffintervalflow = do
      
 
 mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
-mseriesFromredis conn msg = do
+mseriesFromredis conn msg = 
+   do
      res <- runRedis conn (getdiffintervalflow)
-     -- need to add judge holding position match trend or not .if not  need to add position 
-     -- add position condition must more strict than first open
-     -- if curpr is lower big grid than openprice,then ,change status to add position 
-     --liftIO $ print ("mseiries")
      kline <- parsetokline msg
      let dcp = read $ kclose kline :: Double
      --liftIO $ print ("start analysis min --------------------------------------")
-     bigintervall <- analysismindo (fst res ) dcp
+     bigintervall <- analysismindo (fst res ) dcp 
      logact logByteStringStdout $ BC.pack  (show bigintervall)
      --liftIO $ print bigintervall
      biginterval <- crossminstra bigintervall dcp
@@ -260,6 +258,9 @@ mseriesFromredis conn msg = do
                   when (fst biginterval > 50) $ do 
                       runRedis conn $ do
                          preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval) curtime
+   `catch` (\(e :: SomeException) -> do
+                SI.hPutStrLn stderr $ "Got error: " ++ show e)
+  
      --genposgrid hlsheet dcp
   --write order command to zset
      

@@ -145,21 +145,11 @@ minrule ahll pr interval  = do
    let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
    let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  ] where xlist = reslist
-   
-   
-   --liftIO $ print (highsheet,lowsheet)
    let maxhigh   =   DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak,highsheet] 
    let minlow    =   DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak,lowsheet] 
    logact logByteStringStdout $ B.pack $ show (highsheet,lowsheet,hlbak,maxhigh,minlow)
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
-   --if now stick is lowest point ,then down fast.not open in 3m and 15m, in 1hour and more other ,should half their up
-   --if previous stick is lowest point,and rsi fit,then up 
-   --if now stick is highest point , then up fast.not open
-   --if previous stick is highest point,and rsi fit,then down 
-   --if curpr > 3/4 grid < 7/8 ,is 1/4 up position  ,up      ,if rsi match then add 1/4 up 
-   --if curpr < 1/4 grid > 1/8 ,is 1/2 up position  ,down    ,if rsi match then add total up 
-   --                           else ,return -10, is notknown,if rsi match then add 1/2 up                
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
    let gridspan         = ( (fst maxhigh) ,(fst minlow))
    let griddiff         = (fst maxhigh)-(fst minlow)
@@ -173,10 +163,7 @@ minrule ahll pr interval  = do
                              x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.5                                 
                              x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 1                                
                              x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.125                               
-
-
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
-
    rsiindexf <- getrsi ahl 8
    let indexlentwo = case (fst rsiindexf) of 
                            x| x<2 -> 9
@@ -195,12 +182,7 @@ minrule ahll pr interval  = do
                              x| x>5  && x<=12                                                          -> 240
                              x| x<=5                                                                  -> 360
 
-                                                       -- if in 3mins ,any two sticks (max (bef,aft) - min (bef,aft) > 0.11,and check snds sticks,then prepare to buy)
-  -- curpr( > high pr,return longer interval append position and 0) -  or (< low pr ,return -100000 ) 
-  -- if (> low pr or < high pr,first to know near high or near low ,nearest point is (high-> mean to down ,quant should minus ) or (low-> mean to up  and return append position ) ,get up or low trend , then see small interval)
-   --liftIO $ print (maxhigh,minlow,rsiindexx,openpos)
    logact logByteStringStdout $ B.pack  (show (maxhigh,minlow,rsiindexx,openpos))
-   --liftIO $ print (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi)
    logact logByteStringStdout $ B.pack  (show (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi))
    case (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi) of 
         (True  ,_     ,_     ,_     ,_     ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- up 
