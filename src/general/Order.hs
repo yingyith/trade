@@ -175,7 +175,7 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
        let orderid =  show stamp 
        let side = "SELL" :: String
        let shprice =  showdouble (lastpr)
-       let shquant =  show (quantity+mergequan)
+       let shquant =  show (quantity)
        let shstate =  show $ fromEnum Cprepare
        let lmergequan = show 0
        let shgrid = showdouble  grid
@@ -297,9 +297,7 @@ pexpandordertorediszset quan pr otimestamp insertstamp = do
    --liftIO $ print (recorditem)
    let lastorderid = recorditem !! 3
    let lastside = recorditem !! 1
-   let coin = case lastside of 
-                   "BUY" -> "ADA"
-                   "SELL" -> "USDT"
+   let coin =  "ADA"
    let lastorderquant = read $ recorditem !!4 ::Integer
    let lastordertype = recorditem !!2 
    let lastgrid = read (recorditem !! 6) :: Double
