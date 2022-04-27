@@ -340,12 +340,12 @@ opclHandler tbq conn channel  msg = do
               addeventtotbqueue aevent tbq
 
          let accugridlevel = case ordermergequan of 
-                                  x|x<=1000           -> 5
-                                  x|x<=2000&&x>1000   -> 10
-                                  x|x<=4000&&x>2000   -> 20
-                                  x|x<=8000&&x>4000   -> 40
-                                  x|x<=16000&&x>8000  -> 80
-                                   
+                                  x|x<=1000           -> 4
+                                  x|x<=2000&&x>1000   -> 8
+                                  x|x<=4000&&x>2000   -> 16
+                                  x|x<=8000&&x>4000   -> 32
+                                  x|x<=16000&&x>8000  -> 64
+                                  _                   -> 128 
          when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  )  $ do 
               let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
