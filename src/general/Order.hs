@@ -169,7 +169,7 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
        let shquant =  show (quantity)
        let shstate =  show $ fromEnum Cprepare
        let lmergequan = show 0
-       let shgrid = showdouble  grid
+       let shgrid = showdouble lastgrid
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
