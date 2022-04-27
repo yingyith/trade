@@ -211,23 +211,24 @@ gethlsheetsec index kll =  do
 
 secondrule :: [Klinedata] -> IO Int
 secondrule records = do 
-                          rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..15] :: IO [AS.Hlnode]
-                          rsiindexx <- getrsi rehllist 14
-                          let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
-                          let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
-                          let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
-                          let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")] where xlist = reslist
-                          let highgrid = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y ) (highsheet!!0) highsheet
-                          let lowgrid  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y ) (lowsheet!!0)  lowsheet 
-                          let highpr = fst highgrid 
-                          let lowpr = fst lowgrid 
-                          let diff = highpr - lowpr
-                          let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
-                          let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
-                          let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
-                          let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
-                          case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
-                              (True ,_    ,_    ,_    )-> return (-15) 
-                              (False,True ,True ,False)-> return 70 
-                              (False,_    ,_    ,True )-> return 250
-                              (False,_    ,_    ,_    )-> return (-30)
+                         return 0
+                         -- rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..15] :: IO [AS.Hlnode]
+                         -- rsiindexx <- getrsi rehllist 14
+                         -- let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
+                         -- let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
+                         -- let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
+                         -- let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")] where xlist = reslist
+                         -- let highgrid = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y ) (highsheet!!0) highsheet
+                         -- let lowgrid  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y ) (lowsheet!!0)  lowsheet 
+                         -- let highpr = fst highgrid 
+                         -- let lowpr = fst lowgrid 
+                         -- let diff = highpr - lowpr
+                         -- let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
+                         -- let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
+                         -- let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
+                         -- let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
+                         -- case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
+                         --     (True ,_    ,_    ,_    )-> return (-15) 
+                         --     (False,True ,True ,False)-> return 70 
+                         --     (False,_    ,_    ,True )-> return 250
+                         --     (False,_    ,_    ,_    )-> return (-30)
