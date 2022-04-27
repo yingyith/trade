@@ -266,8 +266,9 @@ procproinitordertorediszset quan pr ordid  stampi insertstamp = do
    let lastgrid  = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let lmergequan = show mergequan
+
    let stamp = fromIntegral stampi :: Double
-   let shgrid = show lastgrid
+   let shgrid = showdouble lastgrid
    when (DL.any (== recordstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Process)] )  $ do 
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]

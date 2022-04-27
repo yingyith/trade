@@ -317,6 +317,7 @@ opclHandler tbq conn channel  msg = do
          let orderquan = read (order !!4) :: Integer
          let orderpr = read (order !!5) :: Double
          let ordergrid = read (order !!6) :: Double
+         let ordermergequan = read (order !!7) :: Int
          let ordid = order !!3
          let orderstate = DL.last order
          kline <- getmsgfromstr  klinemsg 
@@ -338,7 +339,14 @@ opclHandler tbq conn channel  msg = do
               let aevent = Opevent "cprep" 0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
-         when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (5*ordergrid))  )  $ do 
+         let accugridlevel = case ordermergequan of 
+                                  x|x<=1000           -> 5
+                                  x|x<=2000&&x>1000   -> 10
+                                  x|x<=4000&&x>2000   -> 20
+                                  x|x<=8000&&x>4000   -> 40
+                                  x|x<=16000&&x>8000  -> 80
+                                   
+         when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  )  $ do 
               let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
