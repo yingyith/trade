@@ -152,7 +152,8 @@ msgordertempdo msg osdetail =  do
     liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchevent)                         
 
     when (DL.any (== orderstate) [(show $ fromEnum Cprepare),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
-                                  (show $ fromEnum Prepare),(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit)]  )  $ do 
+                                  (show $ fromEnum Prepare),(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit),(show $ fromEnum HalfDone)
+                                 ]  )  $ do 
         liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
     
@@ -188,7 +189,6 @@ publishThread rc wc tvar ptid = do
       logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       res <- runRedis rc (replydo curtimestamp ) 
-      --let aa = (1/0) 
       let orderitem = snd res
       let klineitem = fst res
       logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem,orderitem)
@@ -275,12 +275,14 @@ detailopHandler tbq = do
         when (et == "merge") $ do 
               runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
 
+        when (et == "cprep") $ do 
+              runRedis conn (preorcpreordertorediszset 0 etpr  0  0 curtime)
+
         when (et == "reset") $ do 
               qrypos <- querypos
               (quan,pr) <- funcgetposinf qrypos
               let astate = show $ fromEnum Done
               runRedis conn (settodefredisstate "BUY" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
-             -- runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
         when (et == "acupd") $ do 
               logact logByteStringStdout $ B.pack $ show ("befacupd!")
@@ -329,6 +331,11 @@ opclHandler tbq conn channel  msg = do
          when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               let aevent = Opevent "sopen" 0 pr 0 ordid
+              addeventtotbqueue aevent tbq
+
+         when ((orderstate == (show $ fromEnum HalfDone)) ) $ do
+              let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+              let aevent = Opevent "cprep" 0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
          when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (3*ordergrid))  )  $ do 
