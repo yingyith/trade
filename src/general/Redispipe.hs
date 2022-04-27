@@ -282,7 +282,7 @@ detailopHandler tbq = do
               qrypos <- querypos
               (quan,pr) <- funcgetposinf qrypos
               let astate = show $ fromEnum Done
-              runRedis conn (settodefredisstate "BUY" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
+              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
 
         when (et == "acupd") $ do 
               logact logByteStringStdout $ B.pack $ show ("befacupd!")
@@ -338,7 +338,7 @@ opclHandler tbq conn channel  msg = do
               let aevent = Opevent "cprep" 0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
-         when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (3*ordergrid))  )  $ do 
+         when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (5*ordergrid))  )  $ do 
               let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
               
