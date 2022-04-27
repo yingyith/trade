@@ -18,11 +18,15 @@ module Globalvar (
     secondstick,
     holdprkey,
     minquan,
+    quanlist,
     holdposkey
 ) where
 
 defintervallist :: [String]
 defintervallist = ["3m","5m","15m","1h","4h","12h","3d"] 
+
+quanlist :: [Int]
+quanlist = [1000,2000,4000,8000,15000] -- 15m,1h,4h,12h
 
 orderkey = "Order"
 
