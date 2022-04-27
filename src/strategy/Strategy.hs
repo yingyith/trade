@@ -88,8 +88,11 @@ crossminstra abc pr = do
     let resquan = (sum  [fst $ fst x|x<-abc])
     let resbquan = ((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
     let fallklineindex = maxindex+itemlen-1
+    let aindex = case fallklineindex of 
+                    x|x>=4          -> 4
+                    x|(x>=2 || x<4) -> x
 
-    let gridspan = snd $ fst $ (!! (fallklineindex)) abc   --transfer this grid to the redis order record can be used as 
+    let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
@@ -97,7 +100,7 @@ crossminstra abc pr = do
     let openpredi = maxindexpredi && itempredi && lowpredi 
     let newgrid = max (grid - (pr-lowp)) 0.001
     case (openpredi) of 
-          True    -> return (resquan,newgrid)
+          True    -> return (resquan*5,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
         --(False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
    -- return (130,0.0005)
