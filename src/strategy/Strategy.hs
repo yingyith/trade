@@ -73,7 +73,7 @@ minrisksheet = fromList [
 
 crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO (Int,Double)
 crossminstra abc pr = do 
-    let uppredi  = \x -> ((> 50) $ fst $ fst x) && ( (== 'u') $ (!!0) $ fst $ snd  x )
+    let uppredi  = \x -> ((> 14) $ fst $ fst x) && ( (== 'u') $ (!!0) $ fst $ snd  x )
     let lhsheet = DT.map uppredi abc
     let trueresl = DL.group lhsheet --[true,false,true ,false]
     let grouplist = DT.map length trueresl
@@ -100,11 +100,12 @@ crossminstra abc pr = do
                       x|x==6        -> (quanlist !! 4)
                       _             -> 0
     let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
+    let largeminsupportpredi  = (> 100) $ fst $ fst $ (!! (aindex)) abc    --transfer this grid to the redis order record can be used as 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
-    let openpredi = maxindexpredi && itempredi && lowpredi 
+    let openpredi = maxindexpredi && itempredi && lowpredi &&largeminsupportpredi
     let newgrid = max (grid - (pr-lowp)) 0.001
     case (openpredi) of 
           True    -> return (resquan,newgrid)
