@@ -168,7 +168,7 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
        let shprice =  showdouble (lastpr)
        let shquant =  show (quantity)
        let shstate =  show $ fromEnum Cprepare
-       let lmergequan = show 0
+       let lmergequan = show mergequan
        let shgrid = showdouble lastgrid
        when (quantity > 0) $ do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
@@ -338,7 +338,9 @@ endordertorediszset quan pr otimestamp insertstamp = do
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
-   let shmergequan =  show mergequan
+   let shmergequan = case side of 
+                        "BUY"   -> show mergequan
+                        "SELL"  -> show 0
    let orderid =  lastorderid
    --let shquant =  show quan
    let shquant =  holdposquan

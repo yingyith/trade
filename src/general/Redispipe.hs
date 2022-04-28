@@ -249,7 +249,13 @@ detailopHandler tbq = do
                   [] ->  return ()
                   _  ->  do 
                              CE.catch (mapM_ funcgetorderid  sqryord) ( \e -> do 
-                                 logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException)))
+                                 logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
+                               --  qrypos <- querypos
+                               --  (quan,pr) <- funcgetposinf qrypos
+                               --  let astate = show $ fromEnum Done
+                               --  runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
+
+                                 )
                              runRedis conn (ccanordertorediszset  curtime)
 
         when (et == "bopen") $ do 
