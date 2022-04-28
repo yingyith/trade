@@ -26,7 +26,7 @@ defintervallist :: [String]
 defintervallist = ["3m","5m","15m","1h","4h","12h","3d"] 
 
 quanlist :: [Int]
-quanlist = [1000,2000,4000,8000,15000] -- 15m,1h,4h,12h
+quanlist = [1300,2300,4300,8300,15300] -- 15m,1h,4h,12h
 
 orderkey = "Order"
 

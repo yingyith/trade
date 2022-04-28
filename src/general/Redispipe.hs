@@ -274,7 +274,7 @@ detailopHandler tbq = do
               case (et == lastetype) of  
                  False -> do
                               case res of 
-                                 True  -> takeorder "SELL" lastquan apr
+                                 True  -> takeorder "SELL" (lastquan-300) apr
                                  False -> return () 
                  True  -> return ()
 
