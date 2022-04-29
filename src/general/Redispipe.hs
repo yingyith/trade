@@ -208,7 +208,7 @@ publishThread rc wc tvar ptid = do
            sendpongdo timediff  wc
 
 
-      when (matchoevt == "or") $ do
+      when (matchoevt == "or" || matchoevt == "ac") $ do
            runRedis rc $ do 
                             res <- replydo curtimestamp 
                             let orderitem = snd res
@@ -218,10 +218,6 @@ publishThread rc wc tvar ptid = do
                             msgordertempdo message orderdet
 
       
-      when (matchoevt == "ac") $ do
-           liftIO $ logact logByteStringStdout "take order partit"                             
-           runRedis rc $ do 
-                  void $ publish "ac:1" ("ac" <> message )
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
