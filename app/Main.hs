@@ -111,7 +111,8 @@ main =
     runRedis conn (liskeytoredis aas nowtime)
     --let aimss = "/stream?streams=adausdt@kline_1m&listenkey=" ++ aas -----------------------------------------------
     --liftIO $ print (aimss)
-    let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth"  ++ aas -----------------------------------------------
+    let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth@500ms"  ++ aas -----------------------------------------------
+    --let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth@500ms"  ++ aas -----------------------------------------------
    -- let aimss = "/stream?streams=adausdt@kline_1m/"  -----------------------------------------------
     --let aimss = "/ws/" ++aas -----------------------------------------------
     --let aimss = "/ws/streams=btcusdt@markPrice/"++ "&listenkey="  ++ aas -----------------------------------------------
