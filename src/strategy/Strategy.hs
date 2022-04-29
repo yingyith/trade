@@ -100,7 +100,7 @@ crossminstra abc pr = do
                       x|x==6        -> (quanlist !! 4)
                       _             -> 0
     let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
-    let largeminsupportpredi  = (> 140) $ fst $ fst $ (!! (aindex)) abc    --transfer this grid to the redis order record can be used as 
+    let largeminsupportpredi  = (> 140) $ fst $ fst $ (!! (2)) abc    --transfer this grid to the redis order record can be used as 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
