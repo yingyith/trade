@@ -105,6 +105,7 @@ crossminstra abc pr = do
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
+    liftIO $ logact logByteStringStdout $ B.pack $ show (maxindexpredi , itempredi,lowpredi,largeminsupportpredi,aindex)
     let openpredi = maxindexpredi && itempredi && lowpredi &&largeminsupportpredi
     let newgrid = max (grid - (pr-lowp)) 0.001
     case (openpredi) of 
