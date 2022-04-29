@@ -170,6 +170,29 @@ msgsklinetoredis msg stamp = do
       void $ zremrangebyrank abykeystr 150 1000
 
 
+msgklinedoredis :: Integer -> ByteString -> NC.Connection   ->  Redis Integer
+msgklinedoredis curtimestamp msg wc= do 
+      res <- replydo curtimestamp 
+      let klineitem = fst res
+      let orderitem = snd res
+      liftIO $ logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem)
+      let cachetime = case klineitem of
+            Left _  ->  "some error"
+            Right v ->   (v!!0)
+      let orderdet  = case orderitem of
+            Left _  ->  "some error"
+            Right v ->   (v!!0)
+      msgordertempdo msg orderdet
+      let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
+      let replydores = (read (replydomarray !! 0)) :: Integer
+      let timediffi = curtimestamp-replydores
+      msgsklinetoredis msg curtimestamp
+      void $ publish "analysis:1" ( msg)
+      msgcacheandpingtempdo timediffi msg wc 
+      return timediffi
+      
+      
+
 getliskeyfromredis :: Redis ()
 getliskeyfromredis =  return ()
 
@@ -181,20 +204,8 @@ publishThread rc wc tvar ptid = do
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       matchoevt <- matchmsgfun message
       when (matchoevt == "kline") $ do
-           runRedis rc $ do
-                            res <- replydo curtimestamp 
-                            let klineitem = fst res
-                            liftIO $ logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem)
-                            let cachetime = case klineitem of
-                                  Left _  ->  "some error"
-                                  Right v ->   (v!!0)
-                            let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-                            let replydores = (read (replydomarray !! 0)) :: Integer
-                            let timediff = curtimestamp-replydores
-                            msgsklinetoredis message curtimestamp
-                            void $ publish "analysis:1" ( message)
-                            msgcacheandpingtempdo timediff message wc 
-                            liftIO $ sendpongdo timediff  wc
+           timediff <- runRedis rc (msgklinedoredis curtimestamp message wc)
+           sendpongdo timediff  wc
 
 
       when (matchoevt == "or") $ do

@@ -63,8 +63,8 @@ import Logger
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
                  ("3m" , [-10     ,  90,  -120, -180  ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m" , [-10     ,  90,  -120, -180  ]), --
-                 ("15m", [0       ,  90,  -120, -180  ]),
+                 ("5m" , [20      ,  90,  -120, -180  ]), --
+                 ("15m", [30      ,  90,  -120, -180  ]),
                  ("1h" , [5       ,  90,  -120, -180  ]),
                  ("4h" , [5       ,  90,  -120, -180  ]),
                  ("12h", [5       ,  90,  -120, -180  ]),
