@@ -121,23 +121,27 @@ sendpongdo a conn = do
               return ()
           
 
-matchmsgfun :: ByteString -> Redis String
+matchmsgfun :: ByteString -> IO String
 matchmsgfun msg = do
     let  matchkline = DB.drop 11 $ DB.take 24 msg 
     let  matchkmsg = BLU.fromString "adausdt@kline"
+    let  matchdepth = DB.drop 11 $ DB.take 30 msg 
+    let  matchdmsg = BLU.fromString "adausdt@depth@500ms"
     let  matchacevent = DB.drop 90 $ DB.take 103 msg 
     let  matchacmsg = BLU.fromString "ACCOUNT_UPDATE"
     let  matchorevent = DB.drop 90 $ DB.take 108 msg 
     let  matchormsg = BLU.fromString "ORDER_TRADE_UPDATE"
     liftIO $ logact logByteStringStdout $ B.pack $  show (matchacevent,matchorevent)                         
     let klinepredi = matchkline == matchkmsg
+    let depthpredi = matchdepth == matchdmsg
     let acpredi = matchacevent == matchacmsg
     let orpredi = matchorevent == matchormsg
-    case (klinepredi,acpredi,orpredi) of 
-        (True  , _     ,_     ) -> return "kline"
-        (_     , True  ,_     ) -> return "ac"
-        (_     , _     ,True  ) -> return "or"
-        (_     , _     ,_     ) -> return "no"
+    case (klinepredi,depthpredi,acpredi,orpredi) of 
+        (True  ,_      ,_     ,_     ) -> return "kline"
+        (_     ,True   ,_     ,_     ) -> return "depth"
+        (_     ,_      ,True  ,_     ) -> return "ac"
+        (_     ,_      ,_     ,True  ) -> return "or"
+        (_     ,_      ,_     ,_     ) -> return "no"
 
 
 msgordertempdo :: ByteString -> ByteString -> Redis ()
@@ -148,8 +152,6 @@ msgordertempdo msg osdetail =  do
     let orderquan =  read $ order!!4 :: Integer
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
-    matchevent <- matchmsgfun msg
-    liftIO $ logact logByteStringStdout $ B.pack $  show (orderstate,matchevent)                         
 
     when (DL.any (== orderstate) [(show $ fromEnum Cprepare),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
                                   (show $ fromEnum Prepare),(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit),(show $ fromEnum HalfDone)
@@ -157,27 +159,16 @@ msgordertempdo msg osdetail =  do
         liftIO $ logact logByteStringStdout "take order part"                             
         void $ publish "order:1" ("order" <> mmsg )
     
-    when (matchevent == "ac" ) $ do 
-        liftIO $ logact logByteStringStdout "take order partit"                             
-        void $ publish "ac:1" ("ac" <> mmsg )
 
 msgsklinetoredis :: ByteString -> Integer -> Redis ()
 msgsklinetoredis msg stamp = do
-    matchevent <- matchmsgfun msg
-    when (matchevent == "kline" ) $ do 
       void $ publish "sndc:1" ( msg)
-      --logact logByteStringStdout $ msg                              
       let abyvaluestr = msg
       let abykeystr = BLU.fromString secondkey
       let stamptime = fromInteger stamp :: Double
       void $ zadd abykeystr [(-stamptime,abyvaluestr)]
       void $ zremrangebyrank abykeystr 150 1000
 
-msganalysistoredis :: ByteString -> Redis ()
-msganalysistoredis msg = do
-    matchevent <- matchmsgfun msg
-    when (matchevent == "kline" ) $ do 
-      void $ publish "analysis:1" ( msg)
 
 getliskeyfromredis :: Redis ()
 getliskeyfromredis =  return ()
@@ -188,26 +179,38 @@ publishThread rc wc tvar ptid = do
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
-      res <- runRedis rc (replydo curtimestamp ) 
-      let orderitem = snd res
-      let klineitem = fst res
-      logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem,orderitem)
-      let cachetime = case klineitem of
-            Left _  ->  "some error"
-            Right v ->   (v!!0)
-      let orderdet  = case orderitem of
-            Left _  ->  "some error"
-            Right v ->   (v!!0)
-      let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
-      let replydores = (read (replydomarray !! 0)) :: Integer
-      let timediff = curtimestamp-replydores
+      matchoevt <- matchmsgfun message
+      when (matchoevt == "kline") $ do
+           runRedis rc $ do
+                            res <- replydo curtimestamp 
+                            let klineitem = fst res
+                            liftIO $ logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem)
+                            let cachetime = case klineitem of
+                                  Left _  ->  "some error"
+                                  Right v ->   (v!!0)
+                            let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
+                            let replydores = (read (replydomarray !! 0)) :: Integer
+                            let timediff = curtimestamp-replydores
+                            msgsklinetoredis message curtimestamp
+                            void $ publish "analysis:1" ( message)
+                            msgcacheandpingtempdo timediff message wc 
+                            liftIO $ sendpongdo timediff  wc
+
+
+      when (matchoevt == "or") $ do
+           runRedis rc $ do 
+                            res <- replydo curtimestamp 
+                            let orderitem = snd res
+                            let orderdet  = case orderitem of
+                                  Left _  ->  "some error"
+                                  Right v ->   (v!!0)
+                            msgordertempdo message orderdet
+
       
-      runRedis rc $ do 
-         msgcacheandpingtempdo timediff message wc 
-         msgsklinetoredis message curtimestamp
-         msganalysistoredis message
-         msgordertempdo message orderdet
-      sendpongdo timediff  wc
+      when (matchoevt == "ac") $ do
+           liftIO $ logact logByteStringStdout "take order partit"                             
+           runRedis rc $ do 
+                  void $ publish "ac:1" ("ac" <> message )
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
