@@ -208,7 +208,7 @@ publishThread rc wc tvar ptid = do
            sendpongdo timediff  wc
 
 
-      when (matchoevt == "or" || matchoevt == "ac") $ do
+      when (matchoevt == "or" || matchoevt == "ac" || matchoevt == "no") $ do
            runRedis rc $ do 
                             res <- replydo curtimestamp 
                             let orderitem = snd res
