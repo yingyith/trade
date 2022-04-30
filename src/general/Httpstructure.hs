@@ -229,8 +229,8 @@ querydepth = do
       let areq = req GET url NoReqBody jsonResponse  httpparams
       response  <- areq
       let result = responseBody response :: Value
-      let bdet = (result^..values.filtered (has (key "bids"))) 
-      let adet = (result^..values.filtered (has (key "asks"))) 
+      let bdet = (result^..values.filtered (has (key "bids".values))) 
+      let adet = (result^..values.filtered (has (key "asks".values))) 
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querydepth ----",result)
       return (bdet,adet)
 
