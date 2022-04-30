@@ -140,6 +140,7 @@ initdepth :: R.Connection -> IO ()
 initdepth conn = do 
     qrydepth <- querydepth
     liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
+
     return ()
 
 
