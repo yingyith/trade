@@ -229,11 +229,11 @@ querydepth = do
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req GET url NoReqBody jsonResponse  httpparams
       response  <- areq
-      let result = responseBody response  :: Value
+      let result = responseBody response  :: [Value]
       --let sorders = (result ._Object )
-      let sorders = (result ^..values)
+      --let sorders = (result ^..(!? 0))
       --let sorders = (result ^..values).(^? nth 0) 
-      return (sorders)
+      return (result)
 
 cancelorder :: String -> IO ()
 cancelorder orderid  = do
