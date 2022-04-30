@@ -19,6 +19,7 @@ module Globalvar (
     holdprkey,
     minquan,
     quanlist,
+    depthkey,
     holdposkey
 ) where
 
@@ -41,6 +42,7 @@ usdtkey = "Usdt"
 holdprkey = "Holdpr"
 holdposkey = "Holdpos"
 liskey = "liskey"
+depthkey = "depthkey"
 secondstick = 60 :: Integer
 sellorderid = "Sellorder20"
 buyorderid = "Buyyorder20"

@@ -217,6 +217,8 @@ publishThread rc wc tvar ptid = do
                                   Right v ->   (v!!0)
                             msgordertempdo message orderdet
 
+      when (matchoevt == "depth") $ do
+           runRedis rc (void $ publish "depth:1" ( message))
       
 
 onInitialComplete :: IO ()
@@ -236,9 +238,8 @@ handlerThread conn ctrl tvar = do
            SI.hPutStrLn stderr $ "Got error: " ++ show e
            )
 
-detailopHandler :: TBQueue Opevent  -> IO () 
-detailopHandler tbq = do 
-    conn <- (connect defaultConnectInfo)
+detailopHandler :: TBQueue Opevent  -> R.Connection -> IO () 
+detailopHandler tbq conn = do 
     iterateM_  ( \lastetype -> do
         logact logByteStringStdout $ B.pack $ show ("killbef thread!")
         res <- atomically $ readTBQueue tbq
@@ -260,11 +261,6 @@ detailopHandler tbq = do
                   _  ->  do 
                              CE.catch (mapM_ funcgetorderid  sqryord) ( \e -> do 
                                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
-                               --  qrypos <- querypos
-                               --  (quan,pr) <- funcgetposinf qrypos
-                               --  let astate = show $ fromEnum Done
-                               --  runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
-
                                  )
                              runRedis conn (ccanordertorediszset  curtime)
 
@@ -318,8 +314,8 @@ detailopHandler tbq = do
         return et)  ""
         
 
-opclHandler :: TBQueue Opevent -> R.Connection -> RedisChannel -> ByteString -> IO ()
-opclHandler tbq conn channel  msg = do
+opclHandler :: TBQueue Opevent  -> RedisChannel -> ByteString -> IO ()
+opclHandler tbq  channel  msg = do
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict  $ B.drop 3 $ snd $  B.breakSubstring seperatemark  msg
     let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
@@ -373,15 +369,15 @@ opclHandler tbq conn channel  msg = do
          logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               --logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
-              let curorderstate = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
+              let curorderstate  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
               let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
               let cty            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
-              let ccliorderid            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "c")
+              let ccliorderid    = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "c")
               let cpr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "ap")
-              let coriginprstr            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "p")
+              let coriginprstr   = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "p")
               let corty          = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "q")
               let otimestampstr  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "T")
-              let corderid  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "i")
+              let corderid       = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "i")
               let curorderpr     = read cpr            :: Double
               let curquantyy     = read cty            :: Double
               let curortyy       = read corty          :: Double
@@ -420,9 +416,8 @@ opclHandler tbq conn channel  msg = do
               let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
               addeventtotbqueue aevent tbq
 
-detailanalysHandler :: TBQueue Cronevent  -> IO () 
-detailanalysHandler tbq = do 
-    conn <- (connect defaultConnectInfo)
+detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> IO () 
+detailanalysHandler tbq conn = do 
     iterateM_  ( \lastetype -> do
         logact logByteStringStdout $ B.pack $ show ("analys thread!")
         res <- atomically $ readTBQueue tbq
@@ -435,6 +430,12 @@ detailanalysHandler tbq = do
 
         when (et == "forward") $  do 
               mseriesFromredis conn etcont--get all mseries from redis 
+
+        when (et == "klinetor") $  do 
+              runRedis conn (sndklinetoredis etcont )
+
+        when (et == "depthtor") $  do 
+              return ()
 
         return et)  ""
 
@@ -452,20 +453,28 @@ sndklinetoredis msg  = do
     let dcp = kclose kline
     let dhp = khigh kline 
     let dlp = klow kline 
-    --let abyvaluestr =  BLU.fromString $ DL.intercalate "|" [dst,dop,dcp,dhp,dlp]
     let abyvaluestr = msg 
                     
     void $ zadd abykeystr [(-kt,abyvaluestr)]
     void $ zremrangebyrank abykeystr 150 1000
       
-sndtocacheHandler :: RedisChannel -> ByteString -> IO ()
-sndtocacheHandler channel msg = do 
-      conn <- connect defaultConnectInfo
-      runRedis conn (sndklinetoredis msg )
-      debugtime
+sndtocacheHandler :: TBQueue Cronevent -> RedisChannel -> ByteString -> IO ()
+sndtocacheHandler tbq channel  msg = do 
+      let strturple = BL.fromStrict    msg
+      let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
+      let detdata = wsdata $ fromJust restmsg
+      let dettype = wstream $ fromJust restmsg
+      when (dettype == "adausdt@kline_1m") $ do 
+           let aevent = Cronevent "klinetor" msg 
+           addoeventtotbqueue aevent tbq
+
+      when (dettype == "adausdt@depth@500ms") $ do 
+           let aevent = Cronevent "depthtor" msg 
+           addoeventtotbqueue aevent tbq
+
       
-analysisHandler :: TBQueue Cronevent -> R.Connection ->  RedisChannel -> ByteString -> IO ()
-analysisHandler tbq conn  channel msg = do 
+analysisHandler :: TBQueue Cronevent  ->  RedisChannel -> ByteString -> IO ()
+analysisHandler tbq   channel msg = do 
       let aevent = Cronevent "forward" msg 
       addoeventtotbqueue aevent tbq
 

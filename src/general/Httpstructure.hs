@@ -13,6 +13,7 @@ module Httpstructure
       getmsilist,
       queryorder,
       querypos,
+      querydepth,
       queryforder,
       pinghandledo,
       getintervalfrpair,
@@ -204,6 +205,33 @@ queryforder = do
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return ()
 
+querydepth :: IO ()
+querydepth = do
+   let symbol = "ADAUSDT"
+   let symboll = "ADAUSDT"
+   curtimestamp <- getcurtimestamp
+   runReq defaultHttpConfig $ do 
+      let signature = BLU.fromString sk
+      let passwdtxt = BC.pack Passwd.passwd
+
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("limit","1000"),("timestamp",show curtimestamp)  ] 
+      let ares = showDigest(hmacSha256 signature abody)
+      let httpparams = 
+            (header "X-MBX-APIKEY" passwdtxt ) <>
+            ("symbol" =: (symboll :: Text)) <>
+            ("limit" =: (1000 :: Integer )) <>
+            ("timestamp" =: (curtimestamp :: Integer )) <>
+            ("signature" =: (T.pack ares :: Text ))
+      let ouri = "https://fapi.binance.com/fapi/v1/depth"  
+      let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
+      uri <- URI.mkURI auri 
+      let (url, options) = fromJust (useHttpsURI uri)
+      let areq = req GET url NoReqBody jsonResponse  httpparams
+      response  <- areq
+      let result = responseBody response :: Value
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querydepth ----",result)
+      return ()
+
 cancelorder :: String -> IO ()
 cancelorder orderid  = do
    let symbol = "ADAUSDT"
@@ -251,11 +279,8 @@ takeorder a b c = do
    let quantity = if b > 10 then b else 10 :: Integer
    
    let price = c :: Double
-   --let price = (fromInteger $  round $ oprice * (10^4))/(10.0^^4)
-
    curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
    let curtimestamp = curtimestampl :: Integer
-   --liftIO $ print (curtimestamp)
    runReq defaultHttpConfig $ do 
       let signature = BLU.fromString sk
       let params = 
@@ -276,25 +301,15 @@ takeorder a b c = do
             ("signature" =: (T.pack ares :: Text ))
       
       let ouri = "https://fapi.binance.com/fapi/v1/order"  
-      --let ouri = "https://api.binance.com/api/v3/order"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
-      --增加对astring的hmac的处理 
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req POST url (ReqBodyUrlEnc params) ignoreResponse httpparams
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("bef take order!--")
       response <- areq
-     -- let result = responseBody response :: Value
-      --liftIO $ logact logByteStringStdout $ BC.pack  $ show (result,a,b,c)
-      --let ares = fromJust $  parseMaybe (.: "signature") result :: String
-      --liftIO $ print ("ss")
-      --liftIO $ print (response)
-      --liftIO $ print (result)
       return ()
-      --how to change bs to json
    
 parsekline :: String -> IO (DpairMserie) 
---getStickToCache :: String -> IO () 
 parsekline nstr  = runReq defaultHttpConfig $ do
     let ouri = https "fapi.binance.com" /: "fapi" /: "v1" /: "klines"  
     let symbol = "ADAUSD"
