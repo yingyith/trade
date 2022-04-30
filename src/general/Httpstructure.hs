@@ -44,6 +44,7 @@ import Data.Aeson.Types as DAT
 import Data.Aeson.Lens 
 import Data.Text.IO as T
 import Data.Text as T
+import Data.Map as DM
 import Data.Typeable
 import GHC.Generics
 import Network.HTTP.Req
@@ -205,7 +206,7 @@ queryforder = do
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return ()
 
-querydepth :: IO ( Maybe Value)
+querydepth :: IO ( [Value])
 querydepth = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
@@ -229,7 +230,7 @@ querydepth = do
       let areq = req GET url NoReqBody jsonResponse  httpparams
       response  <- areq
       let result = responseBody response :: Value
-      let sorders = result ^? nth 0 
+      let sorders = (result^..values)
       --let sorders = (result ^..values).(^? nth 0) 
       return (sorders)
 
