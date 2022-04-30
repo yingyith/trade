@@ -188,35 +188,34 @@ initbal conn = do
     
 ws :: ClientApp ()
 ws connection = do
-    --B.putStrLn "Connected!"
-   -- logFileHandle <- openFile "/root/trade/1.log" ReadWriteMode
     ctrll <- newPubSubController [][]
     conn <- connect defaultConnectInfo
     connn <- connect defaultConnectInfo
     connnn <- connect defaultConnectInfo
     connnnn <- connect defaultConnectInfo
     initbal conn
+    initdepth conn
 
 
-    let ordervari = Ordervar True 0 0 0
-    let orderVar = newTVarIO ordervari-- newTVarIO Int
-    sendthid <- myThreadId 
-    qord <- newTBQueueIO 30 :: IO (TBQueue Opevent)
-    qanalys <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
+   -- let ordervari = Ordervar True 0 0 0
+   -- let orderVar = newTVarIO ordervari-- newTVarIO Int
+   -- sendthid <- myThreadId 
+   -- qord <- newTBQueueIO 30 :: IO (TBQueue Opevent)
+   -- qanalys <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
 
-    withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
-        withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
-           void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys  )]
-           void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler          )]
-           void $ addChannels ctrll [] [("order:*"    , opclHandler  qord          )]
-           void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys    )]
-           void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler           )]
-           void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys  )]
-           threadDelay 1000000
-           forkIO $ detailopHandler qord connn
-           forkIO $ detailanalysHandler qanalys connnn
-        --sendbye connection conn 0 ctrll 
-    forever  $ do
-       threadDelay 50000000
+   -- withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
+   --     withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
+   --        void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys  )]
+   --        void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler          )]
+   --        void $ addChannels ctrll [] [("order:*"    , opclHandler  qord          )]
+   --        void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys    )]
+   --        void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler           )]
+   --        void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys  )]
+   --        threadDelay 1000000
+   --        forkIO $ detailopHandler qord connn
+   --        forkIO $ detailanalysHandler qanalys connnn
+   --     --sendbye connection conn 0 ctrll 
+   -- forever  $ do
+   --    threadDelay 50000000
     return ()
 
