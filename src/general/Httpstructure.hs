@@ -205,7 +205,7 @@ queryforder = do
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return ()
 
-querydepth :: IO ()
+querydepth :: IO ([Value],[Value])
 querydepth = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
@@ -229,8 +229,10 @@ querydepth = do
       let areq = req GET url NoReqBody jsonResponse  httpparams
       response  <- areq
       let result = responseBody response :: Value
+      let bdet = (result^..values.filtered (has (key "bids"))) 
+      let adet = (result^..values.filtered (has (key "asks"))) 
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querydepth ----",result)
-      return ()
+      return (bdet,adet)
 
 cancelorder :: String -> IO ()
 cancelorder orderid  = do
@@ -321,13 +323,7 @@ parsekline nstr  = runReq defaultHttpConfig $ do
           "limit" =: (24 :: Int)
     areq <- req GET ouri NoReqBody lbsResponse params
     let breq = responseBody areq
-    --liftIO $ print (areq)
-    --liftIO $ DC.putStrLn (breq)
-    --convert areq to sticks
-    --convert sticks to redis cache wl
     let creq =  (A.decode breq) :: Maybe Mseries
-    --decode bytestring to haskell object
-    --liftIO $ print (responseBody areq :: Value)
     let dreq = DpairMserie nstr creq 
     return dreq
 

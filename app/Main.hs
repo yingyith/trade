@@ -136,11 +136,17 @@ sendbye wconn conn ac ctrl  = do
       False  -> return ()
     sendbye wconn conn (ac+1) ctrl 
 
+initdepth :: R.Connection -> IO ()
+initdepth conn = do 
+    qrydepth <- querydepth
+    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
+    return ()
+
+
 initbal :: R.Connection -> IO ()
 initbal conn = do 
     qryord <- queryorder
     qrypos <- querypos
-    qrydepth <- querydepth
     let bqryord = fst qryord
     let sqryord = snd qryord
     currtime <- getcurtimestamp 
