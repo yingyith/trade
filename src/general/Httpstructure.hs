@@ -206,7 +206,7 @@ queryforder = do
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return ()
 
-querydepth :: IO (Value)
+querydepth :: IO ((Maybe Value,Maybe Value))
 querydepth = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
@@ -233,8 +233,9 @@ querydepth = do
       --let sorders = (result ._Object )
       --let sorders = (result ^..(!? 0))
       let sorders = (result ^? key "bids") 
+      let borders = (result ^? key "asks") 
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",sorders)
-      return (result)
+      return (sorders,borders)
 
 cancelorder :: String -> IO ()
 cancelorder orderid  = do

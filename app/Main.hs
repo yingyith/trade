@@ -139,7 +139,10 @@ sendbye wconn conn ac ctrl  = do
 initdepth :: R.Connection -> IO ()
 initdepth conn = do 
     qrydepth <- querydepth
-    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
+    --liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
+    let bidso = fromJust $ fst qrydepth
+    let askso = fromJust $ snd qrydepth
+    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",bidso,askso)
 
     return ()
 
