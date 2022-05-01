@@ -169,15 +169,13 @@ msgsklinetoredis msg stamp = do
       void $ zadd abykeystr [(-stamptime,abyvaluestr)]
       void $ zremrangebyrank abykeystr 150 1000
 
-depthtoredis :: String -> Integer -> String -> Redis ()
-depthtoredis prkeystr count side = do
+
+depthtoredis :: [(Double,ByteString)] -> String -> Redis ()
+depthtoredis iteml side = do
       let abykeystr = BLU.fromString $ case side of 
                                            "bids" -> biddepth 
                                            "asks" -> askdepth 
-      let abyvaluestr = BLU.fromString $ prkeystr
-      let stamptime   = fromInteger count :: Double
-      void $ zadd abykeystr [(stamptime,abyvaluestr)]
-
+      void $ zadd abykeystr iteml
 
 msgklinedoredis :: Integer -> ByteString -> NC.Connection   ->  Redis Integer
 msgklinedoredis curtimestamp msg wc= do 

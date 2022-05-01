@@ -4,6 +4,7 @@ module Httpstructure
     ( 
       parsekline,
       Mseries,
+      Depseries,
       Stick,
       takeorder,
       cancelorder,
@@ -206,7 +207,8 @@ queryforder = do
       liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return ()
 
-querydepth :: IO ((Maybe Value,Maybe Value))
+--querydepth :: IO ((Maybe Value,Maybe Value))
+querydepth :: IO ()
 querydepth = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
@@ -227,15 +229,15 @@ querydepth = do
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
-      let areq = req GET url NoReqBody jsonResponse  httpparams
-      response  <- areq
-      let result = responseBody response  :: Value
+      areq <- req GET url NoReqBody lbsResponse httpparams
+      let result = responseBody areq
       --let sorders = (result ._Object )
       --let sorders = (result ^..(!? 0))
-      let sorders = (result ^? key "bids") 
-      let borders = (result ^? key "asks") 
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",sorders)
-      return (sorders,borders)
+     -- let bids =  (A.decode result) :: Maybe Depseries
+     -- let asks =  (A.decode result) :: Maybe Depseries
+      --let dreq = DpairMserie nstr creq 
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",result)
+      return ()
 
 cancelorder :: String -> IO ()
 cancelorder orderid  = do
@@ -394,6 +396,13 @@ getmsilist :: Mseries -> [HStick]
 getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
 --instance  Show Mseries 
+data Depseries = Depseries [(Double,String)] deriving (Show,Generic) 
+
+instance FromJSON Depseries where 
+    parseJSON (Array o) = do
+       ptsList <- mapM parseJSON $ V.toList o
+       return $ Depseries ptsList
+    parseJSON _ = mzero
 
 data HStick = HStick {
       st :: Integer,

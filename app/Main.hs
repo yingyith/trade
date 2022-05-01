@@ -19,8 +19,9 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
-import Data.Aeson.Types
+import Data.Aeson.Types as DAT
 import Data.Either
+import qualified  Data.Vector  as DV  
 import Data.HashMap.Lazy (HashMap)
 import Data.Maybe (fromJust)
 import Data.Monoid ((<>))
@@ -28,6 +29,7 @@ import Data.Text  as T
 import Data.Text.IO as T
 import Data.Map
 import GHC.Generics
+import Prelude as PM
 import Network.HTTP.Req
 import Data.Digest.Pure.SHA
 import Data.ByteString.Lazy.UTF8 as BLU
@@ -134,13 +136,22 @@ sendbye wconn conn ac ctrl  = do
       False  -> return ()
     sendbye wconn conn (ac+1) ctrl 
 
-initdepth :: R.Connection -> IO ()
-initdepth conn = do 
+--depthitemtoredis :: (DV.Vector Array)   ->   (Double,String)
+--depthitemtoredis itemo  = ((outString $ (!!0) itemo) ,(read $ outString $ (!!1) itemo :: Double))
+
+initupddepth :: R.Connection -> IO ()
+initupddepth conn = do 
     qrydepth <- querydepth
-    let bidso = fromJust $ fst qrydepth
-    let askso = fromJust $ snd qrydepth
-    let bidsoo = outArray bidso 
-    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",bidsoo,askso)
+   -- let bidso = fromJust $ fst qrydepth 
+   -- let askso = fromJust $ snd qrydepth 
+   -- let bidsoo =  outArray bidso  
+   -- let asksoo =  outArray askso 
+   -- let bidslist = DV.map depthitemtoredis bidsoo
+   -- let askslisr = DV.map depthitemtoredis asksoo
+   -- runRedis conn $ do 
+   --          depthtoredis bidslist "bids"
+   --          depthtoredis bidslist "asks"
+    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
 
     return ()
 
@@ -196,7 +207,7 @@ ws connection = do
     connnn <- connect defaultConnectInfo
     connnnn <- connect defaultConnectInfo
     initbal conn
-    initdepth conn
+    initupddepth conn
 
 
    -- let ordervari = Ordervar True 0 0 0
