@@ -12,6 +12,7 @@ module Httpstructure
       DpairMserie,
       sticks,
       getmsilist,
+      getlistfrdep,
       queryorder,
       querypos,
       querydepth,
@@ -34,7 +35,7 @@ import qualified Data.Map as Map
 import Control.Monad
 import Control.Monad.IO.Class as I 
 import qualified Data.Vector as V
-import qualified Data.ByteString.Lazy.Internal as BLI
+import qualified Data.ByteString.Lazy as BLL
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.UTF8 as BL
 import qualified Network.HTTP.Base as NTB
@@ -393,11 +394,14 @@ getintervalfrpair (DpairMserie a b) = a
 getmsilist :: Mseries -> [HStick]
 getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
---instance  Show Mseries 
-data Depseries = Depseries ([(Double,String)],[(Double,String)])  deriving (Show,Generic) 
 
-listranform :: [[String]] -> [(Double,String)]
-listranform al = [ (read (i!!1)::Double, (i!!0) )|i<-al ] 
+getlistfrdep :: Depseries ->  ([(Double,BL.ByteString)],[(Double,BL.ByteString)])
+getlistfrdep (Depseries a ) = a 
+--instance  Show Mseries 
+data Depseries = Depseries ([(Double,BL.ByteString)],[(Double,BL.ByteString)])  deriving (Show,Generic) 
+
+listranform :: [[String]] -> [(Double,BL.ByteString)]
+listranform al = [ (read (i!!1)::Double, BLL.toStrict $ BLU.fromString (i!!0) )|i<-al ] 
 
 instance FromJSON Depseries where 
     parseJSON (Object o) = do

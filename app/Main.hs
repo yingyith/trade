@@ -142,15 +142,15 @@ sendbye wconn conn ac ctrl  = do
 initupddepth :: R.Connection -> IO ()
 initupddepth conn = do 
     qrydepth <- querydepth
-   -- let bidso = fromJust $ fst qrydepth 
-   -- let askso = fromJust $ snd qrydepth 
+    let bidso = fst $ getlistfrdep $ fromJust  qrydepth 
+    let askso = snd $ getlistfrdep $ fromJust  qrydepth 
    -- let bidsoo =  outArray bidso  
    -- let asksoo =  outArray askso 
    -- let bidslist = DV.map depthitemtoredis bidsoo
    -- let askslisr = DV.map depthitemtoredis asksoo
-   -- runRedis conn $ do 
-   --          depthtoredis bidslist "bids"
-   --          depthtoredis bidslist "asks"
+    runRedis conn $ do 
+             depthtoredis bidso "bids"
+             depthtoredis askso "asks"
     liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
 
     return ()

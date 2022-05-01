@@ -14,6 +14,7 @@ module Redispipe
       listenkeyHandler,
       mintocacheHandler,
       showChannels,
+      depthtoredis,
       sndtocacheHandler,
       detailanalysHandler,
       detailopHandler,
