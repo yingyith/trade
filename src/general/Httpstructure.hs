@@ -208,7 +208,7 @@ queryforder = do
       return ()
 
 --querydepth :: IO ((Maybe Value,Maybe Value))
-querydepth :: IO ()
+querydepth :: IO (Maybe Depseries)
 querydepth = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
@@ -233,11 +233,11 @@ querydepth = do
       let result = responseBody areq
       --let sorders = (result ._Object )
       --let sorders = (result ^..(!? 0))
-     -- let bids =  (A.decode result) :: Maybe Depseries
+      let ressheet =  (A.decode result) :: Maybe Depseries
      -- let asks =  (A.decode result) :: Maybe Depseries
       --let dreq = DpairMserie nstr creq 
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",result)
-      return ()
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",ressheet)
+      return ressheet
 
 cancelorder :: String -> IO ()
 cancelorder orderid  = do
@@ -396,12 +396,15 @@ getmsilist :: Mseries -> [HStick]
 getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
 --instance  Show Mseries 
-data Depseries = Depseries [(Double,String)] deriving (Show,Generic) 
+data Depseries = Depseries ([(Double,String)],[(Double,String)])  deriving (Show,Generic) 
 
 instance FromJSON Depseries where 
-    parseJSON (Array o) = do
-       ptsList <- mapM parseJSON $ V.toList o
-       return $ Depseries ptsList
+    parseJSON (Object o) = do
+       bids <- o .: "bids"
+       asks <- o .: "asks"
+       bidsList <- mapM parseJSON $ V.toList bids
+       asksList <- mapM parseJSON $ V.toList asks
+       return $ Depseries (bidsList,asksList)
     parseJSON _ = mzero
 
 data HStick = HStick {
@@ -422,8 +425,6 @@ instance FromJSON HStick where
           return $ HStick st op hp lp cp
    parseJSON _ = mzero
 
---mapOdds :: (a -> a) -> [a] -> [a]
---   mapOdds f al = case al! 
 
 instance FromJSON Mseries where
    parseJSON (Array v) = do
