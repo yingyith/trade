@@ -235,7 +235,7 @@ querydepth = do
       let ressheet =  (A.decode result) :: Maybe Depseries
      -- let asks =  (A.decode result) :: Maybe Depseries
       --let dreq = DpairMserie nstr creq 
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",ressheet)
+      --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",ressheet)
       return ressheet
 
 cancelorder :: String -> IO ()
