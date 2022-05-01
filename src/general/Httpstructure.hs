@@ -67,8 +67,6 @@ getorderitem = runReq defaultHttpConfig $ do
     let params = 
           "symbol" =: ("ADAUSDT" :: Text)
     areq <- req GET ouri NoReqBody lbsResponse params
-   -- let breq = responseBody areq
-    --liftIO $ print ("ss")
     return ()
     
 getcurtimestamp :: IO Integer
@@ -396,7 +394,7 @@ getmsilist :: Mseries -> [HStick]
 getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
 --instance  Show Mseries 
-data Depseries = Depseries ([(Double,String)],[(Double,String)])  deriving (Show,Generic) 
+data Depseries = Depseries ([[String]],[[String]])  deriving (Show,Generic) 
 
 instance FromJSON Depseries where 
     parseJSON (Object o) = do
