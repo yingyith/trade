@@ -41,24 +41,6 @@ import Colog (LogAction,logByteStringStdout)
 import Logger
 
 
---every grid have a position value, 1min value -> 15  up_fast->5      oppsite -> -15 fall_fast -> -25
---                                  5min value -> 20  up_fast->5     oppsite -> -10 fall_fast -> -20
---                                  15min value -> 15 up_fast->5      oppsite -> -10 fall_fast -> -20
---                                  1hour value -> 10 up_fast->5      oppsite -> -15 fall_fast -> -10
---                                  4hour value -> 30 up_fast->-10     oppsite -> -40 fall_fast -> -60
---                                  1day value -> 5   up_fast->-5      oppsite -> -5  fall_fast -> 0
---                                  3day value -> 5   up_fast->-5      oppsite -> -5  fall_fast -> 0
---                                  only sum of all predication > = 0 ,then can open
---risksheet :: DM.Map String [Integer]
---risksheet = fromList [
---             ("3m", [-150,-150,-15,-45]),
---             ("5m", [10,-150,10,-25]),
---             ("15m",[-150,-150,10,-15]),   --15min highpoint  , up_fast must be minus -25 or smaller
---             ("1h", [20,20,-10,-25]),    -- long interval have effect on short interval ,if 1hour is rise ,then ,15min low point  should rely on ,easy to have benefit.
---             ("4h", [25,20,-15,-25]),
---             ("12h", [5,5,0,0]),
---             ("3d", [0,5,0,0])
---            ]
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [

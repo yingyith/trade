@@ -20,6 +20,8 @@ module Globalvar (
     minquan,
     quanlist,
     depthkey,
+    biddepth,
+    askdepth,
     holdposkey
 ) where
 
@@ -28,6 +30,9 @@ defintervallist = ["3m","5m","15m","1h","4h","12h","3d"]
 
 quanlist :: [Int]
 quanlist = [1300,2300,4300,8300,15300] -- 15m,1h,4h,12h
+
+biddepth = "Biddepth"
+askdepth = "Askdepth"
 
 orderkey = "Order"
 

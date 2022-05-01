@@ -124,8 +124,6 @@ sendbye  ::  NC.Connection -> R.Connection -> Int ->  PubSubController -> IO () 
 sendbye wconn conn ac ctrl  = do
     res <- expirepredi conn 120000
     let preres = fst res 
-    --let timediff = snd res
-    --infoM "time" $ show timediff 
     case preres of 
       True   -> do
                      void $ NW.sendClose wconn (B.pack "Bye!")
@@ -139,10 +137,10 @@ sendbye wconn conn ac ctrl  = do
 initdepth :: R.Connection -> IO ()
 initdepth conn = do 
     qrydepth <- querydepth
-    --liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
     let bidso = fromJust $ fst qrydepth
     let askso = fromJust $ snd qrydepth
-    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",bidso,askso)
+    let bidsoo = outArray bidso 
+    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",bidsoo,askso)
 
     return ()
 

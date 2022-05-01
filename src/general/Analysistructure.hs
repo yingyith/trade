@@ -3,13 +3,15 @@
 module Analysistructure
     ( 
       Hlnode (..),
+      biddepthsheet,
+      askdepthsheet,
       retposfromgrid
     ) where
 import Control.Applicative
 import qualified Text.URI as URI
 import qualified Data.ByteString  as B
 import Data.Maybe (fromJust)
-import qualified Data.Map as Map
+import qualified Data.Map as DM
 import Control.Monad
 import Control.Monad.IO.Class as I 
 import qualified Data.Vector as V
@@ -44,12 +46,12 @@ data Hlnode = Hlnode {
               cprice :: Double
               } deriving (Show,Generic)
 
---mix 1m and 5m kline analysis
---mix 5m and 15m kline analysis
---mix 5m and 15m kline analysis
-  --plan a :   predicationA : 1m kline  $$ 5m kline ==> result
-  --           predicationB : 1m kline $$ 3h kline  $$ 5m kline ==> result
-  --           apply predicationA ruleB   
+biddepthsheet :: DM.Map String Int 
+biddepthsheet  = DM.fromList []
+
+askdepthsheet :: DM.Map String Int 
+askdepthsheet  = DM.fromList []
+
 retposfromgrid :: [Double]-> Double -> [[Double]] -> IO (Integer,[Double])
 retposfromgrid dll curprice dlsheet = do 
             --get current position from redis

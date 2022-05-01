@@ -5,6 +5,7 @@
 -- I execute this with `stack runghc ManualPubSub.hs`
 module Myutils (
        outString,
+       outArray,
        showdouble
 ) where
 
@@ -43,6 +44,10 @@ outString a =  case a of
                                         Right k ->  T.pack $ show k
                                         Left  g ->  T.pack $ showdouble g 
                              --T.pack $ show $ fromRight 0 $ floatingOrInteger  (l::Scientific)
+
+outArray :: Value -> DAT.Array
+outArray  a =  case a of 
+                   DAT.Array l -> l 
 
 showdouble :: Double -> String
 showdouble x = showFFloat (Just 4) x "" 
