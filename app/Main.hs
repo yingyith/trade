@@ -151,7 +151,6 @@ initupddepth conn = do
     runRedis conn $ do 
              depthtoredis bidso "bids"
              depthtoredis askso "asks"
-    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",bidso)
 
     return ()
 
@@ -210,25 +209,25 @@ ws connection = do
     initupddepth conn
 
 
-   -- let ordervari = Ordervar True 0 0 0
-   -- let orderVar = newTVarIO ordervari-- newTVarIO Int
-   -- sendthid <- myThreadId 
-   -- qord <- newTBQueueIO 30 :: IO (TBQueue Opevent)
-   -- qanalys <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
+    let ordervari = Ordervar True 0 0 0
+    let orderVar = newTVarIO ordervari-- newTVarIO Int
+    sendthid <- myThreadId 
+    qord <- newTBQueueIO 30 :: IO (TBQueue Opevent)
+    qanalys <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
 
-   -- withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
-   --     withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
-   --        void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys  )]
-   --        void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler          )]
+    withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
+        withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
+           void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys  )]
+           void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler          )]
    --        void $ addChannels ctrll [] [("order:*"    , opclHandler  qord          )]
-   --        void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys    )]
-   --        void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler           )]
-   --        void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys  )]
-   --        threadDelay 1000000
-   --        forkIO $ detailopHandler qord connn
-   --        forkIO $ detailanalysHandler qanalys connnn
-   --     --sendbye connection conn 0 ctrll 
-   -- forever  $ do
-   --    threadDelay 50000000
+           void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys    )]
+           void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler           )]
+           void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys  )]
+           threadDelay 1000000
+           forkIO $ detailopHandler qord connn
+           forkIO $ detailanalysHandler qanalys connnn
+        --sendbye connection conn 0 ctrll 
+    forever  $ do
+       threadDelay 50000000
     return ()
 
