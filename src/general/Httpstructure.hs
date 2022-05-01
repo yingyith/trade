@@ -394,14 +394,19 @@ getmsilist :: Mseries -> [HStick]
 getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
 --instance  Show Mseries 
-data Depseries = Depseries ([[String]],[[String]])  deriving (Show,Generic) 
+data Depseries = Depseries ([(Double,String)],[(Double,String)])  deriving (Show,Generic) 
+
+listranform :: [[String]] -> [(Double,String)]
+listranform al = [ (read (i!!1)::Double, (i!!0) )|i<-al ] 
 
 instance FromJSON Depseries where 
     parseJSON (Object o) = do
        bids <- o .: "bids"
        asks <- o .: "asks"
-       bidsList <- mapM parseJSON $ V.toList bids
-       asksList <- mapM parseJSON $ V.toList asks
+       bidsListo <- mapM parseJSON $ V.toList bids
+       asksListo <- mapM parseJSON $ V.toList asks
+       let bidsList = listranform bidsListo
+       let asksList = listranform asksListo
        return $ Depseries (bidsList,asksList)
     parseJSON _ = mzero
 
