@@ -171,7 +171,7 @@ msgsklinetoredis msg stamp = do
       void $ zremrangebyrank abykeystr 150 1000
 
 
-depthtoredis :: [(Double,ByteString)] -> String -> Redis ()
+depthtoredis :: [(Double,BLU.ByteString)] -> String -> Redis ()
 depthtoredis iteml side = do
       let abykeystr = BLU.fromString $ case side of 
                                            "bids" -> biddepth 

@@ -151,7 +151,7 @@ initupddepth conn = do
     runRedis conn $ do 
              depthtoredis bidso "bids"
              depthtoredis askso "asks"
-    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",qrydepth)
+    liftIO $ logact logByteStringStdout $ B.pack  $ show ("queryorder ----",bidso)
 
     return ()
 
