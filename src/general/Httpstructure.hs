@@ -415,14 +415,14 @@ data Wdepseries = Wdepseries {
 instance FromJSON Wdepseries where 
     parseJSON (Object o) = do
       --depthdata     <- o .: "data"
-      depthevtdata     <- (o .: "stream")
+      --depthevtdata     <- (o .: "stream")
       -- uutimee       <- depthdata .: "U"
       -- utimee        <- depthdata .: "u"
       -- putimee       <- depthdata .: "pu"
       -- let uutime  = read uutimee :: Int
       -- let utime   = read  utimee :: Int
       -- let putime  = read putimee :: Int
-      let res = depthevtdata :: Object
+      --let res = depthevtdata :: Object
 
       -- bidlist      <- depthdata .: "b"
       -- asklist      <- depthdata .: "a"
