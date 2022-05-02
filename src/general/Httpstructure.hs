@@ -414,14 +414,15 @@ data Wdepseries = Wdepseries {
 
 instance FromJSON Wdepseries where 
     parseJSON (Object o) = do
-       --depthdata     <- (o .: "data")
-      -- depthevtdata     <- (o .: "adausdt@depth@500ms")
+      --depthdata     <- o .: "data"
+      depthevtdata     <- (o .: "stream")
       -- uutimee       <- depthdata .: "U"
       -- utimee        <- depthdata .: "u"
       -- putimee       <- depthdata .: "pu"
       -- let uutime  = read uutimee :: Int
       -- let utime   = read  utimee :: Int
       -- let putime  = read putimee :: Int
+      let res = depthevtdata :: Object
 
       -- bidlist      <- depthdata .: "b"
       -- asklist      <- depthdata .: "a"
@@ -429,7 +430,7 @@ instance FromJSON Wdepseries where
       -- asksListo    <- mapM parseJSON $ V.toList asklist
       -- let bidsList = listranform bidsListo
       -- let asksList = listranform asksListo
-       return $ Wdepseries $show o  --uutime utime putime bidsList asksList 
+      return $ Wdepseries $ show depthevtdata  --uutime utime putime bidsList asksList 
     parseJSON _ = return $ Wdepseries "ttttt"
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
