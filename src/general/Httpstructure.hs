@@ -422,12 +422,9 @@ instance FromJSON Wdepseries where
       uutimeee                 <- depthdata .: "U" 
       utimeee                  <- depthdata .: "u" 
       putimeee                 <- depthdata .: "pu" 
-      let uutimee  = uutimeee :: String
-      let utimee   = utimeee  :: String
-      let putimee  = putimeee :: String
-      let uutime  = read uutimee :: Int
-      let utime   = read  utimee :: Int
-      let putime  = read putimee :: Int
+      let uutimee  = uutimeee :: Int
+      let utimee   = utimeee  :: Int 
+      let putimee  = putimeee :: Int
      -- bidlist      <- depthdata .: "b"  
      -- asklist      <- depthdata .: "a"  
      -- bidsListo    <- mapM parseJSON $ V.toList bidlist
