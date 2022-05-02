@@ -9,7 +9,8 @@ module Httpstructure
       takeorder,
       cancelorder,
       HStick (op,cp,lp,hp,st),
-      Wdepseries (depu,depU,deppu,asksh,bidsh),
+      --Wdepseries (depu,depU,deppu,asksh,bidsh),
+      Wdepseries (tdata),
       DpairMserie,
       sticks,
       getmsilist,
@@ -403,30 +404,31 @@ getlistfrdep (Depseries a ) = a
 data Depseries = Depseries   (Int ,([(Double,BL.ByteString)],[(Double,BL.ByteString)]))  deriving (Show,Generic) 
 
 data Wdepseries = Wdepseries {
-      depu  :: Int,
-      depU  :: Int,
-      deppu :: Int,
-      bidsh :: [(Double,BL.ByteString)],
-      asksh :: [(Double,BL.ByteString)]
+  --    depu  :: Int,
+  --    depU  :: Int,
+  --    deppu :: Int,
+  --    bidsh :: [(Double,BL.ByteString)],
+  --    asksh :: [(Double,BL.ByteString)]
+        tdata :: String
 } deriving (Show,Generic) 
 
 instance FromJSON Wdepseries where 
     parseJSON (Object o) = do
        depthdata     <- (o .: "data")
        uutimee       <- depthdata .: "U"
-       utimee        <- depthdata .: "u"
-       putimee       <- depthdata .: "pu"
-       let uutime  = read uutimee :: Int
-       let utime   = read  utimee :: Int
-       let putime  = read putimee :: Int
+      -- utimee        <- depthdata .: "u"
+      -- putimee       <- depthdata .: "pu"
+      -- let uutime  = read uutimee :: Int
+      -- let utime   = read  utimee :: Int
+      -- let putime  = read putimee :: Int
 
-       bidlist      <- depthdata .: "b"
-       asklist      <- depthdata .: "a"
-       bidsListo    <- mapM parseJSON $ V.toList bidlist
-       asksListo    <- mapM parseJSON $ V.toList asklist
-       let bidsList = listranform bidsListo
-       let asksList = listranform asksListo
-       return $ Wdepseries uutime utime putime bidsList asksList 
+      -- bidlist      <- depthdata .: "b"
+      -- asklist      <- depthdata .: "a"
+      -- bidsListo    <- mapM parseJSON $ V.toList bidlist
+      -- asksListo    <- mapM parseJSON $ V.toList asklist
+      -- let bidsList = listranform bidsListo
+      -- let asksList = listranform asksListo
+       return $ Wdepseries uutimee --uutime utime putime bidsList asksList 
     parseJSON _ = mzero
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
