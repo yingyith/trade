@@ -9,6 +9,7 @@ module Httpstructure
       takeorder,
       cancelorder,
       HStick (op,cp,lp,hp,st),
+      Wdepseries (depu,depU,deppu,asksh,bidsh),
       DpairMserie,
       sticks,
       getmsilist,
@@ -395,23 +396,52 @@ getmsilist :: Mseries -> [HStick]
 getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
 
-getlistfrdep :: Depseries ->  ([(Double,BL.ByteString)],[(Double,BL.ByteString)])
+getlistfrdep :: Depseries -> (Int, ([(Double,BL.ByteString)],[(Double,BL.ByteString)]))
 getlistfrdep (Depseries a ) = a 
 --instance  Show Mseries 
-data Depseries = Depseries ([(Double,BL.ByteString)],[(Double,BL.ByteString)])  deriving (Show,Generic) 
+
+data Depseries = Depseries   (Int ,([(Double,BL.ByteString)],[(Double,BL.ByteString)]))  deriving (Show,Generic) 
+
+data Wdepseries = Wdepseries {
+      depu  :: Int,
+      depU  :: Int,
+      deppu :: Int,
+      bidsh :: [(Double,BL.ByteString)],
+      asksh :: [(Double,BL.ByteString)]
+} deriving (Show,Generic) 
+
+instance FromJSON Wdepseries where 
+    parseJSON (Object o) = do
+       depthdata     <- (o .: "data")
+       uutimee       <- depthdata .: "U"
+       utimee        <- depthdata .: "u"
+       putimee       <- depthdata .: "pu"
+       let uutime  = read uutimee :: Int
+       let utime   = read  utimee :: Int
+       let putime  = read putimee :: Int
+
+       bidlist      <- depthdata .: "b"
+       asklist      <- depthdata .: "a"
+       bidsListo <- mapM parseJSON $ V.toList bidlist
+       asksListo <- mapM parseJSON $ V.toList asklist
+       let bidsList = listranform bidsListo
+       let asksList = listranform asksListo
+       return $ Wdepseries uutime utime putime bidsList asksList 
+    parseJSON _ = mzero
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
 listranform al = [ (read (i!!1)::Double, BLL.toStrict $ BLU.fromString (i!!0) )|i<-al ] 
 
 instance FromJSON Depseries where 
     parseJSON (Object o) = do
-       bids <- o .: "bids"
-       asks <- o .: "asks"
+       bids      <- o .: "bids" 
+       asks      <- o .: "asks"
+       lastupdid <- o .: "lastUpdateId"
        bidsListo <- mapM parseJSON $ V.toList bids
        asksListo <- mapM parseJSON $ V.toList asks
        let bidsList = listranform bidsListo
        let asksList = listranform asksListo
-       return $ Depseries (bidsList,asksList)
+       return $ Depseries (lastupdid,(bidsList,asksList))
     parseJSON _ = mzero
 
 data HStick = HStick {

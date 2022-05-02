@@ -139,11 +139,12 @@ sendbye wconn conn ac ctrl  = do
 --depthitemtoredis :: (DV.Vector Array)   ->   (Double,String)
 --depthitemtoredis itemo  = ((outString $ (!!0) itemo) ,(read $ outString $ (!!1) itemo :: Double))
 
-initupddepth :: R.Connection -> IO ()
+initupddepth :: R.Connection -> IO Depseries 
 initupddepth conn = do 
-    qrydepth <- querydepth
-    let bidso = fst $ getlistfrdep $ fromJust  qrydepth 
-    let askso = snd $ getlistfrdep $ fromJust  qrydepth 
+    qrydepthh <- querydepth
+    let qrydepth = fromJust qrydepthh
+    let bidso = fst $ snd $ getlistfrdep   qrydepth 
+    let askso = snd $ snd $ getlistfrdep   qrydepth 
    -- let bidsoo =  outArray bidso  
    -- let asksoo =  outArray askso 
    -- let bidslist = DV.map depthitemtoredis bidsoo
@@ -152,7 +153,7 @@ initupddepth conn = do
              depthtoredis bidso "bids"
              depthtoredis askso "asks"
 
-    return ()
+    return qrydepth
 
 
 initbal :: R.Connection -> IO ()
@@ -206,7 +207,7 @@ ws connection = do
     connnn <- connect defaultConnectInfo
     connnnn <- connect defaultConnectInfo
     --initbal conn
-    initupddepth conn
+    depthdata <- initupddepth conn
 
 
     let ordervari = Ordervar True 0 0 0

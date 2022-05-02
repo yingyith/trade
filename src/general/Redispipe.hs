@@ -443,6 +443,8 @@ detailanalysHandler tbq conn = do
               runRedis conn (sndklinetoredis etcont )
 
         when (et == "depthtor") $  do 
+              let ressheet =  (A.decode (BL.fromStrict etcont)) :: Maybe Depseries
+              liftIO $ logact logByteStringStdout $ B.pack $ show ("depthtor is ----- !",ressheet)
               return ()
 
         return et)  ""
