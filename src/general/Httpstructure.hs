@@ -430,7 +430,7 @@ instance FromJSON Wdepseries where
       -- let bidsList = listranform bidsListo
       -- let asksList = listranform asksListo
        return $ Wdepseries depthevtdata --uutime utime putime bidsList asksList 
-    parseJSON _ = mzero
+    parseJSON _ = return $ Wdepseries "ttttt"
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
 listranform al = [ (read (i!!1)::Double, BLL.toStrict $ BLU.fromString (i!!0) )|i<-al ] 
