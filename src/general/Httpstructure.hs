@@ -422,8 +422,8 @@ instance FromJSON Wdepseries where
 
        bidlist      <- depthdata .: "b"
        asklist      <- depthdata .: "a"
-       bidsListo <- mapM parseJSON $ V.toList bidlist
-       asksListo <- mapM parseJSON $ V.toList asklist
+       bidsListo    <- mapM parseJSON $ V.toList bidlist
+       asksListo    <- mapM parseJSON $ V.toList asklist
        let bidsList = listranform bidsListo
        let asksList = listranform asksListo
        return $ Wdepseries uutime utime putime bidsList asksList 

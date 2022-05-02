@@ -444,7 +444,7 @@ detailanalysHandler tbq conn = do
 
         when (et == "depthtor") $  do 
               let ressheet =  (A.decode (BL.fromStrict etcont)) :: Maybe Depseries
-              liftIO $ logact logByteStringStdout $ B.pack $ show ("depthtor is ----- !",ressheet)
+              liftIO $ logact logByteStringStdout $ B.pack $ show ("depthtor is ----- !",etcont,ressheet)
               return ()
 
         return et)  ""
