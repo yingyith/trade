@@ -9,8 +9,7 @@ module Httpstructure
       takeorder,
       cancelorder,
       HStick (op,cp,lp,hp,st),
-      --Wdepseries (depu,depU,deppu,asksh,bidsh),
-      Wdepseries (tdata),
+      Wdepseries (depu,depU,deppu,asksh,bidsh),
       DpairMserie,
       sticks,
       getmsilist,
@@ -404,12 +403,11 @@ getlistfrdep (Depseries a ) = a
 data Depseries = Depseries   (Int ,([(Double,BL.ByteString)],[(Double,BL.ByteString)]))  deriving (Show,Generic) 
 
 data Wdepseries = Wdepseries {
-  --    depu  :: Int,
-  --    depU  :: Int,
-  --    deppu :: Int,
-  --    bidsh :: [(Double,BL.ByteString)],
-  --    asksh :: [(Double,BL.ByteString)]
-        tdata :: String
+      depu  :: Int,
+      depU  :: Int,
+      deppu :: Int,
+      bidsh :: [(Double,BL.ByteString)],
+      asksh :: [(Double,BL.ByteString)]
 } deriving (Show,Generic) 
 
 instance FromJSON Wdepseries where 
@@ -425,14 +423,14 @@ instance FromJSON Wdepseries where
       let uutimee  = uutimeee :: Int
       let utimee   = utimeee  :: Int 
       let putimee  = putimeee :: Int
-     -- bidlist      <- depthdata .: "b"  
-     -- asklist      <- depthdata .: "a"  
-     -- bidsListo    <- mapM parseJSON $ V.toList bidlist
-     -- asksListo    <- mapM parseJSON $ V.toList asklist
-     -- let bidsList = listranform bidsListo
-     -- let asksList = listranform asksListo
-      return $ Wdepseries $ show (o)  --uutime utime putime bidsList asksList 
-    parseJSON _ = return $ Wdepseries "ttttt"
+      bidlist      <- depthdata .: "b"  
+      asklist      <- depthdata .: "a"  
+      bidsListo    <- mapM parseJSON $ V.toList bidlist
+      asksListo    <- mapM parseJSON $ V.toList asklist
+      let bidsList = listranform bidsListo
+      let asksList = listranform asksListo
+      return $ Wdepseries uutimee utimee putimee bidsList asksList 
+    parseJSON _ = mzero
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
 listranform al = [ (read (i!!1)::Double, BLL.toStrict $ BLU.fromString (i!!0) )|i<-al ] 
