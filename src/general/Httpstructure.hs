@@ -414,24 +414,22 @@ data Wdepseries = Wdepseries {
 
 instance FromJSON Wdepseries where 
     parseJSON (Object o) = do
-      depthdata     <- o .: "data"
-      depthevtdata     <- (o .: "stream")
-      -- uutimee       <- depthdata .: "U"
-      -- utimee        <- depthdata .: "u"
-      -- putimee       <- depthdata .: "pu"
-      -- let uutime  = read uutimee :: Int
-      -- let utime   = read  utimee :: Int
-      -- let putime  = read putimee :: Int
-      let res = depthevtdata :: String
-      let resdepth = depthdata :: Object
+      depthdata       <-  o .: "data"
+      depthevtdata    <-  o .: "stream" :: Parser String
 
-      -- bidlist      <- depthdata .: "b"
-      -- asklist      <- depthdata .: "a"
-      -- bidsListo    <- mapM parseJSON $ V.toList bidlist
-      -- asksListo    <- mapM parseJSON $ V.toList asklist
-      -- let bidsList = listranform bidsListo
-      -- let asksList = listranform asksListo
-      return $ Wdepseries $ show (o,res,resdepth)  --uutime utime putime bidsList asksList 
+      uutimee                 <- depthdata .: "U"
+      utimee                  <- depthdata .: "u"
+      putimee                 <- depthdata .: "pu"
+      let uutime  = read uutimee :: Int
+      let utime   = read  utimee :: Int
+      let putime  = read putimee :: Int
+      bidlist      <- depthdata .: "b"
+      asklist      <- depthdata .: "a"
+      bidsListo    <- mapM parseJSON $ V.toList bidlist
+      asksListo    <- mapM parseJSON $ V.toList asklist
+      let bidsList = listranform bidsListo
+      let asksList = listranform asksListo
+      return $ Wdepseries $ show (o)  --uutime utime putime bidsList asksList 
     parseJSON _ = return $ Wdepseries "ttttt"
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
