@@ -428,12 +428,12 @@ instance FromJSON Wdepseries where
       let uutime  = read uutimee :: Int
       let utime   = read  utimee :: Int
       let putime  = read putimee :: Int
-      bidlist      <- depthdata .: "b"  
-      asklist      <- depthdata .: "a"  
-      bidsListo    <- mapM parseJSON $ V.toList bidlist
-      asksListo    <- mapM parseJSON $ V.toList asklist
-      let bidsList = listranform bidsListo
-      let asksList = listranform asksListo
+     -- bidlist      <- depthdata .: "b"  
+     -- asklist      <- depthdata .: "a"  
+     -- bidsListo    <- mapM parseJSON $ V.toList bidlist
+     -- asksListo    <- mapM parseJSON $ V.toList asklist
+     -- let bidsList = listranform bidsListo
+     -- let asksList = listranform asksListo
       return $ Wdepseries $ show (o)  --uutime utime putime bidsList asksList 
     parseJSON _ = return $ Wdepseries "ttttt"
 
