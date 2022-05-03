@@ -3,6 +3,7 @@
 module Analysistructure
     ( 
       Hlnode (..),
+      Depthset (..),
       biddepthsheet,
       askdepthsheet,
       retposfromgrid
@@ -12,6 +13,7 @@ import qualified Text.URI as URI
 import qualified Data.ByteString  as B
 import Data.Maybe (fromJust)
 import qualified Data.Map as DM
+import qualified Data.HashMap  as DHM
 import Control.Monad
 import Control.Monad.IO.Class as I 
 import qualified Data.Vector as V
@@ -29,22 +31,27 @@ import Database.Redis
 import Data.String.Class as DC
 import Globalvar
 
---data HLtree  = Leaf {
---               index :: Integer,
---               price :: Double,
---               rank :: Integer,
---               stype :: String }
---               | Branch HLtree HLtree deriving Show 
+
+data Depthset = Depthset {
+      depu   :: Int,
+      depU   :: Int,
+      deppu  :: Int,
+      bidset :: DHM.Map BL.ByteString Double ,------[(Double,BL.ByteString)],
+      askset :: DHM.Map BL.ByteString Double                      --[(Double,BL.ByteString)]
+} deriving (Show,Generic) 
+
+
 
 data Hlnode = Hlnode {
-              time :: Integer,       
-              hprice :: Double,
-              lprice :: Double,
-              rank :: Integer,
-              stype :: String, -- high or low` 
-              rtype :: String,  -- '5min' or '1h'
+              time   :: Integer ,       
+              hprice :: Double  ,
+              lprice :: Double  ,
+              rank   :: Integer ,
+              stype  :: String  , -- high or low` 
+              rtype  :: String  ,  -- '5min' or '1h'
               cprice :: Double
               } deriving (Show,Generic)
+
 
 biddepthsheet :: DM.Map String Int 
 biddepthsheet  = DM.fromList []

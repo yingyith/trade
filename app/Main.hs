@@ -7,6 +7,7 @@ import Database.Redis as R
 import Control.Concurrent (myThreadId ,forkIO ,threadDelay,ThreadId,killThread)
 import Control.Concurrent.Async
 import Control.Concurrent.STM
+import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TBQueue
 import Control.Lens
 import Control.Monad (forever, unless, void)
@@ -20,6 +21,7 @@ import Control.Monad.IO.Class
 import Data.Aeson
 import Data.Aeson.Lens
 import Data.Aeson.Types as DAT
+import qualified Data.HashMap  as DHM
 import Data.Either
 import qualified  Data.Vector  as DV  
 import Data.HashMap.Lazy (HashMap)
@@ -60,6 +62,8 @@ import System.Posix.Signals
 import System.Posix
 import Colog (LogAction,logByteStringStdout)
 import Myutils
+import Analysistructure
+import Mobject
 
 
 main :: IO ()
@@ -139,21 +143,6 @@ sendbye wconn conn ac ctrl  = do
 --depthitemtoredis :: (DV.Vector Array)   ->   (Double,String)
 --depthitemtoredis itemo  = ((outString $ (!!0) itemo) ,(read $ outString $ (!!1) itemo :: Double))
 
-initupddepth :: R.Connection -> IO Depseries 
-initupddepth conn = do 
-    qrydepthh <- querydepth
-    let qrydepth = fromJust qrydepthh
-    let bidso = fst $ snd $ getlistfrdep   qrydepth 
-    let askso = snd $ snd $ getlistfrdep   qrydepth 
-   -- let bidsoo =  outArray bidso  
-   -- let asksoo =  outArray askso 
-   -- let bidslist = DV.map depthitemtoredis bidsoo
-   -- let askslisr = DV.map depthitemtoredis asksoo
-    runRedis conn $ do 
-             depthtoredis bidso "bids"
-             depthtoredis askso "asks"
-
-    return qrydepth
 
 
 initbal :: R.Connection -> IO ()
@@ -209,24 +198,24 @@ ws connection = do
     --initbal conn
     depthdata <- initupddepth conn
 
-
+    depthtvar <-newTVarIO depthdata
     let ordervari = Ordervar True 0 0 0
     let orderVar = newTVarIO ordervari-- newTVarIO Int
     sendthid <- myThreadId 
-    qord <- newTBQueueIO 30 :: IO (TBQueue Opevent)
-    qanalys <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
+    qord     <- newTBQueueIO 30 :: IO (TBQueue Opevent)
+    qanalys  <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
 
     withAsync (publishThread conn connection orderVar sendthid) $ \_pubT -> do
         withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
-           void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys  )]
+           void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys depthtvar  )]
            void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler          )]
    --        void $ addChannels ctrll [] [("order:*"    , opclHandler  qord          )]
-           void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys    )]
+           void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys depthtvar   )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler           )]
-           void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys  )]
+           void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys depthtvar  )]
            threadDelay 1000000
            forkIO $ detailopHandler qord connn
-           forkIO $ detailanalysHandler qanalys connnn
+           forkIO $ detailanalysHandler qanalys connnn depthtvar
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000

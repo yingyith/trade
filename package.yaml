@@ -34,6 +34,7 @@ dependencies:
 - unordered-containers
 - lens-aeson
 - lens
+- hashmap
 - containers
 - parallel
 - eventful-core

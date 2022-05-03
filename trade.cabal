@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 947fc1d12d353cde18ffe2efe763c84014f44b1e3f7ffcbb9cd34b550ed73495
+-- hash: 23b8ceacddf602abedfa71673735dd324eb63af0fa0174a24aa549baa9913daf
 
 name:           trade
 version:        0.1.0.0
@@ -50,6 +50,7 @@ library
       Httpstructure
       Lib
       Logger
+      Mobject
       Myutils
       Order
       Passwd
@@ -84,6 +85,7 @@ library
     , containers
     , entropy
     , eventful-core
+    , hashmap
     , hedis
     , hslogger
     , lens
@@ -136,6 +138,7 @@ executable trade-exe
     , containers
     , entropy
     , eventful-core
+    , hashmap
     , hedis
     , hslogger
     , lens
@@ -190,6 +193,7 @@ test-suite trade-test
     , containers
     , entropy
     , eventful-core
+    , hashmap
     , hedis
     , hslogger
     , lens

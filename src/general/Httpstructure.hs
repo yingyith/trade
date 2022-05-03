@@ -40,6 +40,7 @@ import qualified Data.ByteString.Lazy as BLL
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.UTF8 as BL
 import qualified Network.HTTP.Base as NTB
+import qualified Data.HashMap  as DHM
 import Data.ByteString.Lazy.UTF8 as BLU
 import Data.ByteString.Internal (unpackBytes)
 import Data.Aeson as A
@@ -396,18 +397,18 @@ getmsilist :: Mseries -> [HStick]
 getmsilist (Mseries t ) = t
 getmsilist (Mseries _ ) = []
 
-getlistfrdep :: Depseries -> (Int, ([(Double,BL.ByteString)],[(Double,BL.ByteString)]))
+getlistfrdep :: Depseries -> (Int, ([(BL.ByteString,Double)],[(BL.ByteString,Double)]))
 getlistfrdep (Depseries a ) = a 
 --instance  Show Mseries 
 
-data Depseries = Depseries   (Int ,([(Double,BL.ByteString)],[(Double,BL.ByteString)]))  deriving (Show,Generic) 
+data Depseries   = Depseries   (Int ,([(BL.ByteString,Double)],[(BL.ByteString,Double)]))  deriving (Show,Generic) 
 
-data Wdepseries = Wdepseries {
+data Wdepseries  = Wdepseries {
       depu  :: Int,
       depU  :: Int,
       deppu :: Int,
-      bidsh :: [(Double,BL.ByteString)],
-      asksh :: [(Double,BL.ByteString)]
+      bidsh :: [(BL.ByteString,Double)],
+      asksh :: [(BL.ByteString,Double)]
 } deriving (Show,Generic) 
 
 instance FromJSON Wdepseries where 
@@ -416,7 +417,6 @@ instance FromJSON Wdepseries where
       depthevtdataa     <-  o .: "stream" :: Parser String
       let depthdata     = depthdataa 
       let depthevtdata  = depthevtdataa 
-
       uutimeee                 <- depthdata .: "U" 
       utimeee                  <- depthdata .: "u" 
       putimeee                 <- depthdata .: "pu" 
@@ -427,13 +427,16 @@ instance FromJSON Wdepseries where
       asklist      <- depthdata .: "a"  
       bidsListo    <- mapM parseJSON $ V.toList bidlist
       asksListo    <- mapM parseJSON $ V.toList asklist
-      let bidsList = listranform bidsListo
-      let asksList = listranform asksListo
+      let bidsList = listranformsnd bidsListo
+      let asksList = listranformsnd asksListo
       return $ Wdepseries uutimee utimee putimee bidsList asksList 
     parseJSON _ = mzero
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
-listranform al = [ (read (i!!1)::Double, BLL.toStrict $ BLU.fromString (i!!0) )|i<-al ] 
+listranform al = [ ( (read (i!!1)) :: Double, BLL.toStrict $ BLU.fromString (i!!0)) |i<-al] 
+
+listranformsnd :: [[String]] -> [(BL.ByteString,Double)]
+listranformsnd al = [ (BLL.toStrict $ BLU.fromString (i!!0)  , (read (i!!1)) :: Double) |i<-al] 
 
 instance FromJSON Depseries where 
     parseJSON (Object o) = do
@@ -442,8 +445,8 @@ instance FromJSON Depseries where
        lastupdid <- o .: "lastUpdateId"
        bidsListo <- mapM parseJSON $ V.toList bids
        asksListo <- mapM parseJSON $ V.toList asks
-       let bidsList = listranform bidsListo
-       let asksList = listranform asksListo
+       let bidsList = listranformsnd bidsListo
+       let asksList = listranformsnd asksListo
        return $ Depseries (lastupdid,(bidsList,asksList))
     parseJSON _ = mzero
 
@@ -509,6 +512,7 @@ instance FromJSON Klinedata where
               <*> ((o .: "data") >>= (.: "k") >>= (.: "t"))
   parseJSON _ = mzero
 
+    
 --instance FromJSON Websocketdata where 
 --  parseJSON (Object o) = 
 --    Websocketdata <$> (o .: "e")

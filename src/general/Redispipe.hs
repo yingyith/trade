@@ -49,6 +49,7 @@ import Data.Text.Encoding
 import System.IO as SI
 import Data.Aeson as A
 import Data.Aeson.Lens as DAL
+import qualified Data.HashMap  as DHM
 import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.List.Split as DLT
 import qualified Data.ByteString.Char8 as B
@@ -74,6 +75,8 @@ import Events
 import Logger
 import Colog (LogAction,logByteStringStdout)
 import Redisutils
+import qualified Analysistructure as Anlys
+import Mobject
 
 
 replydo :: Integer -> Redis (Either Reply [ByteString], Either Reply [ByteString])
@@ -424,8 +427,8 @@ opclHandler tbq  channel  msg = do
               let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
               addeventtotbqueue aevent tbq
 
-detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> IO () 
-detailanalysHandler tbq conn = do 
+detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthset) -> IO () 
+detailanalysHandler tbq conn tdepth = do 
     iterateM_  ( \lastetype -> do
         logact logByteStringStdout $ B.pack $ show ("analys thread!")
         res <- atomically $ readTBQueue tbq
@@ -436,22 +439,55 @@ detailanalysHandler tbq conn = do
         let et = ectype res
         let etcont = eccont res
 
-        when (et == "forward") $  do 
+        when (et == "forward")   $  do 
               mseriesFromredis conn etcont--get all mseries from redis 
 
-        when (et == "klinetor") $  do 
+        when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
 
         when (et == "depthtor") $  do 
-              let originmsg = BL.fromStrict etcont
-              let ressheet =  (A.decode originmsg) :: (Maybe Wdepseries)
-              liftIO $ logact logByteStringStdout $ B.pack $ show ("depthtor is ----- !",ressheet)
-              return ()
+              let originmsg       =  BL.fromStrict etcont
+              let ressheeto        =  (A.decode originmsg) :: (Maybe Wdepseries)
+              case ressheeto of 
+                 Nothing -> return ()
+                 _       -> do 
+                    let ressheet = fromJust ressheeto
+                    let curdepthu       =  depu  ressheet 
+                    let curdepthU       =  depU  ressheet
+                    let curdepthpu      =  deppu ressheet
+                    let curdepthbidset  =  DHM.fromList $  bidsh ressheet
+                    let curdepthaskset  =  DHM.fromList $  asksh ressheet
+                    befdepth <- readTVarIO tdepth
+                    let befdepthu       = Anlys.depu  befdepth 
+                    let befdepthU       = Anlys.depU  befdepth
+                    let befdepthpu      = Anlys.deppu befdepth
+                    let befdepthbidset  = Anlys.bidset befdepth
+                    let befdepthaskset  = Anlys.askset befdepth
+                    let newhttppredi    =  befdepthpu == 0
+                    let bulessthanpredi =  curdepthU < befdepthu 
+                    let ubigthanpredi   =  curdepthu > befdepthu 
+                    let continuprei     =  curdepthpu == befdepthu
+                    case (newhttppredi,bulessthanpredi,ubigthanpredi,continuprei) of 
+                         (_       ,_       ,_      ,True ) -> do      --start merge
+                                  let newbidhm = DHM.union curdepthbidset befdepthbidset 
+                                  let newaskhm = DHM.union curdepthaskset befdepthaskset 
+                                  let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
+                                  atomically  $ writeTVar tdepth newdepthdata  
+                                  logact logByteStringStdout $ B.pack $ show ("depth merge-- !",newdepthdata)
+
+                         (_       ,_       ,_      ,_    ) -> do      --need resync 
+                                  depthdata <- initupddepth conn
+                                  atomically  $ writeTVar tdepth depthdata  
+                                  logact logByteStringStdout $ B.pack $ show ("depth new-- !")
+                        
+
+
+                    return ()
 
         return et)  ""
 
-sndklinetoredis :: ByteString -> Redis ()
-sndklinetoredis msg  = do 
+sndklinetoredis ::  ByteString -> Redis ()
+sndklinetoredis  msg  = do 
     let mmsg = BL.fromStrict msg
     let test = A.decode mmsg :: Maybe Klinedata --Klinedata
     let abykeystr = BLU.fromString secondkey 
@@ -469,8 +505,8 @@ sndklinetoredis msg  = do
     void $ zadd abykeystr [(-kt,abyvaluestr)]
     void $ zremrangebyrank abykeystr 150 1000
       
-sndtocacheHandler :: TBQueue Cronevent -> RedisChannel -> ByteString -> IO ()
-sndtocacheHandler tbq channel  msg = do 
+sndtocacheHandler :: TBQueue Cronevent -> (TVar Anlys.Depthset)  -> RedisChannel -> ByteString -> IO ()
+sndtocacheHandler tbq tdepth channel  msg = do 
       let strturple = BL.fromStrict    msg
       let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
       let detdata = wsdata $ fromJust restmsg
@@ -484,8 +520,8 @@ sndtocacheHandler tbq channel  msg = do
            addoeventtotbqueue aevent tbq
 
       
-analysisHandler :: TBQueue Cronevent  ->  RedisChannel -> ByteString -> IO ()
-analysisHandler tbq   channel msg = do 
+analysisHandler :: TBQueue Cronevent -> (TVar Anlys.Depthset)  ->  RedisChannel -> ByteString -> IO ()
+analysisHandler tbq tdepth  channel msg = do 
       let aevent = Cronevent "forward" msg 
       addoeventtotbqueue aevent tbq
 
