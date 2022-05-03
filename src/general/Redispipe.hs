@@ -468,6 +468,13 @@ detailanalysHandler tbq conn tdepth = do
                     let ubigthanpredi   =  curdepthu > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
                     case (newhttppredi,bulessthanpredi,ubigthanpredi,continuprei) of 
+                         (_    ,True    ,True    ,_ ) -> do      --start merge
+                                  let newbidhm = DHM.union curdepthbidset befdepthbidset 
+                                  let newaskhm = DHM.union curdepthaskset befdepthaskset 
+                                  let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
+                                  atomically  $ writeTVar tdepth newdepthdata  
+                                  logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
+
                          (_       ,_       ,_      ,True ) -> do      --start merge
                                   let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                   let newaskhm = DHM.union curdepthaskset befdepthaskset 
