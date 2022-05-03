@@ -468,6 +468,7 @@ detailanalysHandler tbq conn tdepth = do
                     let ubigthanpredi   =  curdepthu > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
                     logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,newhttppredi,bulessthanpredi,ubigthanpredi,continuprei )
+                    logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,curdepthU,curdepthu,curdepthpu )
                     case (newhttppredi,bulessthanpredi,ubigthanpredi,continuprei) of 
                          (_    ,True    ,True    ,_ ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
