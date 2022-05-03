@@ -468,9 +468,9 @@ detailanalysHandler tbq conn tdepth = do
                     let ubigthanpredi   =  curdepthu > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
                     logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,newhttppredi,bulessthanpredi,ubigthanpredi,continuprei )
-                    logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,curdepthU,curdepthu,curdepthpu )
+                    logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,befdepthu,curdepthU,curdepthu,curdepthpu )
                     case (newhttppredi,bulessthanpredi,ubigthanpredi,continuprei) of 
-                         (_    ,True    ,True    ,_ ) -> do      --start merge
+                         (_    ,True    ,True    ,_   ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
                                let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
@@ -488,8 +488,6 @@ detailanalysHandler tbq conn tdepth = do
                                depthdata <- initupddepth conn
                                atomically  $ writeTVar tdepth depthdata  
                                logact logByteStringStdout $ B.pack $ show ("depth new-- !"  ,curdepthpu,befdepthu)
-                        
-
 
                     return ()
 
