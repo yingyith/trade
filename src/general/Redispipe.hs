@@ -473,12 +473,12 @@ detailanalysHandler tbq conn tdepth = do
                                   let newaskhm = DHM.union curdepthaskset befdepthaskset 
                                   let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
                                   atomically  $ writeTVar tdepth newdepthdata  
-                                  logact logByteStringStdout $ B.pack $ show ("depth merge-- !",newdepthdata)
+                                  logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
                          (_       ,_       ,_      ,_    ) -> do      --need resync 
                                   depthdata <- initupddepth conn
                                   atomically  $ writeTVar tdepth depthdata  
-                                  logact logByteStringStdout $ B.pack $ show ("depth new-- !")
+                                  logact logByteStringStdout $ B.pack $ show ("depth new-- !",curdepthpu,befdepthu)
                         
 
 
