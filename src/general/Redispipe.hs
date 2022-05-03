@@ -458,34 +458,35 @@ detailanalysHandler tbq conn tdepth = do
                     let curdepthbidset  =  DHM.fromList $  bidsh ressheet
                     let curdepthaskset  =  DHM.fromList $  asksh ressheet
                     befdepth <- readTVarIO tdepth
-                    let befdepthu       = Anlys.depu  befdepth 
-                    let befdepthU       = Anlys.depU  befdepth
-                    let befdepthpu      = Anlys.deppu befdepth
-                    let befdepthbidset  = Anlys.bidset befdepth
-                    let befdepthaskset  = Anlys.askset befdepth
+                    let befdepthu       =  Anlys.depu  befdepth 
+                    let befdepthU       =  Anlys.depU  befdepth
+                    let befdepthpu      =  Anlys.deppu befdepth
+                    let befdepthbidset  =  Anlys.bidset befdepth
+                    let befdepthaskset  =  Anlys.askset befdepth
                     let newhttppredi    =  befdepthpu == 0
                     let bulessthanpredi =  curdepthU < befdepthu 
                     let ubigthanpredi   =  curdepthu > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
+                    logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,newhttppredi,bulessthanpredi,ubigthanpredi,continuprei )
                     case (newhttppredi,bulessthanpredi,ubigthanpredi,continuprei) of 
                          (_    ,True    ,True    ,_ ) -> do      --start merge
-                                  let newbidhm = DHM.union curdepthbidset befdepthbidset 
-                                  let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                                  let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
-                                  atomically  $ writeTVar tdepth newdepthdata  
-                                  logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
+                               let newbidhm = DHM.union curdepthbidset befdepthbidset 
+                               let newaskhm = DHM.union curdepthaskset befdepthaskset 
+                               let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
+                               atomically  $ writeTVar tdepth newdepthdata  
+                               logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
-                         (_       ,_       ,_      ,True ) -> do      --start merge
-                                  let newbidhm = DHM.union curdepthbidset befdepthbidset 
-                                  let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                                  let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
-                                  atomically  $ writeTVar tdepth newdepthdata  
-                                  logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
+                         (_    ,_       ,_      ,True ) -> do      --start merge
+                               let newbidhm = DHM.union curdepthbidset befdepthbidset 
+                               let newaskhm = DHM.union curdepthaskset befdepthaskset 
+                               let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
+                               atomically  $ writeTVar tdepth newdepthdata  
+                               logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
-                         (_       ,_       ,_      ,_    ) -> do      --need resync 
-                                  depthdata <- initupddepth conn
-                                  atomically  $ writeTVar tdepth depthdata  
-                                  logact logByteStringStdout $ B.pack $ show ("depth new-- !",curdepthpu,befdepthu)
+                         (_    ,_       ,_      ,_    ) -> do      --need resync 
+                               depthdata <- initupddepth conn
+                               atomically  $ writeTVar tdepth depthdata  
+                               logact logByteStringStdout $ B.pack $ show ("depth new-- !"  ,curdepthpu,befdepthu)
                         
 
 
