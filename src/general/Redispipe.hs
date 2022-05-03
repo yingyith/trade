@@ -463,7 +463,7 @@ detailanalysHandler tbq conn tdepth = do
                     let befdepthpu      =  Anlys.deppu befdepth
                     let befdepthbidset  =  Anlys.bidset befdepth
                     let befdepthaskset  =  Anlys.askset befdepth
-                    let newhttppredi    =  befdepthpu == 0
+                    let newhttppredi    =  befdepthu == 0
                     let bulessthanpredi =  curdepthU < befdepthu 
                     let ubigthanpredi   =  curdepthu > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
