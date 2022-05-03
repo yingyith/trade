@@ -429,7 +429,7 @@ instance FromJSON Wdepseries where
       asksListo    <- mapM parseJSON $ V.toList asklist
       let bidsList = listranformsnd bidsListo
       let asksList = listranformsnd asksListo
-      return $ Wdepseries uutimee utimee putimee bidsList asksList 
+      return $ Wdepseries utimee uutimee putimee bidsList asksList 
     parseJSON _ = mzero
 
 listranform :: [[String]] -> [(Double,BL.ByteString)]
