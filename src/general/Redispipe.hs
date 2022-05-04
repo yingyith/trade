@@ -280,7 +280,6 @@ detailopHandler tbq conn = do
               case (et == lastetype) of  
                  False -> do
                             (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
-                            logact logByteStringStdout $ B.pack $ show ("aft bopen!")
                             case res of 
                                True  -> takeorder "BUY" lastquan apr
                                False -> return () 
@@ -308,17 +307,14 @@ detailopHandler tbq conn = do
               runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
 
         when (et == "acupd") $ do 
-              logact logByteStringStdout $ B.pack $ show ("befacupd!")
               runRedis conn (acupdtorediszset etquan etpr etimee )
-              logact logByteStringStdout $ B.pack $ show ("aftacupd!")
 
         when (et == "fill") $ do 
               runRedis conn (endordertorediszset etquan etpr etimee curtime)  
 
         when (et == "init") $ do 
-              logact logByteStringStdout $ B.pack $ show ("bef init!")
-              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
               logact logByteStringStdout $ B.pack $ show ("aft init!")
+              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
 
         logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
@@ -377,7 +373,7 @@ opclHandler tbq  channel  msg = do
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = T.unpack $ outString eventstr 
-         logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
+        -- logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               --logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
@@ -419,7 +415,7 @@ opclHandler tbq  channel  msg = do
               let usdtbalo    = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    )).key "cw"    -- !!0  
               let orderposo   = detdata ^.. key "a" .key "P" .values.filtered (has (key "s"._String.only "ADAUSDT" )).key "pa"    -- !!0
               let orderpro    = detdata ^.. key "a" .key "P" .values.filtered (has (key "s"._String.only "ADAUSDT" )).key "ep"    -- !!0
-              logact logByteStringStdout $ B.pack  $ show ("acupdate ---------",usdtbalo,orderposo,orderpro)
+          --    logact logByteStringStdout $ B.pack  $ show ("acupdate ---------",usdtbalo,orderposo,orderpro)
               --let usdtbalo    = read $ T.unpack $ outString $ fromJust usdtbalo  :: Int 
               let orderpos    = read $ T.unpack $ outString $ (!!0)  orderposo :: Integer
               let usdtbal     = round (read $ T.unpack $ outString $ (!!0)  usdtbalo :: Double) :: Int
@@ -467,27 +463,27 @@ detailanalysHandler tbq conn tdepth = do
                     let bulessthanpredi =  curdepthU < befdepthu 
                     let ubigthanpredi   =  curdepthu > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
-                    logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,newhttppredi,bulessthanpredi,ubigthanpredi,continuprei )
-                    logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,befdepthu,curdepthU,curdepthu,curdepthpu )
+           --         logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,newhttppredi,bulessthanpredi,ubigthanpredi,continuprei )
+            --        logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,befdepthu,curdepthU,curdepthu,curdepthpu )
                     case (newhttppredi,bulessthanpredi,ubigthanpredi,continuprei) of 
                          (_    ,True    ,True    ,_   ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
                                let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
-                               logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
+           --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
                          (_    ,_       ,_      ,True ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
                                let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
-                               logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
+           --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
                          (_    ,_       ,_      ,_    ) -> do      --need resync 
                                depthdata <- initupddepth conn
                                atomically  $ writeTVar tdepth depthdata  
-                               logact logByteStringStdout $ B.pack $ show ("depth new-- !"  ,curdepthpu,befdepthu)
+           --                    logact logByteStringStdout $ B.pack $ show ("depth new-- !"  ,curdepthpu,befdepthu)
 
                     return ()
 
