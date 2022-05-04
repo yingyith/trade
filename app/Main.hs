@@ -196,7 +196,7 @@ ws connection = do
     connn <- connect defaultConnectInfo
     connnn <- connect defaultConnectInfo
     connnnn <- connect defaultConnectInfo
-    --initbal conn
+    initbal conn
     depthdata <- initupddepth conn
 
     depthtvar <-newTVarIO depthdata
