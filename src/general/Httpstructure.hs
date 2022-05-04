@@ -149,7 +149,7 @@ queryorder = do
       let result = responseBody response :: Value
       let borders = (result^..values.filtered (has (key "side"._String.only "BUY"))) 
       let sorders = (result^..values.filtered (has (key "side"._String.only "SELL"))) 
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
+      --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return (borders,sorders)
 
 querypos :: IO ([Value])
@@ -176,7 +176,7 @@ querypos = do
       response  <- areq
       let result = responseBody response :: Value
       let borders = (result^..values.filtered (has (key "symbol"._String.only "ADAUSDT"))) 
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querypos ----",borders,"+++++")
+      --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querypos ----",borders,"+++++")
       return borders
 
 queryforder :: IO ()
@@ -205,7 +205,7 @@ queryforder = do
       let result = responseBody response :: Value
       let borders = (result^..values.filtered (has (key "side"._String.only "BUY"))) 
       let sorders = (result^..values.filtered (has (key "side"._String.only "SELL"))) 
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
+      --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return ()
 
 --querydepth :: IO ((Maybe Value,Maybe Value))
@@ -237,7 +237,7 @@ querydepth = do
       let ressheet =  (A.decode result) :: Maybe Depseries
      -- let asks =  (A.decode result) :: Maybe Depseries
       --let dreq = DpairMserie nstr creq 
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",result)
+      --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",result)
       return ressheet
 
 cancelorder :: String -> IO ()

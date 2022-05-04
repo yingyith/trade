@@ -154,6 +154,7 @@ initbal conn = do
     currtime <- getcurtimestamp 
     let curtime = fromInteger currtime ::Double
     (quan,pr) <- funcgetposinf qrypos
+    logact logByteStringStdout $ B.pack $ show (quan==0,bqryord,sqryord,"init bal---!")
     case (quan==0,bqryord,sqryord) of 
        (True  ,[] ,[] ) ->  do
                              let astate = show $ fromEnum Done
