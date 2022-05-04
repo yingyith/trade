@@ -82,7 +82,7 @@ crossminstra abc pr = do
                       x|x==6        -> (quanlist !! 4)
                       _             -> 0
     let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
-    let largeminsupportpredi  = (> 140) $ fst $ fst $ (!! (2)) abc    --transfer this grid to the redis order record can be used as 
+    let largeminsupportpredi  = (> 120) $ fst $ fst $ (!! (2)) abc    --transfer this grid to the redis order record can be used as 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
@@ -139,16 +139,16 @@ minrule ahll pr interval  = do
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
    let gridspan         = ( (fst maxhigh) ,(fst minlow))
    let griddiff         = (fst maxhigh)-(fst minlow)
-   let fastuppredi      =  (1   >=   (snd maxhigh)) 
-   let fastdownpredi    =  (1   >=   (snd minlow ))
-   let fastprevuppredi  =  (1   >=   (snd maxhigh)) &&  (interval == "15m") --need 3m support 
-   let fastprevdopredi  =  (1   >=   (snd minlow )) &&  (interval == "15m") --need 3m support
+   let fastuppredi      =  (0   >=   (snd maxhigh)) 
+   let fastdownpredi    =  (0   >=   (snd minlow ))
+   let fastprevuppredi  =  (1   ==   (snd maxhigh))  --need 3m support 
+   let fastprevdopredi  =  (1   ==   (snd minlow ))  --need 3m support
    let openpos          = case pr of 
                              x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.125
                              x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.25 
                              x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.5                                 
-                             x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 1                                
-                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.125                               
+                             x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 0.8                                
+                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.8                               
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
    rsiindexf <- getrsi ahl 8
    let indexlentwo = case (fst rsiindexf) of 
