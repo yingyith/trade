@@ -204,7 +204,7 @@ publishThread rc wc tvar ptid = do
       let timecountpred = (timecounta - timecountb) > 60000
       let intervalcbpred = intervalcb == 0
       matchoevt  <- matchmsgfun message
-
+      liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"befprediis----")                            
       returnres  <-  case (timecountpred,intervalcbpred) of 
                             (True ,True )   -> do
                                                    sendpongdo wc
