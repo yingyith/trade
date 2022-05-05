@@ -99,30 +99,18 @@ ispinginvalid = True
 isstrategyinvalid ::         Bool  
 isstrategyinvalid = True
 
-msgcacheandpingtempdo :: Integer -> ByteString -> NC.Connection-> Redis ()
-msgcacheandpingtempdo a msg wc = do
-        case compare a 60000 of -- 300000= 5min
-            GT -> do 
-              void $ publish "minc:1" ("cache" <> msg)
-              void $ publish "listenkey:1" ("listenkey" <> msg)
-             -- NC.sendPong wc
-            EQ ->
-              return ()
-            LT ->
-              return ()
+msgcacheandpingtempdo :: ByteString -> NC.Connection-> Redis ()
+msgcacheandpingtempdo msg wc = do
+    liftIO $ logact logByteStringStdout "bef cache -----------!"                             
+    void $ publish "minc:1" ("cache" <> msg)
+    void $ publish "listenkey:1" ("listenkey" <> msg)
 
 
-sendpongdo :: Integer -> NC.Connection -> IO ()
-sendpongdo a conn = do
-        case compare a 60000 of -- 300000= 5min
-            GT -> do 
-                  sendPong conn (T.pack $ show "")
-                  sendPing conn (T.pack $ show "")
-                  sendPong conn (T.pack $ show "")
-            EQ ->
-              return ()
-            LT ->
-              return ()
+sendpongdo :: NC.Connection -> IO ()
+sendpongdo conn = do
+    sendPong conn (T.pack $ show "")
+    sendPing conn (T.pack $ show "")
+    sendPong conn (T.pack $ show "")
           
 
 matchmsgfun :: ByteString -> IO String
@@ -181,7 +169,7 @@ depthtoredis iteml side = do
                                            "asks" -> askdepth 
       void $ zadd abykeystr iteml
 
-msgklinedoredis :: Integer -> ByteString -> NC.Connection   ->  Redis Integer
+msgklinedoredis :: Integer -> ByteString -> NC.Connection   ->  Redis ()
 msgklinedoredis curtimestamp msg wc= do 
       res <- replydo curtimestamp 
       let klineitem = fst res
@@ -199,8 +187,7 @@ msgklinedoredis curtimestamp msg wc= do
       let timediffi = curtimestamp-replydores
       msgsklinetoredis msg curtimestamp
       void $ publish "analysis:1" ( msg)
-      msgcacheandpingtempdo timediffi msg wc 
-      return timediffi
+      return ()
       
       
 
@@ -209,27 +196,49 @@ getliskeyfromredis =  return ()
 
 publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread rc wc tvar ptid = do 
-    forever $ do
+    iterateM_  ( \(timecountb,intervalcb) -> do
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
-      matchoevt <- matchmsgfun message
+      let timecounta   = (curtimestamp `mod` 60000) 
+      let timecountpred = (timecounta - timecountb) > 60000
+      let intervalcbpred = intervalcb == 0
+      matchoevt  <- matchmsgfun message
+
+      returnres  <-  case (timecountpred,intervalcbpred) of 
+                            (True ,True )   -> do
+                                                   sendpongdo wc
+                                                   runRedis rc (msgcacheandpingtempdo  message wc )
+                                                   return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
+                            (True ,False)   -> do  
+                                                   return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
+                            (False,True )   -> do  
+                                                   return (timecountb,0)
+                            (False,False)   -> do 
+                                                   return (timecountb,0)--reset intercalcount
+
+
+
       when (matchoevt == "kline") $ do
-           timediff <- runRedis rc (msgklinedoredis curtimestamp message wc)
-           sendpongdo timediff  wc
+           runRedis rc (msgklinedoredis curtimestamp message wc)
 
 
       when (matchoevt == "or" || matchoevt == "ac" || matchoevt == "no") $ do
            runRedis rc $ do 
-                            res <- replydo curtimestamp 
-                            let orderitem = snd res
-                            let orderdet  = case orderitem of
-                                  Left _  ->  "some error"
-                                  Right v ->   (v!!0)
-                            msgordertempdo message orderdet
+               res <- replydo curtimestamp 
+               let orderitem = snd res
+               let orderdet  = case orderitem of
+                     Left _  ->  "some error"
+                     Right v ->   (v!!0)
+               msgordertempdo message orderdet
 
       when (matchoevt == "depth") $ do
-           runRedis rc (void $ publish "depth:1" ( message))
+           runRedis rc $ do 
+               void $ publish "depth:1" ( message)
+
+
+
+      return returnres )  (0,0)
       
 
 onInitialComplete :: IO ()
@@ -427,13 +436,13 @@ detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthse
 detailanalysHandler tbq conn tdepth = do 
     iterateM_  ( \lastetype -> do
         logact logByteStringStdout $ B.pack $ show ("analys thread!")
-        res <- atomically $ readTBQueue tbq
-        tbqlen <- atomically $ lengthTBQueue tbq
+        res      <- atomically $ readTBQueue tbq
+        tbqlen   <- atomically $ lengthTBQueue tbq
         logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
         let curtime = fromInteger currtime ::Double
-        let et = ectype res
-        let etcont = eccont res
+        let et      = ectype res
+        let etcont  = eccont res
 
         when (et == "forward")   $  do 
               mseriesFromredis conn etcont--get all mseries from redis 
@@ -441,8 +450,8 @@ detailanalysHandler tbq conn tdepth = do
         when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
 
-        when (et == "depthtor") $  do 
-              let originmsg       =  BL.fromStrict etcont
+        when (et == "depthtor")  $  do 
+              let originmsg        =  BL.fromStrict etcont
               let ressheeto        =  (A.decode originmsg) :: (Maybe Wdepseries)
               case ressheeto of 
                  Nothing -> return ()
@@ -459,9 +468,9 @@ detailanalysHandler tbq conn tdepth = do
                     let befdepthpu      =  Anlys.deppu befdepth
                     let befdepthbidset  =  Anlys.bidset befdepth
                     let befdepthaskset  =  Anlys.askset befdepth
-                    let newhttppredi    =  befdepthu == 0
-                    let bulessthanpredi =  curdepthU < befdepthu 
-                    let ubigthanpredi   =  curdepthu > befdepthu 
+                    let newhttppredi    =  befdepthu  == 0
+                    let bulessthanpredi =  curdepthU  < befdepthu 
+                    let ubigthanpredi   =  curdepthu  > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
            --         logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,newhttppredi,bulessthanpredi,ubigthanpredi,continuprei )
             --        logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,befdepthu,curdepthU,curdepthu,curdepthpu )
@@ -469,14 +478,16 @@ detailanalysHandler tbq conn tdepth = do
                          (_    ,True    ,True    ,_   ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                               let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
+                               let newinterhm = DHM.intersection newbidhm  newaskhm
+                               let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newinterhm newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
            --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
                          (_    ,_       ,_      ,True ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                               let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newbidhm newaskhm
+                               let newinterhm = DHM.intersection newbidhm  newaskhm
+                               let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newinterhm newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
            --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
@@ -532,6 +543,7 @@ mintocacheHandler :: RedisChannel -> ByteString -> IO ()
 mintocacheHandler channel msg = do 
       --liftIO $ print ("start cache ++++++++++++++++++++++++++++++++++++++++++++")
       conn <- connect defaultConnectInfo
+      --how to control the interval
       minSticksToCache conn
       debugtime
       --SI.hPutStrLn stderr $ "Saw pmsg: " ++ unpack (decodeUtf8 channel) ++ unpack (decodeUtf8 msg)

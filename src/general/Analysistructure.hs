@@ -33,14 +33,42 @@ import Globalvar
 
 
 data Depthset = Depthset {
-      depu   :: Int,
-      depU   :: Int,
-      deppu  :: Int,
-      bidset :: DHM.Map BL.ByteString Double ,------[(Double,BL.ByteString)],
-      askset :: DHM.Map BL.ByteString Double                      --[(Double,BL.ByteString)]
+      depu       :: Int,
+      depU       :: Int,
+      deppu      :: Int,
+      intersset  :: DHM.Map BL.ByteString Double ,
+      bidset     :: DHM.Map BL.ByteString Double ,------[(Double,BL.ByteString)],
+      askset     :: DHM.Map BL.ByteString Double                      --[(Double,BL.ByteString)]
 } deriving (Show,Generic) 
 
 
+depthmidpr :: DHM.Map BL.ByteString Double ->  DHM.Map BL.ByteString Double -> DHM.Map BL.ByteString Double
+depthmidpr a  b  = DHM.intersection a  b
+
+getcurpraccu ::  Depthset -> Int     
+getcurpraccu ordepth = 1 
+     
+
+
+getdepthweight :: Double -> Double -> Int
+getdepthweight bcount acount = do 
+     case (bcount-acount)/(max bcount acount) of 
+         x|x<(diffspreadsheet!!1) && x>(diffspreadsheet!!0)  -> (depthrisksheet !! 0)
+         x|x<(diffspreadsheet!!2) && x>(diffspreadsheet!!1)  -> (depthrisksheet !! 1)
+         x|x<(diffspreadsheet!!3) && x>(diffspreadsheet!!2)  -> (depthrisksheet !! 2)
+         x|x<(diffspreadsheet!!4) && x>(diffspreadsheet!!3)  -> (depthrisksheet !! 3)
+         x|x<(diffspreadsheet!!5) && x>(diffspreadsheet!!4)  -> (depthrisksheet !! 4)
+         x|x<(diffspreadsheet!!6) && x>(diffspreadsheet!!5)  -> (depthrisksheet !! 5)
+         x|x<(diffspreadsheet!!7) && x>(diffspreadsheet!!6)  -> (depthrisksheet !! 6)
+         x|x<(diffspreadsheet!!8) && x>(diffspreadsheet!!7)  -> (depthrisksheet !! 7)
+         _                                                   -> (depthrisksheet !! 0)
+
+diffspreadsheet :: [Double]
+diffspreadsheet = [-0.1 ,0.1  ,0.2  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
+
+depthrisksheet :: [Int] 
+depthrisksheet = [-2000  ,100  ,200  ,300  ,400  ,600  ,800  , 1000  ]   -- 
+                 
 
 data Hlnode = Hlnode {
               time   :: Integer ,       
