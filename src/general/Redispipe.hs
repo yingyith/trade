@@ -204,18 +204,21 @@ publishThread rc wc tvar ptid = do
       let timecountpred = (timecounta - timecountb) > 60000
       let intervalcbpred = intervalcb == 0
       matchoevt  <- matchmsgfun message
-      liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"befprediis----")                            
       returnres  <-  case (timecountpred,intervalcbpred) of 
-                            (True ,True )   -> do
-                                                   sendpongdo wc
-                                                   runRedis rc (msgcacheandpingtempdo  message wc )
-                                                   return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
-                            (True ,False)   -> do  
-                                                   return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
-                            (False,True )   -> do  
-                                                   return (timecountb,0)
-                            (False,False)   -> do 
-                                                   return (timecountb,0)--reset intercalcount
+           (True ,True )   -> do
+                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timepass----")                            
+                                  sendpongdo wc
+                                  runRedis rc (msgcacheandpingtempdo  message wc )
+                                  return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
+           (True ,False)   -> do  
+                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timepassc----")                            
+                                  return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
+           (False,True )   -> do  
+                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timenotpass----")                            
+                                  return (timecountb,0)
+           (False,False)   -> do 
+                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timenotpass----")                            
+                                  return (timecountb,0)--reset intercalcount
 
 
 
