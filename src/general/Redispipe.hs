@@ -302,7 +302,7 @@ detailopHandler tbq conn = do
               case (et == lastetype) of  
                  False -> do
                               case res of 
-                                 True  -> takeorder "SELL" (lastquan-300) apr
+                                 True  -> takeorder "SELL" (lastquan) apr
                                  False -> return () 
                  True  -> return ()
 
@@ -371,7 +371,8 @@ opclHandler tbq  channel  msg = do
               addeventtotbqueue aevent tbq
 
          let accugridlevel = case orderquan of 
-                                  x|x<=1000           -> 4
+                                  x|x<=500            -> 4
+                                  x|x<=1000&&x>500    -> 4
                                   x|x<=2000&&x>1000   -> 10
                                   x|x<=4000&&x>2000   -> 22
                                   x|x<=8000&&x>4000   -> 50

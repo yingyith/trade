@@ -64,7 +64,7 @@ crossminstra abc pr = do
     let itemindex = sum $ DT.take (maxindex-1) grouplist
     let itemlen = DT.length item
     let remainlist = (DT.drop (maxindex+itemlen) abc) ++ (DT.take maxindex abc ) 
-    let itempredi = (itemlen >= 3)
+    let itempredi = (itemlen >= 2)
     let maxindexpredi = maxindex == 0
     let openpredi = maxindexpredi && itempredi 
     let resquan = (sum  [fst $ fst x|x<-abc])
@@ -72,9 +72,10 @@ crossminstra abc pr = do
     let fallklineindex = maxindex+itemlen-1
     let aindex = case fallklineindex of 
                     x|x>=4          -> 4
-                    x|(x>=2 || x<4) -> x
+                    x|(x>=1 || x<4) -> x
 
     let resquan = case fallklineindex of 
+                      x|x==1        -> (quanlist !! 0)
                       x|x==2        -> (quanlist !! 0)
                       x|x==3        -> (quanlist !! 1)
                       x|x==4        -> (quanlist !! 2)
@@ -82,14 +83,25 @@ crossminstra abc pr = do
                       x|x==6        -> (quanlist !! 4)
                       _             -> 0
     let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
-    let largeminsupportpredi  = (> 120) $ fst $ fst $ (!! (2)) abc    --transfer this grid to the redis order record can be used as 
+    let fstminsupportpredi  = (>  100) $ fst $ fst $ (!! (2)) abc    --transfer this grid to the redis order record can be used as 
+    let sndminsupportpredi  = (> -120) $ fst $ fst $ (!! (3)) abc    --transfer this grid to the redis order record can be used as 
+    let thdminsupportpredi  = (> -120) $ fst $ fst $ (!! (4)) abc    --transfer this grid to the redis order record can be used as 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
-    liftIO $ logact logByteStringStdout $ B.pack $ show (maxindexpredi , itempredi,lowpredi,largeminsupportpredi,aindex)
-    let openpredi = maxindexpredi && itempredi && lowpredi &&largeminsupportpredi
-    let newgrid = max (grid - (pr-lowp)) 0.001
+    liftIO $ logact logByteStringStdout $ B.pack $ show (maxindexpredi , itempredi,lowpredi,fstminsupportpredi,aindex)
+    let openpredi = maxindexpredi && itempredi && lowpredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi
+    let stopprofitgrid = case fallklineindex of 
+                      x|x==1        -> (stopprofitlist !! 0)
+                      x|x==2        -> (stopprofitlist !! 1)
+                      x|x==3        -> (stopprofitlist !! 2)
+                      x|x==4        -> (stopprofitlist !! 3)
+                      x|x==5        -> (stopprofitlist !! 4)
+                      x|x==6        -> (stopprofitlist !! 5)
+                      _             -> 0
+                            
+    let newgrid = max (grid - (pr-lowp)) stopprofitgrid
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 

@@ -19,6 +19,7 @@ module Globalvar (
     holdprkey,
     minquan,
     quanlist,
+    stopprofitlist,
     depthkey,
     biddepth,
     askdepth,
@@ -29,7 +30,10 @@ defintervallist :: [String]
 defintervallist = ["3m","5m","15m","1h","4h","12h","3d"] 
 
 quanlist :: [Int]
-quanlist = [1300,2300,4300,8300,15300] -- 15m,1h,4h,12h
+quanlist = [400,1300,2300,4300,8300,15300] -- 15m,1h,4h,12h
+
+stopprofitlist :: [Double]
+stopprofitlist = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
