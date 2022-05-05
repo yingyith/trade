@@ -200,8 +200,8 @@ publishThread rc wc tvar ptid = do
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
-      let timecounta   = (curtimestamp `mod` 60000) 
-      let timecountpred = (timecounta - timecountb) > 60000
+      let timecounta   = (curtimestamp `quot` 60000) 
+      let timecountpred = (timecounta - timecountb) >= 1 
       let intervalcbpred = intervalcb == 0
       matchoevt  <- matchmsgfun message
       returnres  <-  case (timecountpred,intervalcbpred) of 
