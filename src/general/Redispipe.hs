@@ -101,7 +101,7 @@ isstrategyinvalid = True
 
 msgcacheandpingtempdo :: ByteString -> NC.Connection-> Redis ()
 msgcacheandpingtempdo msg wc = do
-    liftIO $ logact logByteStringStdout "bef cache -----------!"                             
+    liftIO $ logact logByteStringStdout "befcache--loopupd -----------!"                             
     void $ publish "minc:1" ("cache" <> msg)
     void $ publish "listenkey:1" ("listenkey" <> msg)
 
