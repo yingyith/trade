@@ -131,6 +131,20 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
+       when (pr>= (lastpr+2*grid)) $ do  
+           let otype = "Oprep" :: String
+           let quantity = lastquan 
+           let orderid =  show stamp 
+           let side = "SELL" :: String
+           let shprice =  showdouble (lastpr)
+           let shquant =  show (quantity)
+           let shstate =  show $ fromEnum Cprepare
+           let lmergequan = show mergequan
+           let shgrid = showdouble lastgrid
+           when (quantity > 0) $ do
+               let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+               void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
 
        when (mergequan == 0 && quanty > 0) $ do
