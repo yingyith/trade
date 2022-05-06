@@ -101,7 +101,8 @@ crossminstra abc pr = do
                       x|x==6        -> (stopprofitlist !! 5)
                       _             -> 0
                             
-    let newgrid = max (grid - (pr-lowp)) stopprofitgrid
+    --let newgrid = max (grid - (pr-lowp)) stopprofitgrid
+    let newgrid = min (grid - (pr-lowp)) stopprofitgrid
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
