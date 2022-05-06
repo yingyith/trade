@@ -74,7 +74,7 @@ crossminstra abc pr = do
                     x|x>=4          -> 4
                     x|(x>=1 || x<4) -> x
 
-    let resquan = case fallklineindex of 
+    let resquanori = case fallklineindex of 
                       x|x==1        -> (quanlist !! 0)
                       x|x==2        -> (quanlist !! 0)
                       x|x==3        -> (quanlist !! 1)
@@ -83,9 +83,12 @@ crossminstra abc pr = do
                       x|x==6        -> (quanlist !! 4)
                       _             -> 0
     let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
-    let fstminsupportpredi  = (>  30 ) $ fst $ fst $ (!! (2)) abc    --transfer this grid to the redis order record can be used as 
-    let sndminsupportpredi  = (> -120) $ fst $ fst $ (!! (3)) abc    --transfer this grid to the redis order record can be used as 
-    let thdminsupportpredi  = (> -120) $ fst $ fst $ (!! (4)) abc    --transfer this grid to the redis order record can be used as 
+    let fstminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (2)) abc )
+    let sndminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
+    let thdminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
+    let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
+                           (False,False,False) -> ((>  160 ) $ fst $ fst $ (!! (2)) abc, (> 160) $ fst $ fst $ (!! (3)) abc, (> 160) $ fst $ fst $ (!! (4)) abc ) 
+                           (_    ,_    ,_    ) -> ((>  30 )  $ fst $ fst $ (!! (2)) abc, (> -120) $ fst $ fst $ (!! (3)) abc, (> -120) $ fst $ fst $ (!! (4)) abc ) 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
@@ -103,6 +106,9 @@ crossminstra abc pr = do
                             
     --let newgrid = max (grid - (pr-lowp)) stopprofitgrid
     let newgrid = stopprofitgrid 
+    let resquan  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
+                          (False,False,False) -> (round $ (1/2) * (fromIntegral resquanori:: Double) :: Int)
+                          (_    ,_    ,_    ) -> resquanori
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
