@@ -475,7 +475,7 @@ detailanalysHandler tbq conn tdepth = do
                          (_    ,True    ,True    ,_   ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                               let newinterhm = DHM.intersection newbidhm  newaskhm
+                               let newinterhm = DHM.intersection (curdepthbidset)  (curdepthaskset)
                                let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newinterhm newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
            --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
@@ -483,7 +483,7 @@ detailanalysHandler tbq conn tdepth = do
                          (_    ,_       ,_      ,True ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                               let newinterhm = DHM.intersection newbidhm  newaskhm
+                               let newinterhm = DHM.intersection (curdepthbidset)  (curdepthaskset)
                                let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newinterhm newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
            --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
