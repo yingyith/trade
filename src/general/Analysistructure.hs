@@ -69,9 +69,12 @@ getaskdiffquanpred  checkpr diff  key value  =
         _                                           ->  False
     
 
-getBidAskNum :: (Double,Double) -> Depthset -> (Double,Double)  --diff have 0.0005,0.001,0.002
+getBidAskNum :: (Double,Double) -> Depthset -> (Double, [BL.ByteString]  ,Double,  [BL.ByteString])  --diff have 0.0005,0.001,0.002
 getBidAskNum apr dpdata = (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (fst apr) 0.0005 ) $ bidset  dpdata ,
-                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0005 ) $ askset  dpdata)
+                           DHM.keys $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0005 ) $ askset  dpdata        ,
+                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0005 ) $ askset  dpdata ,
+                           DHM.keys $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0005 ) $ askset  dpdata
+                           )
 
 getcurpraccu ::  Depthset -> Int     
 getcurpraccu ordepth = 1 
