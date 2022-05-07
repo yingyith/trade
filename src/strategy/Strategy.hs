@@ -72,11 +72,11 @@ crossminstra abc pr = do
     let fallklineindex = maxindex+itemlen-1
     let aindex = case fallklineindex of 
                     x|x>=4          -> 4
-                    x|(x>=1 || x<4) -> x
+                    x|(x>=0 || x<4) -> x
 
     let resquanori = case fallklineindex of 
                       x|x==1        -> (quanlist !! 0)
-                      x|x==2        -> (quanlist !! 0)
+                      x|x==2        -> (quanlist !! 1)
                       x|x==3        -> (quanlist !! 1)
                       x|x==4        -> (quanlist !! 2)
                       x|x==5        -> (quanlist !! 3)
@@ -87,7 +87,7 @@ crossminstra abc pr = do
     let sndminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
     let thdminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
     let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
-                           (False,False,False) -> ((>  160 ) $ fst $ fst $ (!! (2)) abc, (> 160) $ fst $ fst $ (!! (3)) abc, (> 160) $ fst $ fst $ (!! (4)) abc ) 
+                           (False,False,False) -> ((>  160 ) $ fst $ fst $ (!! (2)) abc, (> 180) $ fst $ fst $ (!! (3)) abc, (> 119) $ fst $ fst $ (!! (4)) abc ) 
                            (_    ,_    ,_    ) -> ((>  30 )  $ fst $ fst $ (!! (2)) abc, (> -120) $ fst $ fst $ (!! (3)) abc, (> -120) $ fst $ fst $ (!! (4)) abc ) 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
@@ -104,8 +104,8 @@ crossminstra abc pr = do
                       x|x==6        -> (stopprofitlist !! 5)
                       _             -> 0.0004
                             
-    --let newgrid = max (grid - (pr-lowp)) stopprofitgrid
-    let newgrid = stopprofitgrid 
+    let newgrid = max (grid - (pr-lowp)) stopprofitgrid
+    --let newgrid = stopprofitgrid 
     let resquan  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
                           (False,False,False) -> (round $ (1/2) * (fromIntegral resquanori:: Double) :: Int)
                           (_    ,_    ,_    ) -> resquanori
