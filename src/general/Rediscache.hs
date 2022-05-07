@@ -215,7 +215,8 @@ anlytoBuy conn msg tdepth =
      let dcp      =  read $ kclose kline :: Double
      bigintervall <- analysismindo (fst res ) dcp 
      biginterval  <- crossminstra bigintervall dcp
-     secondrule tdepth
+     atdepth      <- readTVarIO tdepth 
+     secondrule atdepth
      let secondnum = 0
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      let sumres = (fst biginterval) + secondnum

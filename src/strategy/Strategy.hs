@@ -215,9 +215,8 @@ gethlsheetsec index kll =  do
     return res
 
 
-secondrule :: TVar AS.Depthset  -> IO ()
-secondrule tdep = do 
-                     atdepth <-  readTVarIO tdep 
+secondrule :: AS.Depthset  -> IO ()
+secondrule atdepth = do 
                      apr     <-  depthmidpr atdepth
                      let ares = getBidAskNum apr atdepth
                      logact logByteStringStdout $ B.pack  (show ("depth is -----",ares))

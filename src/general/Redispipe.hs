@@ -353,7 +353,7 @@ opclHandler tbq  channel  msg = do
          let orderstate = DL.last order
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
-         logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
+         --logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
         -- when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do  if < ,reset to origin
          when ((orderstate == (show $ fromEnum Prepare)) )$ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
@@ -426,8 +426,6 @@ opclHandler tbq  channel  msg = do
               let usdtbalo    = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    )).key "cw"    -- !!0  
               let orderposo   = detdata ^.. key "a" .key "P" .values.filtered (has (key "s"._String.only "ADAUSDT" )).key "pa"    -- !!0
               let orderpro    = detdata ^.. key "a" .key "P" .values.filtered (has (key "s"._String.only "ADAUSDT" )).key "ep"    -- !!0
-          --    logact logByteStringStdout $ B.pack  $ show ("acupdate ---------",usdtbalo,orderposo,orderpro)
-              --let usdtbalo    = read $ T.unpack $ outString $ fromJust usdtbalo  :: Int 
               let orderpos    = read $ T.unpack $ outString $ (!!0)  orderposo :: Integer
               let usdtbal     = round (read $ T.unpack $ outString $ (!!0)  usdtbalo :: Double) :: Int
               let orderpr     = read $ T.unpack $ outString $ (!!0)  orderpro  :: Double
