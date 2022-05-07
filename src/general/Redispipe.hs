@@ -459,8 +459,11 @@ detailanalysHandler tbq conn tdepth = do
                     let curdepthu       =  depu  ressheet 
                     let curdepthU       =  depU  ressheet
                     let curdepthpu      =  deppu ressheet
-                    let curdepthbidset  =  DHM.fromList $  bidsh ressheet
-                    let curdepthaskset  =  DHM.fromList $  asksh ressheet
+                    let curdepthbid     =  bidsh ressheet
+                    let curdepthask     =  asksh ressheet
+                    let curdepthbidset  =  DHM.fromList $ curdepthbid 
+                    let curdepthaskset  =  DHM.fromList $ curdepthask
+                    let addintersectelem = DHM.fromList $ [(DL.last curdepthbid),(DL.head curdepthask)] 
                     befdepth <- readTVarIO tdepth
                     let befdepthu       =  Anlys.depu  befdepth 
                     let befdepthU       =  Anlys.depU  befdepth
@@ -475,7 +478,7 @@ detailanalysHandler tbq conn tdepth = do
                          (_    ,True    ,True    ,_   ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                               let newinterhm = DHM.intersection (curdepthbidset)  (curdepthaskset)
+                               let newinterhm = DHM.union addintersectelem $ DHM.intersection (curdepthbidset)  (curdepthaskset)
                                let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newinterhm newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
            --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
@@ -483,7 +486,7 @@ detailanalysHandler tbq conn tdepth = do
                          (_    ,_       ,_      ,True ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
                                let newaskhm = DHM.union curdepthaskset befdepthaskset 
-                               let newinterhm = DHM.intersection (curdepthbidset)  (curdepthaskset)
+                               let newinterhm = DHM.union addintersectelem $ DHM.intersection (curdepthbidset)  (curdepthaskset)
                                let newdepthdata = Anlys.Depthset curdepthu curdepthU curdepthpu newinterhm newbidhm newaskhm
                                atomically  $ writeTVar tdepth newdepthdata  
            --                    logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)

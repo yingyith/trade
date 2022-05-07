@@ -62,13 +62,13 @@ depthmidpr adepth  = do
 getbiddiffquanpred ::Double -> Double -> BL.ByteString -> Double -> Bool 
 getbiddiffquanpred  checkpr diff  key value  =   
     case (read $ BL.toString $ key ::Double) of 
-        x|(x <= (checkpr + diff)) && (x >= checkpr) ->  True
+        x|(x >= (checkpr - diff)) && (x <= checkpr) ->  True
         _                                           ->  False
 
 getaskdiffquanpred ::Double -> Double -> BL.ByteString -> Double -> Bool 
 getaskdiffquanpred  checkpr diff  key value  =   
     case (read $ BL.toString $ key ::Double) of 
-        x|(x >= (checkpr - diff)) && (x <= checkpr) ->  True
+        x|(x <= (checkpr + diff)) && (x >= checkpr) ->  True
         _                                           ->  False
     
 
