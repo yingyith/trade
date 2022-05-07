@@ -215,10 +215,20 @@ gethlsheetsec index kll =  do
     return res
 
 
-secondrule :: AS.Depthset  -> IO ()
-secondrule atdepth = do 
-                     apr     <-  depthmidpr atdepth
-                     let ares = getBidAskNum apr atdepth
-                     logact logByteStringStdout $ B.pack  (show ("depth is -----",ares))
+secondrule ::  (Double,Double)  -> IO Int
+secondrule (a,b) = do 
+                     let res  = (abs (a-b))/(max a b)
+                     let quan = case (a>b) of 
+                                  True  -> case res of 
+                                    x|x<0.1 && x>=0   -> (depthrisksheet !! 0) 
+                                    x|x<0.3 && x>=0.1 ->( depthrisksheet !! 1) 
+                                    x|x<0.7 && x>=0.3 ->( depthrisksheet !! 2)
+                                    x|x<1.2 && x>=0.7 ->( depthrisksheet !! 3)
+                                    x|x<2.4 && x>=1.2 ->( depthrisksheet !! 4)
+                                    x|x<5   && x>=2.4 ->( depthrisksheet !! 5)
+                                    x|x>=5            ->( depthrisksheet !! 6)
+                                    _                 ->( depthrisksheet !! 0)
+                                  False -> -100
+                     return quan
 
 

@@ -216,15 +216,31 @@ anlytoBuy conn msg tdepth =
      bigintervall <- analysismindo (fst res ) dcp 
      biginterval  <- crossminstra bigintervall dcp
      atdepth      <- readTVarIO tdepth 
-     secondrule atdepth
-     let secondnum = 0
+     apr          <- AS.depthmidpr atdepth
+     let ares     =  AS.getBidAskNum apr atdepth
+     sndquan      <- secondrule ares
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-     let sumres = (fst biginterval) + secondnum
-     curtimestampi <- getcurtimestamp
-     let curtime = fromInteger curtimestampi ::Double
-     when (fst biginterval > 50) $ do 
-         runRedis conn $ do
-             preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval) curtime
+     case (fst biginterval < 1) of  
+         True  -> do 
+                    let sumres = sndquan
+                    case sumres of 
+                        x|x<=0 -> return () 
+                        x|x> 0 -> do
+                                     curtimestampi <- getcurtimestamp
+                                     let curtime = fromInteger curtimestampi ::Double
+                                     let stopclosegrid = snd biginterval
+                                     when (fst biginterval > 50) $ do 
+                                         runRedis conn $ do
+                                            preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
+         False -> do 
+                    let sumres = fst biginterval
+                    curtimestampi <- getcurtimestamp
+                    let curtime = fromInteger curtimestampi ::Double
+                    let stopclosegrid = snd biginterval
+                    when (fst biginterval > 50) $ do 
+                        runRedis conn $ do
+                           preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
+
 
    `catch` (\(e :: SomeException) -> do
                 SI.hPutStrLn stderr $ "Goterror1: " ++ show e)

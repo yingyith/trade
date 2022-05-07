@@ -72,11 +72,11 @@ getaskdiffquanpred  checkpr diff  key value  =
         _                                           ->  False
     
 
-getBidAskNum :: (Double,Double) -> Depthset -> (Double, [BL.ByteString]  ,Double,  [BL.ByteString])  --diff have 0.0005,0.001,0.002
+getBidAskNum :: (Double,Double) -> Depthset -> (Double,Double)  --diff have 0.0005,0.001,0.002
 getBidAskNum apr dpdata = (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (fst apr) 0.0007 ) $ bidset  dpdata ,
-                           DHM.keys $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0007 ) $ bidset  dpdata        ,
-                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0007 ) $ askset  dpdata ,
-                           DHM.keys $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0007 ) $ askset  dpdata
+                           --DHM.keys $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0007 ) $ bidset  dpdata        ,
+                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0007 ) $ askset  dpdata 
+                           --DHM.keys $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0007 ) $ askset  dpdata
                            )
 
 getcurpraccu ::  Depthset -> Int     
@@ -97,11 +97,7 @@ getdepthweight bcount acount = do
         x|x<(diffspreadsheet!!8) && x>(diffspreadsheet!!7)  -> (depthrisksheet !! 7)
         _                                                   -> (depthrisksheet !! 0)
 
-diffspreadsheet :: [Double]
-diffspreadsheet = [-0.1 ,0.1  ,0.2  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
 
-depthrisksheet :: [Int] 
-depthrisksheet = [-2000  ,100  ,200  ,300  ,400  ,600  ,800  , 1000  ]   -- 
                  
 
 data Hlnode = Hlnode {

@@ -23,6 +23,8 @@ module Globalvar (
     depthkey,
     biddepth,
     askdepth,
+    diffspreadsheet,
+    depthrisksheet,
     holdposkey
 ) where
 
@@ -34,6 +36,12 @@ quanlist = [600,1000,2000,4000,8000,15300] -- 15m,1h,4h,12h
 
 stopprofitlist :: [Double]
 stopprofitlist = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
+
+diffspreadsheet :: [Double]
+diffspreadsheet = [-0.1 ,0.1  ,0.2  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
+
+depthrisksheet :: [Int] 
+depthrisksheet = [200  ,400  ,600 , 800 , 1000, 1200,1400  ]   -- 
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
