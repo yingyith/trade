@@ -228,7 +228,7 @@ anlytoBuy conn msg tdepth =
                         x|x> 0 -> do
                                      curtimestampi <- getcurtimestamp
                                      let curtime = fromInteger curtimestampi ::Double
-                                     let stopclosegrid = snd biginterval
+                                     let stopclosegrid = 0.0002
                                      when (fst biginterval > 50) $ do 
                                          runRedis conn $ do
                                             preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
