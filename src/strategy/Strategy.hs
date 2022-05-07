@@ -39,13 +39,14 @@ import Globalvar
 import Lib
 import Colog (LogAction,logByteStringStdout)
 import Logger
+import Control.Concurrent.STM
 
 
 
 minrisksheet :: DM.Map String [Int] 
 minrisksheet = fromList [
                  ("3m" , [-10     ,  90,  -120, -180  ]), --first is up fast ,second is normal up,third is normal down ,forth is  fast down
-                 ("5m" , [-20      ,  90,  -120, -180  ]), --
+                 ("5m" , [-20     ,  90,  -120, -180  ]), --
                  ("15m", [30      ,  90,  -120, -180  ]),
                  ("1h" , [5       ,  90,  -120, -180  ]),
                  ("4h" , [5       ,  90,  -120, -180  ]),
@@ -65,8 +66,6 @@ crossminstra abc pr = do
     let itemlen = DT.length item
     let remainlist = (DT.drop (maxindex+itemlen) abc) ++ (DT.take maxindex abc ) 
     let itempredi = (itemlen >= 2)
-    let maxindexpredi = maxindex == 0
-    let openpredi = maxindexpredi && itempredi 
     let resquan = (sum  [fst $ fst x|x<-abc])
     let resbquan = ((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 )
     let fallklineindex = maxindex+itemlen-1
@@ -93,8 +92,8 @@ crossminstra abc pr = do
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
-    liftIO $ logact logByteStringStdout $ B.pack $ show (maxindexpredi , itempredi,lowpredi,fstminsupportpredi,aindex)
-    let openpredi = maxindexpredi && itempredi && lowpredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi
+    liftIO $ logact logByteStringStdout $ B.pack $ show (itempredi,lowpredi,fstminsupportpredi,aindex)
+    let openpredi = itempredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi
     let stopprofitgrid = case fallklineindex of 
                       x|x==1        -> (stopprofitlist !! 0)
                       x|x==2        -> (stopprofitlist !! 1)
@@ -167,7 +166,7 @@ minrule ahll pr interval  = do
                              x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.25 
                              x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.5                                 
                              x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 0.8                                
-                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.8                               
+                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.6                               
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
    rsiindexf <- getrsi ahl 8
    let indexlentwo = case (fst rsiindexf) of 
@@ -181,11 +180,11 @@ minrule ahll pr interval  = do
                              x| x>60 && x<=75                                                         -> -180
                              x| x>50 && x<=60                                                         -> -120
                              x| x>40 && x<=50                                                         -> -60
-                             x| x>28 && x<=40                                                         -> 20
-                             x| x>18 && x<=28                                                         -> 60
-                             x| x>12 && x<=18                                                         -> 120
-                             x| x>5  && x<=12                                                          -> 240
-                             x| x<=5                                                                  -> 360
+                             x| x>28 && x<=40                                                         ->  20
+                             x| x>18 && x<=28                                                         ->  60
+                             x| x>12 && x<=18                                                         ->  120
+                             x| x>5  && x<=12                                                         ->  240
+                             x| x<=5                                                                  ->  360
 
    logact logByteStringStdout $ B.pack  (show (maxhigh,minlow,rsiindexx,openpos))
    logact logByteStringStdout $ B.pack  (show (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi))
@@ -203,42 +202,24 @@ minrule ahll pr interval  = do
 
 gethlsheetsec :: Int -> [ Klinedata ] -> IO (AS.Hlnode)
 gethlsheetsec index kll =  do 
-    --- rule1: if last one stick < last low point , return  -unlimitKlinedata
-  --    rule2: if near high point then not open,if near low point can open  ,
-    --liftIO $ print ("debug hlsheet---------")
-    let curitem  = kll !! index 
-    let nextitem  = kll !! (index + 1) 
-    let curitemt = ktime curitem
-    let curitemcp = read $ kclose curitem  :: Double
-    let nextitemcp = read $ kclose nextitem :: Double 
+    let curitem     = kll !! index 
+    let nextitem    = kll !! (index + 1) 
+    let curitemt    = ktime curitem
+    let curitemcp   = read $ kclose curitem  :: Double
+    let nextitemcp  = read $ kclose nextitem :: Double 
     let predication = (curitemcp - nextitemcp) 
     let res = case compare predication  0 of 
-                  LT   ->  (AS.Hlnode curitemt 0 curitemcp 0 "low" "1s" curitemcp)
-                  GT ->  (AS.Hlnode curitemt curitemcp 0 0 "high" "1s" curitemcp)
-                  EQ ->  (AS.Hlnode curitemt curitemcp 0 0 "wsmall" "1s" curitemcp)
+                  LT   ->  (AS.Hlnode curitemt 0 curitemcp 0 "low"    "1s" curitemcp)
+                  GT   ->  (AS.Hlnode curitemt curitemcp 0 0 "high"   "1s" curitemcp)
+                  EQ   ->  (AS.Hlnode curitemt curitemcp 0 0 "wsmall" "1s" curitemcp)
     return res
 
 
-secondrule :: [Klinedata] -> IO Int
-secondrule records = do 
-                         return 0
-                         -- rehllist <- mapM ((\s ->  gethlsheetsec s records) :: Int -> IO AS.Hlnode ) [0..15] :: IO [AS.Hlnode]
-                         -- rsiindexx <- getrsi rehllist 14
-                         -- let reslist = [(xlist!!x,x)|x<-[1..(length xlist)-2],((stype $ xlist!!(x-1)) /= (stype $ xlist!!x)) && ((stype $ xlist!!x) /= "wsmall")] where xlist = rehllist
-                         -- let currentpr = max (hprice $ fst $ reslist !! 0) (lprice $ fst $ reslist !! 0)
-                         -- let highsheet = [((hprice $ fst x),snd x)| x<- xlist,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")] where xlist = reslist
-                         -- let lowsheet = [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low")] where xlist = reslist
-                         -- let highgrid = DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y ) (highsheet!!0) highsheet
-                         -- let lowgrid  = DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y ) (lowsheet!!0)  lowsheet 
-                         -- let highpr = fst highgrid 
-                         -- let lowpr = fst lowgrid 
-                         -- let diff = highpr - lowpr
-                         -- let wavediffpredi = (abs (highpr - lowpr ) <=0.005)
-                         -- let hlpredi = (snd highgrid) > (snd lowgrid)--leave unsolved
-                         -- let prlocpredi = (currentpr < (highpr-diff*0.33)) && (currentpr >= (lowpr+diff/6))
-                         -- let lastjumppredi = (stype (rehllist!!0)=="low") && (stype (rehllist!!1)=="high") && (abs ((lprice $ rehllist!!0) -( hprice $ rehllist!!1))) > 0.01 
-                         -- case (wavediffpredi,hlpredi,prlocpredi,lastjumppredi) of 
-                         --     (True ,_    ,_    ,_    )-> return (-15) 
-                         --     (False,True ,True ,False)-> return 70 
-                         --     (False,_    ,_    ,True )-> return 250
-                         --     (False,_    ,_    ,_    )-> return (-30)
+secondrule :: TVar AS.Depthset  -> IO ()
+secondrule tdep = do 
+                     atdepth <-  readTVarIO tdep 
+                     apr     <-  depthmidpr atdepth
+                     let ares = getBidAskNum apr atdepth
+                     logact logByteStringStdout $ B.pack  (show ("depth is -----",ares))
+
+

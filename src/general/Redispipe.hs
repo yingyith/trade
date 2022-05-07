@@ -329,7 +329,7 @@ detailopHandler tbq conn = do
               runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
 
-        logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
+       -- logact logByteStringStdout $ B.pack $ show ("kill bef thread!",res)
         return et)  ""
         
 
@@ -386,9 +386,7 @@ opclHandler tbq  channel  msg = do
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = T.unpack $ outString eventstr 
-        -- logact logByteStringStdout $ B.pack  $ show ("beforderupdate01 ---------",show eventstr)
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
-              --logact logByteStringStdout $ B.pack  $ show ("beforderupdate ---------")
               let curorderstate  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
               let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
               let cty            = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "z")
@@ -449,7 +447,7 @@ detailanalysHandler tbq conn tdepth = do
         let etcont  = eccont res
 
         when (et == "forward")   $  do 
-              mseriesFromredis conn etcont--get all mseries from redis 
+              anlytoBuy conn etcont tdepth--get all mseries from redis 
 
         when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
@@ -476,8 +474,6 @@ detailanalysHandler tbq conn tdepth = do
                     let bulessthanpredi =  curdepthU  < befdepthu 
                     let ubigthanpredi   =  curdepthu  > befdepthu 
                     let continuprei     =  curdepthpu == befdepthu
-           --         logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,newhttppredi,bulessthanpredi,ubigthanpredi,continuprei )
-            --        logact logByteStringStdout $ B.pack $ show ("depth init-- !"  ,befdepthu,curdepthU,curdepthu,curdepthpu )
                     case (newhttppredi,bulessthanpredi,ubigthanpredi,continuprei) of 
                          (_    ,True    ,True    ,_   ) -> do      --start merge
                                let newbidhm = DHM.union curdepthbidset befdepthbidset 
@@ -545,7 +541,6 @@ analysisHandler tbq tdepth  channel msg = do
 
 mintocacheHandler :: RedisChannel -> ByteString -> IO ()
 mintocacheHandler channel msg = do 
-      --liftIO $ print ("start cache ++++++++++++++++++++++++++++++++++++++++++++")
       conn <- connect defaultConnectInfo
       --how to control the interval
       minSticksToCache conn

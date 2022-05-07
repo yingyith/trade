@@ -6,7 +6,7 @@
 module Rediscache (
    minSticksToCache,
    defintervallist,
-   mseriesFromredis,
+   anlytoBuy,
    parsetokline,
    liskeytoredis,
    getorderfromredis, 
@@ -62,6 +62,7 @@ import Data.Time.Format.ISO8601
 import Data.Time.Clock.POSIX
 import Redisutils
 import System.IO as SI
+import Control.Concurrent.STM.TVar
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -152,7 +153,6 @@ analysistrdo aa bb = do
      let befitem = "undefined" -- traceback default trace first is unknow not high or low
      let lentdata = DL.length tdata
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
-     --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("check index -------",DL.length rehllist)
      quantylist <- minrule rehllist curpr interval 
 
      return quantylist
@@ -172,17 +172,12 @@ parsetokline msg = do
 analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [((Int,(Double,Double)),(String,Int))]
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
-     --liftIO $ print ("analysisdi--------------------ai")
-     --liftIO $ print (aim)
      hlsheet <-  zipWithM analysistrdo aim aimlist
-
-     --liftIO $ print (hlsheet)
      return hlsheet
 
 getmsgfromstr :: String -> IO Klinedata
 getmsgfromstr msg = do 
     let mmsg = BL.fromString msg
-    --liftIO $ print ("----------++++++++----------")
     res <- parsetokline mmsg
     return res
 
@@ -200,55 +195,39 @@ getsndkline aim  = do
 
 mserieFromredis :: String -> Redis (Either Reply [BL.ByteString])
 mserieFromredis klinename = do  
-     --get kline and ada position,usdt position
      let bklinename = BL.fromString klinename
      res <- zrange bklinename 0 21
      return res
 
 getdiffintervalflow :: Redis ([Either Reply [BL.ByteString]],
-                            Either Reply [BL.ByteString]) 
+                               Either Reply [BL.ByteString]) 
 getdiffintervalflow = do 
      fisar <- mapM mserieFromredis defintervallist 
      sndar <- zrange (BL.fromString secondkey)  0 secondstick  
      return (fisar,sndar)
      
 
-mseriesFromredis :: R.Connection -> BL.ByteString -> IO ()
-mseriesFromredis conn msg = 
+anlytoBuy :: R.Connection -> BL.ByteString ->  (TVar AS.Depthset) -> IO ()
+anlytoBuy conn msg tdepth = 
    do
-     res <- runRedis conn (getdiffintervalflow) 
-     kline <- parsetokline msg
-     let dcp = read $ kclose kline :: Double
+     res          <- runRedis conn (getdiffintervalflow) 
+     kline        <- parsetokline msg
+     let dcp      =  read $ kclose kline :: Double
      bigintervall <- analysismindo (fst res ) dcp 
-     logact logByteStringStdout $ BC.pack  (show bigintervall)
+     biginterval  <- crossminstra bigintervall dcp
+     secondrule tdepth
+     let secondnum = 0
+     timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
+     let sumres = (fst biginterval) + secondnum
+     curtimestampi <- getcurtimestamp
+     let curtime = fromInteger curtimestampi ::Double
+     when (fst biginterval > 50) $ do 
+         runRedis conn $ do
+             preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval) curtime
 
-     biginterval <- crossminstra bigintervall dcp
-
-     sndinterval <- getsndkline (snd res) 
-     case sndinterval of 
-        [] -> return ()
-        _  -> do 
-                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error61 --------------------------------------")
-                  secondnum <- secondrule sndinterval
-                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error7 --------------------------------------")
-                  timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error8 --------------------------------------")
-                  let sumres = (fst biginterval) + secondnum
-                  liftIO $ logact logByteStringStdout $ BC.pack $  show ("get error9 --------------------------------------")
-                  logact logByteStringStdout $ BC.pack $ (show ("++--",timecurtime,biginterval,secondnum,sumres))
-                  curtimestampi <- getcurtimestamp
-                  let curtime = fromInteger curtimestampi ::Double
-                  when (fst biginterval > 50) $ do 
-                      runRedis conn $ do
-                         preorcpreordertorediszset sumres dcp  curtimestampi (snd biginterval) curtime
-              `catch` (\(e :: SomeException) -> do
-                      SI.hPutStrLn stderr $ "Goterror2: " ++ show e)
    `catch` (\(e :: SomeException) -> do
                 SI.hPutStrLn stderr $ "Goterror1: " ++ show e)
   
-     --genposgrid hlsheet dcp
-  --write order command to zset
-     
 
 hsticklistToredis :: DpairMserie -> String -> Redis ()
 hsticklistToredis hst  akey   = do
