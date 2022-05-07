@@ -72,7 +72,6 @@ import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
 import System.Log.Formatter
 import Events
-import Logger
 import Colog (LogAction,logByteStringStdout)
 import Redisutils
 import qualified Analysistructure as Anlys

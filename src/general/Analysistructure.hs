@@ -12,7 +12,7 @@ module Analysistructure
     ) where
 import Control.Applicative
 import qualified Text.URI as URI
-import qualified Data.ByteString  as B
+import qualified Data.ByteString.Char8 as B
 import Data.Maybe (fromJust)
 import qualified Data.Map as DM
 import qualified Data.HashMap  as DHM
@@ -20,7 +20,6 @@ import Control.Monad
 import Control.Monad.IO.Class as I 
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy.Internal as BLI
-import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.UTF8 as BL
 import Data.Aeson as A
 import Data.List as DL
@@ -32,6 +31,8 @@ import Network.HTTP.Req
 import Database.Redis
 import Data.String.Class as DC
 import Globalvar
+import Colog (LogAction,logByteStringStdout)
+import Logger
 
 
 data Depthset = Depthset {
@@ -49,11 +50,13 @@ convbstodoublelist ml = (read $  BL.toString $ fst ml :: Double,snd ml)
 
 depthmidpr :: Depthset  ->IO  (Double,Double)
 depthmidpr adepth  = do 
-    let a = bidset adepth 
-    let b = askset adepth
-    let alist = map convbstodoublelist $  DHM.toList $ DHM.intersection a  b
+    let a   = bidset adepth 
+    let b   = askset adepth
+    let ins = intersset  adepth
+    let alist = map convbstodoublelist $  DHM.toList $ ins 
     let minprt = foldr (\(xf,xs) (yf,ys) -> if xf < yf then (xf,xs) else (yf,ys) )  (1111,1111) alist 
     let maxprt = foldr (\(xf,xs) (yf,ys) -> if xf > yf then (xf,xs) else (yf,ys) )  (0   ,0   ) alist
+    liftIO $ logact logByteStringStdout $ B.pack  (show ("get startpr is -----",alist,minprt,maxprt))
     return (fst minprt,fst maxprt)
 
 getbiddiffquanpred ::Double -> Double -> BL.ByteString -> Double -> Bool 
