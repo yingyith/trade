@@ -2,7 +2,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Mobject 
     ( 
-      initupddepth
+      initupddepth,
+      initupddepthstm,
+      doinitupddepth
     ) where
 import Control.Applicative
 import Control.Lens
@@ -55,15 +57,12 @@ initupddepth conn = do
     let qryasks   =  DHM.fromList $ snd $ snd qrydepth
     let lastu     =  fst qrydepth
     let depthdata =  Depthset lastu  0  0   DHM.empty   qrybids qryasks 
-   -- let bidso = fst $ snd $ getlistfrdep   qrydepth 
-   -- let askso = snd $ snd $ getlistfrdep   qrydepth 
-   -- let bidsoo =  outArray bidso  
-   -- let asksoo =  outArray askso 
-   -- let bidslist = DV.map depthitemtoredis bidsoo
-   -- let askslisr = DV.map depthitemtoredis asksoo
-   -- runRedis conn $ do 
-   --          depthtoredis bidso "bids"
-   --          depthtoredis askso "asks"
-
     return depthdata
+
+initupddepthstm :: R.Connection -> STM (IO Depthset) 
+initupddepthstm conn = return $ initupddepth conn
+
+doinitupddepth :: R.Connection -> IO Depthset
+doinitupddepth conn  = join (atomically $ initupddepthstm conn )
+
 
