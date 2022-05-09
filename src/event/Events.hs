@@ -8,6 +8,7 @@
   module Events (
        Opevent (etype,price,quant,etime,ordid,Opevent),
        Cronevent (ectype,eccont,Cronevent),
+       addoeventtotbqueuestm,
        addeventtotbqueue,
        addoeventtotbqueue
 ) where
@@ -58,3 +59,12 @@ addoeventtotbqueue evt tbq = do
                                    False -> writeTBQueue tbq evt
                                    True  -> return ()
 
+addoeventtotbqueuestm :: Cronevent -> TBQueue Cronevent -> STM ()
+addoeventtotbqueuestm evt tbq = do 
+                                    res <- isFullTBQueue tbq
+                                    befevt <- tryPeekTBQueue tbq
+                                    case befevt of 
+                                       Nothing -> writeTBQueue tbq evt
+                                       Just l  -> case res of 
+                                                     False -> writeTBQueue tbq evt
+                                                     True  -> return ()

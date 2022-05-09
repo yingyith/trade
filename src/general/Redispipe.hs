@@ -450,6 +450,10 @@ detailanalysHandler tbq conn tdepth = do
         when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
 
+        when (et == "resethdeoth")  $  do 
+              depthdata <- initupddepth conn
+              atomically $ writeTVar tdepth depthdata
+
         when (et == "depthtor")  $  do 
               let originmsg        =  BL.fromStrict etcont
               let ressheeto        =  (A.decode originmsg) :: (Maybe Wdepseries)
@@ -494,8 +498,11 @@ detailanalysHandler tbq conn tdepth = do
            --                         logact logByteStringStdout $ B.pack $ show ("depth merge-- !",curdepthpu,befdepthu)
 
                               (_    ,_       ,_      ,_    ) -> do      --need resync 
-                                    depthdata <- unsafeIOToSTM $ initupddepth conn
-                                    writeTVar tdepth depthdata  
+                                    -- send event to queue ,get mvar ,convert mvar to tvar ,update
+                                    let aevent = Cronevent "resethdeoth"  B.empty
+                                    addoeventtotbqueuestm aevent tbq
+                                  --  depthdata <- unsafeIOToSTM $ initupddepth conn
+                                  --  writeTVar tdepth depthdata  
            --                         logact logByteStringStdout $ B.pack $ show ("depth new-- !"  ,curdepthpu,befdepthu)
 
                     return ()
