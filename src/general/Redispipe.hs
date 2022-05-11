@@ -206,18 +206,14 @@ publishThread rc wc tvar ptid = do
       matchoevt  <- matchmsgfun message
       returnres  <-  case (timecountpred,intervalcbpred) of 
            (True ,True )   -> do
-                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timepass----")                            
                                   sendpongdo wc
                                   runRedis rc (msgcacheandpingtempdo  message wc )
                                   return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
            (True ,False)   -> do  
-                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timepassc----")                            
                                   return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
            (False,True )   -> do  
-                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timenotpass----")                            
                                   return (timecountb,0)
            (False,False)   -> do 
-                                  liftIO $ logact logByteStringStdout $ B.pack  $ show  (timecountpred,intervalcbpred,"timenotpass----")                            
                                   return (timecountb,0)--reset intercalcount
 
 
@@ -460,9 +456,13 @@ detailanalysHandler tbq conn tdepth = do
         when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
 
-        when (et == "resethdeoth")  $  do 
+        when (et == "resethdeoth") $
+            do 
               depthdata <- initupddepth conn
               atomically $ writeTVar tdepth depthdata
+            `CE.catch` ( \e -> do 
+                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
+                  )
 
         when (et == "depthtor")  $  do 
               let originmsg        =  BL.fromStrict etcont
