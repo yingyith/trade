@@ -364,6 +364,11 @@ opclHandler tbq  channel  msg = do
               let aevent = Opevent "bopen"  0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
+         when ((orderstate == (show $ fromEnum Process))  && ((curpr-orderpr)> 0.001 )) $ do
+              let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+              let aevent = Opevent "reset"  0 pr 0 ordid
+              addeventtotbqueue aevent tbq
+
          when ((orderstate == (show $ fromEnum Cprepare)) ) $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               let aevent = Opevent "sopen" 0 pr 0 ordid
