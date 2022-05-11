@@ -99,9 +99,9 @@ crossminstra abc pr = do
                       x|x==1        -> (stopprofitlist !! 0)
                       x|x==2        -> (stopprofitlist !! 1)
                       x|x==3        -> (stopprofitlist !! 2)
-                      x|x==4        -> (stopprofitlist !! 3)
-                      x|x==5        -> (stopprofitlist !! 4)
-                      x|x==6        -> (stopprofitlist !! 5)
+                      x|x==4        -> (stopprofitlist !! 2)
+                      x|x==5        -> (stopprofitlist !! 2)
+                      x|x==6        -> (stopprofitlist !! 2)
                       _             -> 0.0004
                             
     let newgrid = max (grid - (pr-lowp)) stopprofitgrid
