@@ -316,7 +316,15 @@ detailopHandler tbq conn = do
               qrypos <- querypos
               (quan,pr) <- funcgetposinf qrypos
               let astate = show $ fromEnum Done
-              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   0  0  curtime)-- set to Done prepare 
+              let accugrid = case quan of 
+                                  x|x<=500            -> 0.0012
+                                  x|x<=1000&&x>500    -> 0.0024
+                                  x|x<=2000&&x>1000   -> 0.005
+                                  x|x<=4000&&x>2000   -> 0.01
+                                  x|x<=8000&&x>4000   -> 0.03
+                                  x|x<=16000&&x>8000  -> 0.09
+                                  _                   -> 0.09
+              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
 
         when (et == "acupd") $ do 
               runRedis conn (acupdtorediszset etquan etpr etimee )

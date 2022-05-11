@@ -85,6 +85,7 @@ crossminstra abc pr = do
     let fstminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (2)) abc )
     let sndminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
     let thdminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
+    let zerominsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
     let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
                            (False,False,False) -> ((>  160 ) $ fst $ fst $ (!! (2)) abc  , (> -120) $ fst $ fst $ (!! (3)) abc, (> -160) $ fst $ fst $ (!! (4)) abc ) 
                            (_    ,_    ,_    ) -> ((>=  -60 )  $ fst $ fst $ (!! (2)) abc, (> -180) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
@@ -93,7 +94,7 @@ crossminstra abc pr = do
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
     liftIO $ logact logByteStringStdout $ B.pack $ show (itempredi,lowpredi,fstminsupportpredi,aindex)
-    let openpredi = itempredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi
+    let openpredi = itempredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi && zerominsupporttrendpred
     let stopprofitgrid = case fallklineindex of 
                       x|x==1        -> (stopprofitlist !! 0)
                       x|x==2        -> (stopprofitlist !! 1)
@@ -215,7 +216,7 @@ gethlsheetsec index kll =  do
     return res
 
 
-secondrule ::  (Double,Double)  -> IO Int
+secondrule ::  (Double,Double)  -> IO (Int,Double)
 secondrule (a,b) = do 
                      let res  = (abs (a-b))/(max a b)
                      let quan = case (a>b) of 
@@ -229,6 +230,6 @@ secondrule (a,b) = do
                                     x|x>=5            ->( depthrisksheet !! 6)
                                     _                 ->( depthrisksheet !! 0)
                                   False -> -100
-                     return quan
+                     return (quan,res)
 
 

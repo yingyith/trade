@@ -218,7 +218,7 @@ anlytoBuy conn msg tdepth =
      atdepth      <- readTVarIO tdepth 
      apr          <- AS.depthmidpr atdepth
      let ares     =  AS.getBidAskNum apr atdepth
-     sndquan      <- secondrule ares
+     (sndquan,sndratio)  <- secondrule ares
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      case (fst biginterval < 1) of  
          True  -> do 
@@ -229,15 +229,16 @@ anlytoBuy conn msg tdepth =
                                      curtimestampi <- getcurtimestamp
                                      let curtime = fromInteger curtimestampi ::Double
                                      let stopclosegrid = 0.0002
-                                     when (fst biginterval > 50) $ do 
-                                         runRedis conn $ do
-                                            preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
+                                     logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
+                                     runRedis conn $ do
+                                        preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
          False -> do 
                     let sumres = fst biginterval
                     curtimestampi <- getcurtimestamp
                     let curtime = fromInteger curtimestampi ::Double
                     let stopclosegrid = snd biginterval
                     when (fst biginterval > 50) $ do 
+                        logact logByteStringStdout $ BC.pack $ show ("normal open !",sumres,stopclosegrid)
                         runRedis conn $ do
                            preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
 

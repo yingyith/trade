@@ -160,16 +160,28 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
        when (mergequan /= 0 && quanty > 0) $ do
-           let otype = "Prep" :: String
-           let orderid =  show stamp 
-           let side = "BUY" :: String
-           let shprice =  show pr
-           let shquant =  show lastquan 
-           let shstate =  show $ fromEnum Prepare
-           let shgrid = showdouble  grid
-           let lmergequan = show mergequan
-           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+           when (mergequan < 1000) $ do      -- high frq trade
+               let otype = "Prep" :: String
+               let orderid =  show stamp 
+               let side = "BUY" :: String
+               let shprice =  show pr
+               let shquant =  show lastquan 
+               let shstate =  show $ fromEnum Prepare
+               let shgrid = showdouble $  grid*5  --add pos = 10
+               let lmergequan = show mergequan
+               let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+               void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+           when (mergequan >= 1000) $  do      -- high frq trade
+               let otype = "Prep" :: String
+               let orderid =  show stamp 
+               let side = "BUY" :: String
+               let shprice =  show pr
+               let shquant =  show lastquan 
+               let shstate =  show $ fromEnum Prepare
+               let shgrid = showdouble  grid
+               let lmergequan = show mergequan
+               let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+               void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
 
    when (recordstate == (show $ fromEnum HalfDone)) $ do -- if curpr orderpr  > grid   then append new order,and need merge
