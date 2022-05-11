@@ -238,7 +238,7 @@ anlytoBuy conn msg tdepth =
                     let curtime = fromInteger curtimestampi ::Double
                     let stopclosegrid = snd biginterval
                     when (fst biginterval > 50) $ do 
-                        logact logByteStringStdout $ BC.pack $ show ("normal open !",sumres,stopclosegrid)
+                        logact logByteStringStdout $ BC.pack $ show ("normal open !",sumres,stopclosegrid,bigintervall)
                         runRedis conn $ do
                            preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
 

@@ -85,10 +85,12 @@ crossminstra abc pr = do
     let fstminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (2)) abc )
     let sndminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
     let thdminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
+    let forthminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (5)) abc )
     let zerominsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
-    let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
-                           (False,False,False) -> ((>  160 ) $ fst $ fst $ (!! (2)) abc  , (> -120) $ fst $ fst $ (!! (3)) abc, (> -160) $ fst $ fst $ (!! (4)) abc ) 
-                           (_    ,_    ,_    ) -> ((>=  -60 )  $ fst $ fst $ (!! (2)) abc, (> -180) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
+    let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,forthminsupporttrendpred) of 
+                           (False,False,False,True) -> ((>  160 ) $ fst $ fst $ (!! (2)) abc  , (> -100) $ fst $ fst $ (!! (3)) abc, (> -100) $ fst $ fst $ (!! (4)) abc ) 
+                           (False,False,False,False) -> ((>  380 ) $ fst $ fst $ (!! (2)) abc  , (> 380) $ fst $ fst $ (!! (3)) abc, (> 380) $ fst $ fst $ (!! (4)) abc ) 
+                           (_    ,_    ,_  ,_  ) -> ((>=  -60 )  $ fst $ fst $ (!! (2)) abc, (> -180) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
@@ -145,7 +147,7 @@ minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,(Double,Double)),(String,I
 minrule ahll pr interval  = do 
    let ahl = DT.take 11 ahll
 
-   let reslist   =  [(xlist!!x,x)|x<-[1..(length xlist-2)]] where xlist = ahl
+   let reslist   =  [(xlist!!x,x)|x<-[0..(length xlist-2)]] where xlist = ahl
    --logact logByteStringStdout $ B.pack  ("enter min do ---------------------")
    let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
@@ -167,7 +169,7 @@ minrule ahll pr interval  = do
                              x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.25 
                              x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.5                                 
                              x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 0.8                                
-                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.6                               
+                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 1                              
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
    rsiindexf <- getrsi ahl 8
    let indexlentwo = case (fst rsiindexf) of 
@@ -184,8 +186,10 @@ minrule ahll pr interval  = do
                              x| x>28 && x<=40                                                         ->  20
                              x| x>18 && x<=28                                                         ->  60
                              x| x>12 && x<=18                                                         ->  120
-                             x| x>5  && x<=12                                                         ->  240
-                             x| x<=5                                                                  ->  360
+                             x| x>8  && x<=12                                                         ->  240
+                             x| x>5  && x<=8                                                          ->  360
+                             x| x>2  && x<=5                                                           ->  480
+                             x| x<=2                                                                  ->  600
 
    logact logByteStringStdout $ B.pack  (show (maxhigh,minlow,rsiindexx,openpos))
    logact logByteStringStdout $ B.pack  (show (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi))
