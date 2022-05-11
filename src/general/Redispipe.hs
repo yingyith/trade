@@ -379,12 +379,14 @@ opclHandler tbq  channel  msg = do
               addeventtotbqueue aevent tbq
 
          let accugridlevel = case orderquan of 
-                                  x|x<=500            -> 4
-                                  x|x<=1000&&x>500    -> 4
-                                  x|x<=2000&&x>1000   -> 10
-                                  x|x<=4000&&x>2000   -> 22
-                                  x|x<=8000&&x>4000   -> 50
-                                  x|x<=16000&&x>8000  -> 64
+                                  x|x<=150            -> 4
+                                  x|x<=260&&x>150     -> 7
+                                  x|x>=260&&x<500     -> 10
+                                  x|x<=1000&&x>500    -> 14
+                                  x|x<=2000&&x>1000   -> 22
+                                  x|x<=4000&&x>2000   -> 29
+                                  x|x<=8000&&x>4000   -> 58
+                                  x|x<=16000&&x>8000  -> 72
                                   _                   -> 128 
          when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  )  $ do 
               let aevent = Opevent "scancel" 0 0 0 ordid
