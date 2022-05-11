@@ -110,7 +110,10 @@ crossminstra abc pr = do
     --let newgrid = stopprofitgrid 
     let resquan  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
                           (False,False,False) -> (round $ (1/8) * (fromIntegral resquanori:: Double) :: Int)
-                          (_    ,_    ,_    ) -> resquanori
+                          (False,_    ,_    ) -> 0 
+                          (_    ,False,_    ) -> 0 
+                          (_    ,_    ,False) -> 0 
+                          (True ,True ,True ) -> resquanori
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
