@@ -315,7 +315,7 @@ detailopHandler tbq conn = do
                                       x|x<=360            -> 0.0005
                                       x|x<=500            -> 0.0005
                                       x|x<=1000&&x>500    -> 0.0005
-                                      x|x<=2000&&x>1000   -> 0.001
+                                      x|x<=2000&&x>1000   -> 0.0005
                                       x|x<=4000&&x>2000   -> 0.01
                                       x|x<=8000&&x>4000   -> 0.03
                                       x|x<=16000&&x>8000  -> 0.09
@@ -331,6 +331,16 @@ detailopHandler tbq conn = do
             when (et == "init") $ do 
                   logact logByteStringStdout $ B.pack $ show ("aft init!")
                   runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
+
+            when (et == "bopen") $ do 
+                  logact logByteStringStdout $ B.pack $ show ("bef bopen!")
+                  case (et == lastetype) of  
+                     False -> do
+                                (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
+                                case res of 
+                                   True  -> takeorder "BUY" lastquan apr
+                                   False -> return () 
+                     True  -> return ()
 
         when (newforbidtime /=0) $ do
             when (et == "bopen") $ do 
