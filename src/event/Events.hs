@@ -15,9 +15,13 @@
 
 import Control.Concurrent.STM.TBQueue
 import Control.Concurrent.STM
+import Control.Exception 
 import qualified Data.ByteString.UTF8 as BL
+import qualified Data.ByteString.Char8 as B
+import Colog (LogAction,logByteStringStdout)
 import Data.List as DL
 import GHC.Generics
+import Logger
 
 data Opevent = Opevent {
                   etype :: String,
@@ -41,6 +45,9 @@ addeventtotbqueue evt tbq = do
                                   case respredi of 
                                      False   -> writeTBQueue tbq evt
                                      True    -> return () 
+   `catch` (\(e :: SomeException) -> do
+        logact logByteStringStdout $ B.pack $ show (e)
+     )
 
 
 data Cronevent = Cronevent {
@@ -58,6 +65,9 @@ addoeventtotbqueue evt tbq = do
                      Just l  -> case res of 
                                    False -> writeTBQueue tbq evt
                                    True  -> return ()
+   `catch` (\(e :: SomeException) -> do
+        logact logByteStringStdout $ B.pack $ show (e)
+     )
 
 addoeventtotbqueuestm :: Cronevent -> TBQueue Cronevent -> STM ()
 addoeventtotbqueuestm evt tbq = do 
@@ -68,3 +78,4 @@ addoeventtotbqueuestm evt tbq = do
                                        Just l  -> case res of 
                                                      False -> writeTBQueue tbq evt
                                                      True  -> return ()
+

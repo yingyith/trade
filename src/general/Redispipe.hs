@@ -259,7 +259,8 @@ handlerThread conn ctrl tvar = do
 
 detailopHandler :: TBQueue Opevent  -> R.Connection -> IO () 
 detailopHandler tbq conn = do 
-    iterateM_  ( \lastetype -> do
+    iterateM_  ( \lastetype -> 
+      do
         logact logByteStringStdout $ B.pack $ show ("killbef thread!")
         res <- atomically $ readTBQueue tbq
         tbqlen <- atomically $ lengthTBQueue tbq
