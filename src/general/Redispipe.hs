@@ -278,80 +278,69 @@ detailopHandler tbq conn = do
                                 True  -> diffbasetime
                                 False -> 0
         
-        when (newforbidtime == 0) $ do
-            when (et == "scancel") $  do 
-                  qryord <- queryorder
-                  let sqryord = snd qryord
-                  case sqryord of 
-                      [] ->  return ()
-                      _  ->  do 
-                                 CE.catch (mapM_ funcgetorderid  sqryord) ( \e -> do 
-                                     logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
-                                     )
-                                 runRedis conn (ccanordertorediszset  curtime)
+        when (et == "scancel") $  do 
+              qryord <- queryorder
+              let sqryord = snd qryord
+              case sqryord of 
+                  [] ->  return ()
+                  _  ->  do 
+                             CE.catch (mapM_ funcgetorderid  sqryord) ( \e -> do 
+                                 logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
+                                 )
+                             runRedis conn (ccanordertorediszset  curtime)
 
 
-            when (et == "sopen") $ do 
-                  (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
-                  case (et == lastetype) of  
-                     False -> do
-                                  case res of 
-                                     True  -> takeorder "SELL" (lastquan) apr
-                                     False -> return () 
-                     True  -> return ()
+        when (et == "sopen") $ do 
+              (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
+              case (et == lastetype) of  
+                 False -> do
+                              case res of 
+                                 True  -> takeorder "SELL" (lastquan) apr
+                                 False -> return () 
+                 True  -> return ()
 
-            when (et == "merge") $ do 
-                  runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
+        when (et == "merge") $ do 
+              runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
 
-            when (et == "cprep") $ do 
-                  runRedis conn (preorcpreordertorediszset 0 etpr  0  0 curtime)
+        when (et == "cprep") $ do 
+              runRedis conn (preorcpreordertorediszset 0 etpr  0  0 curtime)
 
-            when (et == "reset") $ do 
-                  qrypos <- querypos
-                  (quan,pr) <- funcgetposinf qrypos
-                  let astate = show $ fromEnum Done
-                  let accugrid = case quan of 
-                                      x|x<=200            -> 0.0004
-                                      x|x<=360            -> 0.0005
-                                      x|x<=500            -> 0.0005
-                                      x|x<=1000&&x>500    -> 0.0005
-                                      x|x<=2000&&x>1000   -> 0.0005
-                                      x|x<=4000&&x>2000   -> 0.01
-                                      x|x<=8000&&x>4000   -> 0.03
-                                      x|x<=16000&&x>8000  -> 0.09
-                                      _                   -> 0.09
-                  runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+        when (et == "reset") $ do 
+              qrypos <- querypos
+              (quan,pr) <- funcgetposinf qrypos
+              let astate = show $ fromEnum Done
+              let accugrid = case quan of 
+                                  x|x<=200            -> 0.0004
+                                  x|x<=360            -> 0.0005
+                                  x|x<=500            -> 0.0005
+                                  x|x<=1000&&x>500    -> 0.0005
+                                  x|x<=2000&&x>1000   -> 0.0005
+                                  x|x<=4000&&x>2000   -> 0.01
+                                  x|x<=8000&&x>4000   -> 0.03
+                                  x|x<=16000&&x>8000  -> 0.09
+                                  _                   -> 0.09
+              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
 
-            when (et == "acupd") $ do 
-                  runRedis conn (acupdtorediszset etquan etpr etimee )
+        when (et == "acupd") $ do 
+              runRedis conn (acupdtorediszset etquan etpr etimee )
 
-            when (et == "fill") $ do 
-                  runRedis conn (endordertorediszset etquan etpr etimee curtime)  
+        when (et == "fill") $ do 
+              runRedis conn (endordertorediszset etquan etpr etimee curtime)  
 
-            when (et == "init") $ do 
-                  logact logByteStringStdout $ B.pack $ show ("aft init!")
-                  runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
+        when (et == "init") $ do 
+              logact logByteStringStdout $ B.pack $ show ("aft init!")
+              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
-            when (et == "bopen") $ do 
-                  logact logByteStringStdout $ B.pack $ show ("bef bopen!")
-                  case (et == lastetype) of  
-                     False -> do
-                                (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
-                                case res of 
-                                   True  -> takeorder "BUY" lastquan apr
-                                   False -> return () 
-                     True  -> return ()
+        when (et == "bopen") $ do 
+              logact logByteStringStdout $ B.pack $ show ("bef bopen!")
+              case (et == lastetype) of  
+                 False -> do
+                            (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
+                            case res of 
+                               True  -> takeorder "BUY" lastquan apr
+                               False -> return () 
+                 True  -> return ()
 
-        when (newforbidtime /=0) $ do
-            when (et == "bopen") $ do 
-                  logact logByteStringStdout $ B.pack $ show ("bef bopen!")
-                  case (et == lastetype) of  
-                     False -> do
-                                (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
-                                case res of 
-                                   True  -> takeorder "BUY" lastquan apr
-                                   False -> return () 
-                     True  -> return ()
 
         return (et,newforbidtime))  ("",0)
         
