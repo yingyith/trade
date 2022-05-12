@@ -41,7 +41,7 @@ diffspreadsheet :: [Double]
 diffspreadsheet = [-0.1 ,0.1  ,0.2  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
 
 depthrisksheet :: [Int] 
-depthrisksheet = [20  ,40  ,60 , 80 , 100, 120,140  ]   -- 
+depthrisksheet = [100  ,120  ,140 , 160 , 180, 200,220  ]   -- 
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"

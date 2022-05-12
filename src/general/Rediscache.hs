@@ -228,7 +228,7 @@ anlytoBuy conn msg tdepth =
                         x|x> 0 -> do
                                      curtimestampi <- getcurtimestamp
                                      let curtime = fromInteger curtimestampi ::Double
-                                     let stopclosegrid = 0.0002
+                                     let stopclosegrid = 0.0005
                                      logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
                                      runRedis conn $ do
                                         preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
