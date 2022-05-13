@@ -473,6 +473,7 @@ detailanalysHandler tbq conn tdepth = do
         when (et == "resethdeoth") $
             do 
               depthdata <- initupddepth conn
+              logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!",depthdata)
               atomically $ writeTVar tdepth depthdata
               logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
             `CE.catch` ( \e -> do 
