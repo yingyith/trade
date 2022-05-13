@@ -280,6 +280,7 @@ detailopHandler tbq conn = do
                                 False -> 0
         
         when (et == "scancel") $  do 
+              logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
               qryord <- queryorder
               let sqryord = snd qryord
               case sqryord of 
