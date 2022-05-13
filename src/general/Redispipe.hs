@@ -181,11 +181,12 @@ msgklinedoredis curtimestamp msg wc= do
       let orderdet  = case orderitem of
             Left _  ->  "some error"
             Right v ->   (v!!0)
+      void $ publish "sndc:1" ( msg)
       msgordertempdo msg orderdet
       let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
       let replydores = (read (replydomarray !! 0)) :: Integer
       let timediffi = curtimestamp-replydores
-      msgsklinetoredis msg curtimestamp
+      --msgsklinetoredis msg curtimestamp
       void $ publish "analysis:1" ( msg)
       return ()
       
