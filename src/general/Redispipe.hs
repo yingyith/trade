@@ -525,6 +525,7 @@ detailanalysHandler tbq conn tdepth = do
 
                               (_    ,_       ,_      ,_    ) -> do      --need resync 
                                     -- send event to queue ,get mvar ,convert mvar to tvar ,update
+                                    unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
                                     let aevent = Cronevent "resethdeoth"  B.empty
                                     addoeventtotbqueuestm aevent tbq
                                   --  depthdata <- unsafeIOToSTM $ initupddepth conn
