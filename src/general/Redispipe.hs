@@ -152,14 +152,14 @@ msgordertempdo msg osdetail =  do
         void $ publish "order:1" ("order" <> mmsg )
     
 
-msgsklinetoredis :: ByteString -> Integer -> Redis ()
-msgsklinetoredis msg stamp = do
-      void $ publish "sndc:1" ( msg)
-      let abyvaluestr = msg
-      let abykeystr = BLU.fromString secondkey
-      let stamptime = fromInteger stamp :: Double
-      void $ zadd abykeystr [(-stamptime,abyvaluestr)]
-      void $ zremrangebyrank abykeystr 150 1000
+--msgsklinetoredis :: ByteString -> Integer -> Redis ()
+--msgsklinetoredis msg stamp = do
+--      void $ publish "sndc:1" ( msg)
+--      let abyvaluestr = msg
+--      let abykeystr = BLU.fromString secondkey
+--      let stamptime = fromInteger stamp :: Double
+--      void $ zadd abykeystr [(-stamptime,abyvaluestr)]
+--      void $ zremrangebyrank abykeystr 150 1000
 
 
 depthtoredis :: [(Double,BLU.ByteString)] -> String -> Redis ()
@@ -391,8 +391,8 @@ opclHandler tbq  channel  msg = do
          let accugridlevel = case orderquan of 
                                   x|x<=150            -> 4
                                   x|x<=260&&x>150     -> 8
-                                  x|x>=260&&x<500     -> 16
-                                  x|x<=1000&&x>500    -> 24
+                                  x|x>=260&&x<500     -> 12
+                                  x|x<=1000&&x>500    -> 20
                                   x|x<=2000&&x>1000   -> 32
                                   x|x<=4000&&x>2000   -> 64
                                   x|x<=8000&&x>4000   -> 120
