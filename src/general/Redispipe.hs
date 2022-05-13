@@ -457,6 +457,7 @@ detailanalysHandler tbq conn tdepth = do
     iterateM_  ( \lastetype -> do
         logact logByteStringStdout $ B.pack $ show ("analys thread!")
         res      <- atomically $ readTBQueue tbq
+        logact logByteStringStdout $ B.pack $ show ("tbq is !",res)
         tbqlen   <- atomically $ lengthTBQueue tbq
         logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
