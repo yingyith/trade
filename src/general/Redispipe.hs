@@ -474,6 +474,7 @@ detailanalysHandler tbq conn tdepth = do
             do 
               depthdata <- initupddepth conn
               atomically $ writeTVar tdepth depthdata
+              logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
             `CE.catch` ( \e -> do 
                   logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
                   )
