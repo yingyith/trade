@@ -156,9 +156,11 @@ initbal conn = do
     (quan,pr) <- funcgetposinf qrypos
     logact logByteStringStdout $ B.pack $ show (quan==0,bqryord,sqryord,"init bal---!")
     let accugrid = case quan of 
-                        x|x<=500            -> 0.0012
-                        x|x<=1000&&x>500    -> 0.0024
-                        x|x<=2000&&x>1000   -> 0.005
+                        x|x<=200            -> 0.0005
+                        x|x<=360            -> 0.0005
+                        x|x<=500            -> 0.0005
+                        x|x<=1000&&x>500    -> 0.0005
+                        x|x<=2000&&x>1000   -> 0.001
                         x|x<=4000&&x>2000   -> 0.01
                         x|x<=8000&&x>4000   -> 0.03
                         x|x<=16000&&x>8000  -> 0.09
