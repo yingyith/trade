@@ -40,7 +40,7 @@ addeventtotbqueue evt tbq = do
                      Nothing -> writeTBQueue tbq evt
                      Just l  -> do 
                                   let befevttype = etype l
-                                  let befevtmatchpredi  =  (etype l == etype evt) && (DL.any (== befevttype ) ["bopen","sopen"])
+                                  let befevtmatchpredi  =  (etype l == etype evt) && (DL.any (== befevttype ) ["bopen","sopen","scancel"])
                                   let respredi = res && befevtmatchpredi
                                   case respredi of 
                                      False   -> writeTBQueue tbq evt
