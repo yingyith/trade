@@ -46,7 +46,7 @@ addeventtotbqueue evt tbq = do
                                      False   -> writeTBQueue tbq evt
                                      True    -> return () 
    `catch` (\(e :: SomeException) -> do
-        logact logByteStringStdout $ B.pack $ show (e)
+        logact logByteStringStdout $ B.pack $ show ("order ",e)
      )
 
 
@@ -66,7 +66,7 @@ addoeventtotbqueue evt tbq = do
                                    False -> writeTBQueue tbq evt
                                    True  -> return ()
    `catch` (\(e :: SomeException) -> do
-        logact logByteStringStdout $ B.pack $ show (e)
+        logact logByteStringStdout $ B.pack $ show ("oforwardevent",e)
      )
 
 addoeventtotbqueuestm :: Cronevent -> TBQueue Cronevent -> STM ()
