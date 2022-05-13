@@ -46,7 +46,7 @@ addeventtotbqueue evt tbq = do
                                      False   -> writeTBQueue tbq evt
                                      True    -> return () 
    `catch` (\(e :: SomeException) -> do
-        logact logByteStringStdout $ B.pack $ show ("order ",e)
+        logact logByteStringStdout $ B.pack $ show ("order ",e,evt)
      )
 
 

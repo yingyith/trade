@@ -367,6 +367,16 @@ opclHandler tbq  channel  msg = do
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
          logact logByteStringStdout $ B.pack $ show (orderstate,orderpr,curpr,ordergrid,"whynot!")
+         let accugridlevel = case orderquan of 
+                                  x|x<=150            -> 4
+                                  x|x<=260&&x>150     -> 8
+                                  x|x>=260&&x<500     -> 12
+                                  x|x<=1000&&x>500    -> 20
+                                  x|x<=2000&&x>1000   -> 32
+                                  x|x<=4000&&x>2000   -> 64
+                                  x|x<=8000&&x>4000   -> 120
+                                  x|x<=16000&&x>8000  -> 200
+                                  _                   -> 128 
         -- when ((orderstate == (show $ fromEnum Prepare)) &&  ((curpr -orderpr)>((-0.5)*ordergrid)    ))$ do  if < ,reset to origin
          when ((orderstate == (show $ fromEnum Prepare)) )$ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
@@ -388,16 +398,6 @@ opclHandler tbq  channel  msg = do
               let aevent = Opevent "cprep" 0 pr 0 ordid
               addeventtotbqueue aevent tbq
 
-         let accugridlevel = case orderquan of 
-                                  x|x<=150            -> 4
-                                  x|x<=260&&x>150     -> 8
-                                  x|x>=260&&x<500     -> 12
-                                  x|x<=1000&&x>500    -> 20
-                                  x|x<=2000&&x>1000   -> 32
-                                  x|x<=4000&&x>2000   -> 64
-                                  x|x<=8000&&x>4000   -> 120
-                                  x|x<=16000&&x>8000  -> 200
-                                  _                   -> 128 
          when (DL.any (== orderstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  )  $ do 
               let aevent = Opevent "scancel" 0 0 0 ordid
               addeventtotbqueue aevent tbq
