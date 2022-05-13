@@ -88,14 +88,16 @@ crossminstra abc pr = do
     let forthminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (5)) abc )
     let zerominsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
     let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,forthminsupporttrendpred) of 
-                           (False,False,False,True) -> ((>  160 ) $ fst $ fst $ (!! (2)) abc  , (> -100) $ fst $ fst $ (!! (3)) abc, (> -100) $ fst $ fst $ (!! (4)) abc ) 
-                           (False,False,False,False) -> ((>  380 ) $ fst $ fst $ (!! (2)) abc  , (> 380) $ fst $ fst $ (!! (3)) abc, (> 380) $ fst $ fst $ (!! (4)) abc ) 
-                           (_    ,_    ,_  ,_  ) -> ((>=  160 )  $ fst $ fst $ (!! (2)) abc, (> -180) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
+                           (False,False,False,True )     -> ((>  360 ) $ fst $ fst $ (!! (2)) abc  , (> -100) $ fst $ fst $ (!! (3)) abc, (> 100) $ fst $ fst $ (!! (4)) abc ) 
+                           (False,False,False,False)     -> ((>  380 ) $ fst $ fst $ (!! (2)) abc  , (> 380) $ fst $ fst $ (!! (3)) abc , (> 380) $ fst $ fst $ (!! (4)) abc ) 
+                           (_    ,_    ,_    ,_    )     -> ((>=  160 )  $ fst $ fst $ (!! (2)) abc, (> -180) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
     liftIO $ logact logByteStringStdout $ B.pack $ show (itempredi,lowpredi,fstminsupportpredi,aindex)
+  -- current market serious degree
+    liftIO $ logact logByteStringStdout $ B.pack $ show (itempredi)
     let openpredi = itempredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi && zerominsupporttrendpred
     let stopprofitgrid = case fallklineindex of 
                       x|x==1        -> (stopprofitlist !! 0)
@@ -106,14 +108,14 @@ crossminstra abc pr = do
                       x|x==6        -> (stopprofitlist !! 2)
                       _             -> 0.0004
                             
-    let newgrid = max (grid - (pr-lowp)) stopprofitgrid
+    let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     --let newgrid = stopprofitgrid 
-    let resquan  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
-                          (False,False,False) -> (round $ (1/8) * (fromIntegral resquanori:: Double) :: Int)
-                          (False,_    ,_    ) -> 0 
-                          (_    ,False,_    ) -> 0 
-                          (_    ,_    ,False) -> 0 
-                          (True ,True ,True ) -> resquanori
+    let (resquan,newgrid)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
+                          (False,False,False) -> ((round $ (1/8) * (fromIntegral resquanori:: Double) :: Int),3*basegrid)
+                          (False,_    ,_    ) -> (0,0)
+                          (_    ,False,_    ) -> (0,0) 
+                          (_    ,_    ,False) -> (0,0) 
+                          (True ,True ,True ) -> (resquanori,basegrid)
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
@@ -168,11 +170,11 @@ minrule ahll pr interval  = do
    let fastprevuppredi  =  (1   ==   (snd maxhigh))  --need 3m support 
    let fastprevdopredi  =  (1   ==   (snd minlow ))  --need 3m support
    let openpos          = case pr of 
-                             x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.125
-                             x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.25 
-                             x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.5                                 
-                             x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 0.8                                
-                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 1                              
+                             x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.01
+                             x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.1
+                             x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.2                                 
+                             x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 1                                
+                             x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.5                             
    let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
    rsiindexf <- getrsi ahl 8
    let indexlentwo = case (fst rsiindexf) of 
