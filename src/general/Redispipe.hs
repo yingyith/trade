@@ -18,6 +18,7 @@ module Redispipe
       sndtocacheHandler,
       detailanalysHandler,
       detailopHandler,
+      detailpubHandler,
       analysisHandler
 
     ) where
@@ -99,8 +100,8 @@ ispinginvalid = True
 isstrategyinvalid ::         Bool  
 isstrategyinvalid = True
 
-msgcacheandpingtempdo :: ByteString -> NC.Connection-> Redis ()
-msgcacheandpingtempdo msg wc = do
+msgcacheandpingtempdo :: ByteString -> Redis ()
+msgcacheandpingtempdo msg  = do
     liftIO $ logact logByteStringStdout "befcache--loopupd -----------!"                             
     void $ publish "minc:1" ("cache" <> msg)
     void $ publish "listenkey:1" ("listenkey" <> msg)
@@ -169,8 +170,8 @@ depthtoredis iteml side = do
                                            "asks" -> askdepth 
       void $ zadd abykeystr iteml
 
-msgklinedoredis :: Integer -> ByteString -> NC.Connection   ->  Redis ()
-msgklinedoredis curtimestamp msg wc= do 
+msgklinedoredis :: Integer -> ByteString  ->  Redis ()
+msgklinedoredis curtimestamp msg = do 
       res <- replydo curtimestamp 
       let klineitem = fst res
       let orderitem = snd res
@@ -195,8 +196,8 @@ msgklinedoredis curtimestamp msg wc= do
 getliskeyfromredis :: Redis ()
 getliskeyfromredis =  return ()
 
-publishThread :: R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
-publishThread rc wc tvar ptid = do 
+publishThread :: TBQueue Cronevent ->  R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
+publishThread tbq rc wc tvar ptid = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
       message <- (NC.receiveData wc)
       logact logByteStringStdout $ message                              
@@ -208,7 +209,8 @@ publishThread rc wc tvar ptid = do
       returnres  <-  case (timecountpred,intervalcbpred) of 
            (True ,True )   -> do
                                   sendpongdo wc
-                                  runRedis rc (msgcacheandpingtempdo  message wc )
+                                  let aevent = Cronevent "cachep"  message
+                                  addoeventtotbqueue aevent tbq
                                   return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
            (True ,False)   -> do  
                                   return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
@@ -220,24 +222,51 @@ publishThread rc wc tvar ptid = do
 
 
       when (matchoevt == "kline") $ do
-           runRedis rc (msgklinedoredis curtimestamp message wc)
+           let aevent = Cronevent "kline"  message
+           addoeventtotbqueue aevent tbq
 
 
       when (matchoevt == "or" || matchoevt == "ac" || matchoevt == "no") $ do
-           runRedis rc $ do 
-               res <- replydo curtimestamp 
+           let aevent = Cronevent "other"  message
+           addoeventtotbqueue aevent tbq
+
+      when (matchoevt == "depth") $ do
+           let aevent = Cronevent "depth"  message
+           addoeventtotbqueue aevent tbq
+
+      return returnres )  (0,0)
+      
+detailpubHandler :: TBQueue Cronevent  -> R.Connection -> IO () 
+detailpubHandler tbq conn = do 
+    iterateM_  ( \(lastetype,forbidtime) -> do 
+        res <- atomically $ readTBQueue tbq
+        tbqlen <- atomically $ lengthTBQueue tbq
+        logact logByteStringStdout $ B.pack $ show ("dopubb len is !",tbqlen)
+        currtime <- getcurtimestamp 
+        let curtime = fromInteger currtime ::Double
+        let et      = ectype res
+        let etcont  = eccont res
+
+        when (et == "kline")   $  do 
+           runRedis conn (msgklinedoredis currtime etcont )
+
+        when (et == "depth")   $  do 
+           runRedis conn $ do 
+               void $ publish "depth:1" ( etcont)
+
+        when (et == "other")   $  do 
+           runRedis conn $ do 
+               res <- replydo currtime
                let orderitem = snd res
                let orderdet  = case orderitem of
                      Left _  ->  "some error"
                      Right v ->   (v!!0)
-               msgordertempdo message orderdet
+               msgordertempdo etcont orderdet
 
-      when (matchoevt == "depth") $ do
-           runRedis rc $ do 
-               void $ publish "depth:1" ( message)
+        when (et == "cachep")   $  do 
+           runRedis conn (msgcacheandpingtempdo  etcont )
+        return (0,0) )  (0,0)
 
-      return returnres )  (0,0)
-      
 
 onInitialComplete :: IO ()
 onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
@@ -255,6 +284,9 @@ handlerThread conn ctrl tvar = do
          `catch` (\(e :: SomeException) -> do
            SI.hPutStrLn stderr $ "Got error: " ++ show e
            )
+
+
+
 
 detailopHandler :: TBQueue Opevent  -> R.Connection -> IO () 
 detailopHandler tbq conn = do 
