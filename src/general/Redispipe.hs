@@ -511,10 +511,9 @@ detailanalysHandler tbq conn tdepth orderst = do
         logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
 
-        let timecounta   = (currtime `quot` 60000) 
+        let timecounta   = (currtime `quot` 10000) 
         let timecountpred = (timecounta - timecountb) >= 1 
         let intervalcbpred = intervalcb == 0
-        logact logByteStringStdout $ B.pack $ show ("predi is ----- !",currtime,timecounta,timecounta-timecountb ,timecountpred,intervalcbpred)
         returnres  <-  case (timecountpred,intervalcbpred) of 
            (True ,True )   -> do
                                   return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
@@ -537,6 +536,7 @@ detailanalysHandler tbq conn tdepth orderst = do
 
         when (et == "resethdeoth") $
             do 
+               logact logByteStringStdout $ B.pack $ show ("predi is ----- !",currtime,timecounta,timecounta-timecountb ,timecountpred,intervalcbpred)
                case (timecountpred,intervalcbpred) of 
                   (True ,True )   -> do
                                           logact logByteStringStdout $ B.pack $ show ("success !")
@@ -551,6 +551,7 @@ detailanalysHandler tbq conn tdepth orderst = do
                                          return ()
                   (False,False)   -> do 
                                          return ()--reset intercalcount
+               logact logByteStringStdout $ B.pack $ show ("reset is ----- !")
 
 
         when (et == "depthtor")  $  do 
