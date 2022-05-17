@@ -413,6 +413,7 @@ opclHandler tbq ostvar  channel  msg = do
          when ((orderstater == (show $ fromEnum Prepare)  ) == True) $ do
               atomically $ do
                      orderstate <- readTVar ostvar
+                     unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate)
                      case (orderstate == (show $ fromEnum Prepare)) of 
                         True  -> do 
                                     let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
