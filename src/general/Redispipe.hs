@@ -488,8 +488,11 @@ opclHandler tbq ostvar  channel  msg = do
                       addeventtotbqueue aevent tbq
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
+                  atomically $ do 
                       let aevent = Opevent "reset" curorquanty curorderpr otimestamp corderid
-                      addeventtotbqueue aevent tbq
+                      addeventtotbqueuestm aevent tbq
+                      let astate = show $ fromEnum Done
+                      writeTVar ostvar astate
 
          when (eventname == "ACCOUNT_UPDATE") $ do 
               let usdtbalo    = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    )).key "cw"    -- !!0  
