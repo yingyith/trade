@@ -511,7 +511,7 @@ detailanalysHandler tbq conn tdepth orderst = do
         logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
 
-        let timecounta   = (currtime `quot` 10000) 
+        let timecounta   = (currtime `quot` 60000) 
         let timecountpred = (timecounta - timecountb) >= 1 
         let intervalcbpred = intervalcb == 0
         logact logByteStringStdout $ B.pack $ show ("predi is ----- !",currtime,timecounta,timecounta-timecountb ,timecountpred,intervalcbpred)
