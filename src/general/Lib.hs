@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Lib
     ( 
-     getrsi
+     getrsi,
+     getnewgrid,
+     getnewgridlevel
     ) where
 import GHC.Generics
 import Data.Aeson
@@ -30,3 +32,29 @@ getrsi hl hllen = do
   --liftIO $ print (rs)
   let rsi  = (100 - (100 /(1+rs)))
   return (round rsi,"")
+
+getnewgrid :: Integer -> Double
+getnewgrid quan = 
+                  case quan of 
+                      x|x<=200            -> 0.0005
+                      x|x<=360            -> 0.0008
+                      x|x<=500            -> 0.0012
+                      x|x<=1000&&x>500    -> 0.002
+                      x|x<=2000&&x>1000   -> 0.0025
+                      x|x<=4000&&x>2000   -> 0.007
+                      x|x<=8000&&x>4000   -> 0.03
+                      x|x<=16000&&x>8000  -> 0.09
+                      _                   -> 0.09
+
+getnewgridlevel :: Integer -> Double
+getnewgridlevel quan = 
+                  case quan of 
+                      x|x<=150            -> 4
+                      x|x<=260&&x>150     -> 8
+                      x|x>=260&&x<500     -> 12
+                      x|x<=1000&&x>500    -> 20
+                      x|x<=2000&&x>1000   -> 32
+                      x|x<=4000&&x>2000   -> 64
+                      x|x<=8000&&x>4000   -> 120
+                      x|x<=16000&&x>8000  -> 200
+                      _                   -> 128 

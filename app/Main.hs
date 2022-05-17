@@ -32,6 +32,7 @@ import Data.Text.IO as T
 import Data.Map
 import GHC.Generics
 import Prelude as PM
+import Lib
 import Network.HTTP.Req
 import Data.Digest.Pure.SHA
 import Data.ByteString.Lazy.UTF8 as BLU
@@ -149,16 +150,7 @@ initpos ::  IO (Double,(Integer,Double))
 initpos  = do 
     qrypos     <- querypos
     (quan,pr)  <- funcgetposinf qrypos
-    let accugrid = case quan of 
-                        x|x<=200               -> 0.0005
-                        x|x<=360               -> 0.0008
-                        x|x<=500               -> 0.0012
-                        x|x<=1000  && x>500    -> 0.0025
-                        x|x<=2000  && x>1000   -> 0.005
-                        x|x<=4000  && x>2000   -> 0.01
-                        x|x<=8000  && x>4000   -> 0.02
-                        x|x<=16000 && x>8000   -> 0.09
-                        _                      -> 0.09
+    let accugrid = getnewgrid quan  
     return (accugrid,(quan,pr))
 
 initbal :: R.Connection -> Double -> Integer -> Double -> [Value] -> [Value] -> Double -> IO String

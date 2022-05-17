@@ -63,6 +63,7 @@ import Data.Maybe
 import Data.Either
 import Httpstructure
 import Type.Reflection
+import Lib
 import Rediscache
 import Globalvar
 import Order
@@ -344,16 +345,7 @@ detailopHandler tbq ostvar conn = do
               (quan,pr) <- funcgetposinf qrypos
               logact logByteStringStdout $ B.pack $ show ("reset detail is !",quan,pr,qrypos)
               let astate = show $ fromEnum Done
-              let accugrid = case quan of 
-                                  x|x<=200            -> 0.0005
-                                  x|x<=360            -> 0.0006
-                                  x|x<=500            -> 0.0007
-                                  x|x<=1000&&x>500    -> 0.0008
-                                  x|x<=2000&&x>1000   -> 0.001
-                                  x|x<=4000&&x>2000   -> 0.01
-                                  x|x<=8000&&x>4000   -> 0.03
-                                  x|x<=16000&&x>8000  -> 0.09
-                                  _                   -> 0.09
+              let accugrid = getnewgrid quan 
               runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
 
         when (et == "acupd") $ do 
@@ -401,16 +393,7 @@ opclHandler tbq ostvar  channel  msg = do
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
          logact logByteStringStdout $ B.pack $ show (orderpr,curpr,ordergrid,"whynot!")
-         let accugridlevel = case orderquan of 
-                                  x|x<=150            -> 4
-                                  x|x<=260&&x>150     -> 8
-                                  x|x>=260&&x<500     -> 12
-                                  x|x<=1000&&x>500    -> 20
-                                  x|x<=2000&&x>1000   -> 32
-                                  x|x<=4000&&x>2000   -> 64
-                                  x|x<=8000&&x>4000   -> 120
-                                  x|x<=16000&&x>8000  -> 200
-                                  _                   -> 128 
+         let accugridlevel = getnewgridlevel orderquan
          when ((orderstater == (show $ fromEnum Prepare)  ) == True) $ do
               atomically $ do
                      orderstate <- readTVar ostvar
