@@ -200,7 +200,7 @@ publishThread :: TBQueue Cronevent ->  R.Connection -> NC.Connection -> IO (TVar
 publishThread tbq rc wc tvar ptid = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
       message <- (NC.receiveData wc)
-      logact logByteStringStdout $ message                              
+      --logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       let timecounta   = (curtimestamp `quot` 60000) 
       let timecountpred = (timecounta - timecountb) >= 1 
@@ -292,10 +292,10 @@ detailopHandler :: TBQueue Opevent ->  (TVar String) -> R.Connection -> IO ()
 detailopHandler tbq ostvar conn = do 
     iterateM_  ( \(lastetype,forbidtime) -> 
       do
-        logact logByteStringStdout $ B.pack $ show ("killbef thread!")
+       -- logact logByteStringStdout $ B.pack $ show ("killbef thread!")
         res <- atomically $ readTBQueue tbq
         tbqlen <- atomically $ lengthTBQueue tbq
-        logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
+        --logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
         let curtime = fromInteger currtime ::Double
         let et = etype res
@@ -312,7 +312,7 @@ detailopHandler tbq ostvar conn = do
                                 False -> 0
         
         when (et == "scancel") $  do 
-              logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
+             -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
               qryord <- queryorder
               let sqryord = snd qryord
               case sqryord of 
@@ -362,11 +362,11 @@ detailopHandler tbq ostvar conn = do
               runRedis conn (endordertorediszset etquan etpr etimee curtime)  
 
         when (et == "init") $ do 
-              logact logByteStringStdout $ B.pack $ show ("aft init!")
+            --  logact logByteStringStdout $ B.pack $ show ("aft init!")
               runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
 
         when (et == "bopen") $ do 
-              logact logByteStringStdout $ B.pack $ show ("bef bopen!")
+             -- logact logByteStringStdout $ B.pack $ show ("bef bopen!")
               case (et == lastetype) of  
                  False -> do
                             (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
@@ -504,11 +504,10 @@ opclHandler tbq ostvar  channel  msg = do
 detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthset) -> (TVar String) -> IO () 
 detailanalysHandler tbq conn tdepth orderst = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
-        logact logByteStringStdout $ B.pack $ show ("analys thread!")
         res      <- atomically $ readTBQueue tbq
-        logact logByteStringStdout $ B.pack $ show ("tbq is !",res)
+        --logact logByteStringStdout $ B.pack $ show ("tbq is !",res)
         tbqlen   <- atomically $ lengthTBQueue tbq
-        logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
+        logact logByteStringStdout $ B.pack $ show ("analys len is !",tbqlen)
         currtime <- getcurtimestamp 
 
         let timecounta   = (currtime `quot` 10000) 
@@ -601,7 +600,7 @@ detailanalysHandler tbq conn tdepth orderst = do
 
                               (_    ,_       ,_      ,_    ) -> do      --need resync 
                                     -- send event to queue ,get mvar ,convert mvar to tvar ,update
-                                    unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
+                                   -- unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
                                     let aevent = Cronevent "resethdeoth"  B.empty
                                     addoeventtotbqueuestm aevent tbq
                                   --  depthdata <- unsafeIOToSTM $ initupddepth conn
