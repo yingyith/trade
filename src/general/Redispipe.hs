@@ -514,19 +514,21 @@ detailanalysHandler tbq conn tdepth orderst = do
         let timecounta   = (currtime `quot` 10000) 
         let timecountpred = (timecounta - timecountb) >= 1 
         let intervalcbpred = intervalcb == 0
-        returnres  <-  case (timecountpred,intervalcbpred) of 
-           (True ,True )   -> do
-                                  return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
-           (True ,False)   -> do  
-                                  return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
-           (False,True )   -> do  
-                                  return (timecountb,0)
-           (False,False)   -> do 
-                                  return (timecountb,0)--reset intercalcount
-
         let curtime = fromInteger currtime ::Double
         let et      = ectype res
         let etcont  = eccont res
+        let etpred = et == "resethdeoth"
+        returnres  <-  case (timecountpred,intervalcbpred,etpred) of 
+           (True ,True ,True)   -> do
+                                  return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
+           (True ,False,True)   -> do  
+                                  return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
+           (False,True ,True)   -> do  
+                                  return (timecountb,0)
+           (False,False,True)   -> do 
+                                  return (timecountb,0)--reset intercalcount
+           (_    ,_    ,_   )   -> return (timecountb,intervalcb)
+
 
         when (et == "forward")   $  do 
               anlytoBuy conn etcont tdepth orderst--get all mseries from redis 
