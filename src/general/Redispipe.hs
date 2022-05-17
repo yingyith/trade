@@ -482,6 +482,8 @@ opclHandler tbq ostvar  channel  msg = do
                       addeventtotbqueuestm aevent tbq
                       let astate = show $ fromEnum Done
                       writeTVar ostvar astate
+                      orderstate <- readTVar ostvar
+                      unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("confirm cancel ---------",orderstate)
 
          when (eventname == "ACCOUNT_UPDATE") $ do 
               let usdtbalo    = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    )).key "cw"    -- !!0  
