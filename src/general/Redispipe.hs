@@ -342,12 +342,13 @@ detailopHandler tbq ostvar conn = do
         when (et == "reset") $ do 
               qrypos <- querypos
               (quan,pr) <- funcgetposinf qrypos
+              logact logByteStringStdout $ B.pack $ show ("reset detail is !",quan,pr,qrypos)
               let astate = show $ fromEnum Done
               let accugrid = case quan of 
                                   x|x<=200            -> 0.0005
-                                  x|x<=360            -> 0.0005
-                                  x|x<=500            -> 0.0005
-                                  x|x<=1000&&x>500    -> 0.0005
+                                  x|x<=360            -> 0.0006
+                                  x|x<=500            -> 0.0007
+                                  x|x<=1000&&x>500    -> 0.0008
                                   x|x<=2000&&x>1000   -> 0.001
                                   x|x<=4000&&x>2000   -> 0.01
                                   x|x<=8000&&x>4000   -> 0.03
@@ -427,6 +428,8 @@ opclHandler tbq ostvar  channel  msg = do
          when (orderstater == (show $ fromEnum Ccancel))  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
+                                orderstate <- readTVar ostvar
+                                unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef reset command ---------",orderstate)
                                 let aevent = Opevent "reset"  0 pr 0 ordid
                                 addeventtotbqueuestm aevent tbq
                                 let astate = show $ fromEnum Done
@@ -490,6 +493,8 @@ opclHandler tbq ostvar  channel  msg = do
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
                   atomically $ do 
+                      orderstate <- readTVar ostvar
+                      unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("confirm cancel ---------",orderstate)
                       let aevent = Opevent "reset" curorquanty curorderpr otimestamp corderid
                       addeventtotbqueuestm aevent tbq
                       let astate = show $ fromEnum Done
