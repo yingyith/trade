@@ -539,6 +539,7 @@ detailanalysHandler tbq conn tdepth orderst = do
             do 
                case (timecountpred,intervalcbpred) of 
                   (True ,True )   -> do
+                                          logact logByteStringStdout $ B.pack $ show ("success !")
                                           depthdata <- initupddepth conn
                                           atomically $ writeTVar tdepth depthdata
                                      `CE.catch` ( \e -> do 
