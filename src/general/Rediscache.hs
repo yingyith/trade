@@ -40,6 +40,7 @@ import Data.Aeson as A
 import Data.Aeson.Types
 import Database.Redis
 import GHC.Generics
+import GHC.Conc
 import Data.Monoid ((<>))
 import Control.Monad
 import Control.Exception
@@ -233,6 +234,7 @@ anlytoBuy conn msg tdepth ostvar =
                                      let stopclosegrid = 0.0005
                                      atomically $ do 
                                          orderstate <- readTVar ostvar
+                                         unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",orderstate)
                                          case (orderstate == (show $ fromEnum Done)) of 
                                             True  -> do 
                                                        let astate = show $ fromEnum Prepare
@@ -251,6 +253,7 @@ anlytoBuy conn msg tdepth ostvar =
                         logact logByteStringStdout $ BC.pack $ show ("normal open !",sumres,stopclosegrid,bigintervall)
                         atomically $ do 
                             orderstate <- readTVar ostvar
+                            unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",orderstate)
                             case (orderstate == (show $ fromEnum Done)) of 
                                True  -> do 
                                           let astate = show $ fromEnum Prepare
