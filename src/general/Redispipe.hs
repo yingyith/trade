@@ -514,7 +514,7 @@ detailanalysHandler tbq conn tdepth orderst = do
         let timecounta   = (currtime `quot` 10000) 
         let timecountpred = (timecounta - timecountb) >= 1 
         let intervalcbpred = intervalcb == 0
-        logact logByteStringStdout $ B.pack $ show ("predi is ----- !",currtime,timecounta-timecountb ,timecountpred,intervalcbpred)
+        logact logByteStringStdout $ B.pack $ show ("predi is ----- !",currtime,timecounta,timecounta-timecountb ,timecountpred,intervalcbpred)
         returnres  <-  case (timecountpred,intervalcbpred) of 
            (True ,True )   -> do
                                   return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
