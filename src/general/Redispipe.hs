@@ -536,7 +536,7 @@ detailanalysHandler tbq conn tdepth orderst = do
 
         when (et == "resethdeoth") $
             do 
-               logact logByteStringStdout $ B.pack $ show ("predi is ----- !",currtime,timecounta,timecounta-timecountb ,timecountpred,intervalcbpred)
+               logact logByteStringStdout $ B.pack $ show ("predi is ----- !",currtime,timecounta,timecountb,timecounta-timecountb ,timecountpred,intervalcbpred)
                case (timecountpred,intervalcbpred) of 
                   (True ,True )   -> do
                                           logact logByteStringStdout $ B.pack $ show ("success !")
