@@ -241,11 +241,11 @@ detailpubHandler tbq conn = do
     iterateM_  ( \(lastetype,forbidtime) -> do 
         res <- atomically $ readTBQueue tbq
         tbqlen <- atomically $ lengthTBQueue tbq
-        logact logByteStringStdout $ B.pack $ show ("dopubb len is !",tbqlen)
         currtime <- getcurtimestamp 
         let curtime = fromInteger currtime ::Double
         let et      = ectype res
         let etcont  = eccont res
+        logact logByteStringStdout $ B.pack $ show ("dopubb len is !",tbqlen,etcont)
 
         when (et == "kline")   $  do 
            runRedis conn (msgklinedoredis currtime etcont )

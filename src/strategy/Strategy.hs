@@ -196,8 +196,8 @@ minrule ahll pr interval  = do
                              x| x>2  && x<=5                                                           ->  480
                              x| x<=2                                                                  ->  600
 
-   logact logByteStringStdout $ B.pack  (show (maxhigh,minlow,rsiindexx,openpos))
-   logact logByteStringStdout $ B.pack  (show (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi))
+   --logact logByteStringStdout $ B.pack  (show (maxhigh,minlow,rsiindexx,openpos))
+   --logact logByteStringStdout $ B.pack  (show (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi))
    case (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi) of 
         (True  ,_     ,_     ,_     ,_     ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- up 
         (False ,True  ,False ,_     ,_     ,_     ) ->  return ((( (!!0) $ fromJust $  minrisksheet!?interval),gridspan),("uf",rsiindex)) -- up fast
