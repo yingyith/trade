@@ -408,11 +408,11 @@ opclHandler tbq ostvar  channel  msg = do
                         False -> do 
                                     return ()
 
-         when (orderstater == (show $ fromEnum Ccancel))  $ do
+         when ((orderstater == (show $ fromEnum Ccancel)) == True)  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
                                 orderstate <- readTVar ostvar
-                                unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef reset command ---------",orderstate)
+                                unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef resetcommand ---------",orderstate)
                                 let aevent = Opevent "reset"  0 pr 0 ordid
                                 addeventtotbqueuestm aevent tbq
                                 let astate = show $ fromEnum Done
@@ -454,25 +454,25 @@ opclHandler tbq ostvar  channel  msg = do
               let curquanty      = round curquantyy    :: Integer
               let curorquanty    = round curortyy      :: Integer
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
-                       let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
-                       when (curquanty < curorquanty)  $ do 
-                          logact logByteStringStdout $ B.pack $ show ("bef order update partfilled redis---------")
-                          let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid
+                  let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
+                  when (curquanty < curorquanty)  $ do 
+                     logact logByteStringStdout $ B.pack $ show ("bef order update partfilled redis---------")
+                     let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid
+                     addeventtotbqueue aevent tbq
+                  when (curquanty == curorquanty) $ do 
+                     when (curside == "BUY")  $  do 
+                          let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
                           addeventtotbqueue aevent tbq
-                       when (curquanty == curorquanty) $ do 
-                          when (curside == "BUY")  $  do 
-                               let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
-                               addeventtotbqueue aevent tbq
-                          when (curside == "SELL") $  do 
-                               atomically $ do
-                                   let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
-                                   addeventtotbqueuestm aevent tbq
-                                   let astate = show $ fromEnum Done
-                                   writeTVar ostvar astate
+                     when (curside == "SELL") $  do 
+                          atomically $ do
+                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
+                              addeventtotbqueuestm aevent tbq
+                              let astate = show $ fromEnum Done
+                              writeTVar ostvar astate
 
-              when ((DL.any (curorderstate ==) ["NEW"])==True) $ do 
-                      let aevent = Opevent "init" curquanty coriginpr otimestamp corderid
-                      addeventtotbqueue aevent tbq
+              when ((DL.any (curorderstate ==) ["NEW"     ])==True) $ do 
+                  let aevent = Opevent "init" curquanty coriginpr otimestamp corderid
+                  addeventtotbqueue aevent tbq
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
                   atomically $ do 
