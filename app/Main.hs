@@ -145,91 +145,104 @@ sendbye wconn conn ac ctrl  = do
 
 
 
-initbal :: R.Connection -> IO ()
-initbal conn = do 
-    qryord <- queryorder
-    qrypos <- querypos
-    let bqryord = fst qryord
-    let sqryord = snd qryord
-    currtime <- getcurtimestamp 
-    let curtime = fromInteger currtime ::Double
-    (quan,pr) <- funcgetposinf qrypos
-    logact logByteStringStdout $ B.pack $ show (quan==0,bqryord,sqryord,"init bal---!")
+initpos ::  IO (Double,(Integer,Double))
+initpos  = do 
+    qrypos     <- querypos
+    (quan,pr)  <- funcgetposinf qrypos
     let accugrid = case quan of 
-                        x|x<=200            -> 0.0005
-                        x|x<=360            -> 0.0005
-                        x|x<=500            -> 0.0005
-                        x|x<=1000&&x>500    -> 0.0005
-                        x|x<=2000&&x>1000   -> 0.001
-                        x|x<=4000&&x>2000   -> 0.01
-                        x|x<=8000&&x>4000   -> 0.03
-                        x|x<=16000&&x>8000  -> 0.09
-                        _                   -> 0.09
-    case (quan==0,bqryord,sqryord) of 
-       (True  ,[] ,[] ) ->  do
-                             let astate = show $ fromEnum Done
-                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-       (True  ,_  ,[] ) ->  do -- cancel the order ,set to prepare
-                             let astate = show $ fromEnum Done
-                             mapM_ funcgetorderid  sqryord
-                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-       (True  ,[] ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare 
-                             let astate = show $ fromEnum Done
-                             mapM_ funcgetorderid  bqryord
-                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-       (True  ,_  ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare
-                             let astate = show $ fromEnum Done
-                             mapM_ funcgetorderid  bqryord
-                             mapM_ funcgetorderid  sqryord
-                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-       (False ,[] ,[] ) ->  do -- set to halfdone
-                             let astate = show $ fromEnum HalfDone
-                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
-       (False ,[] ,_  ) ->  do-- set to cproinit --detail judge merge or init
-                             let astate = show $ fromEnum HalfDone
-                             mapM_ funcgetorderid  bqryord
-                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
-       (False ,_  ,[] ) ->  do-- set to promerge
-                             let astate = show $ fromEnum HalfDone
-                             mapM_ funcgetorderid  sqryord
-                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
-       (False ,_  ,_  ) ->  do-- not allow to appear,cancel the border and sorder,set state to hlddoaccugride 
-                             let astate = show $ fromEnum HalfDone
-                             mapM_ funcgetorderid  bqryord
-                             mapM_ funcgetorderid  sqryord
-                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                        x|x<=200               -> 0.0005
+                        x|x<=360               -> 0.0008
+                        x|x<=500               -> 0.0012
+                        x|x<=1000  && x>500    -> 0.0025
+                        x|x<=2000  && x>1000   -> 0.005
+                        x|x<=4000  && x>2000   -> 0.01
+                        x|x<=8000  && x>4000   -> 0.02
+                        x|x<=16000 && x>8000   -> 0.09
+                        _                      -> 0.09
+    return (accugrid,(quan,pr))
+
+initbal :: R.Connection -> Double -> Integer -> Double -> [Value] -> [Value] -> Double -> IO String
+initbal conn accugrid quan pr bqryord sqryord curtime= do 
+    resstate <-  case (quan==0,bqryord,sqryord) of 
+                       (True  ,[] ,[] ) ->  do
+                                             let astate = show $ fromEnum Done
+                                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+                       (True  ,_  ,[] ) ->  do -- cancel the order ,set to prepare
+                                             let astate = show $ fromEnum Done
+                                             mapM_ funcgetorderid  sqryord
+                                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+                       (True  ,[] ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare 
+                                             let astate = show $ fromEnum Done
+                                             mapM_ funcgetorderid  bqryord
+                                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+                       (True  ,_  ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare
+                                             let astate = show $ fromEnum Done
+                                             mapM_ funcgetorderid  bqryord
+                                             mapM_ funcgetorderid  sqryord
+                                             runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+                       (False ,[] ,[] ) ->  do -- set to halfdone
+                                             let astate = show $ fromEnum HalfDone
+                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+                       (False ,[] ,_  ) ->  do-- set to cproinit --detail judge merge or init
+                                             let astate = show $ fromEnum HalfDone
+                                             mapM_ funcgetorderid  bqryord
+                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+                       (False ,_  ,[] ) ->  do-- set to promerge
+                                             let astate = show $ fromEnum HalfDone
+                                             mapM_ funcgetorderid  sqryord
+                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+                       (False ,_  ,_  ) ->  do-- not allow to appear,cancel the border and sorder,set state to hlddoaccugride 
+                                             let astate = show $ fromEnum HalfDone
+                                             mapM_ funcgetorderid  bqryord
+                                             mapM_ funcgetorderid  sqryord
+                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             return astate
+    return resstate
     
 ws :: ClientApp ()
 ws connection = do
-    ctrll <- newPubSubController [][]
-    conn <- connect defaultConnectInfo
-    connn <- connect defaultConnectInfo
-    connnn <- connect defaultConnectInfo
-    connnnn <- connect defaultConnectInfo
-    initbal conn
-    depthdata <- initupddepth conn
-
-    depthtvar <-newTVarIO depthdata
-    let ordervari = Ordervar True 0 0 0
-    let orderVar = newTVarIO ordervari-- newTVarIO Int
-    sendthid <- myThreadId 
-    qws      <- newTBQueueIO 200 :: IO (TBQueue Cronevent)
-    qord     <- newTBQueueIO 30 :: IO (TBQueue Opevent)
-    qanalys  <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
+    ctrll                  <- newPubSubController [][]
+    conn                   <- connect defaultConnectInfo
+    connn                  <- connect defaultConnectInfo
+    connnn                 <- connect defaultConnectInfo
+    connnnn                <- connect defaultConnectInfo
+    (accugrid,(quan,pr))   <- initpos
+    qryord                 <- queryorder
+    currtime               <- getcurtimestamp 
+    let curtime            =  fromInteger currtime ::Double
+    let bqryord            =  fst qryord
+    let sqryord            =  snd qryord
+    initostate             <- initbal conn accugrid quan pr bqryord sqryord curtime
+    depthdata              <- initupddepth conn
+    depthtvar              <- newTVarIO depthdata
+    orderst                <- newTVarIO initostate
+    let ordervari          =  Ordervar True 0 0 0
+    let orderVar           =  newTVarIO ordervari-- newTVarIO Int
+    sendthid               <- myThreadId 
+    qws                    <- newTBQueueIO 200 :: IO (TBQueue Cronevent)
+    qord                   <- newTBQueueIO 30  :: IO (TBQueue Opevent)
+    qanalys                <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
 
     withAsync (publishThread qws conn connection orderVar sendthid) $ \_pubT -> do
         withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
            void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys depthtvar  )]
-           void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler          )]
-           void $ addChannels ctrll [] [("order:*"    , opclHandler  qord          )]
-           void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys depthtvar   )]
-           void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler           )]
+           void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler                    )]
+           void $ addChannels ctrll [] [("order:*"    , opclHandler  qord orderst            )]
+           void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys depthtvar    )]
+           void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler                     )]
            void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys depthtvar  )]
            threadDelay 900000
            forkIO $ detailpubHandler qws connnnn
            threadDelay 100000
-           forkIO $ detailopHandler qord connn
-           forkIO $ detailanalysHandler qanalys connnn depthtvar
+           forkIO $ detailopHandler qord orderst  connn
+           forkIO $ detailanalysHandler qanalys connnn depthtvar orderst
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000

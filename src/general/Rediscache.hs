@@ -57,6 +57,7 @@ import System.Log.Handler (setFormatter)
 import System.Log.Handler.Syslog
 import System.Log.Handler.Simple
 import System.Log.Formatter
+import Control.Concurrent.STM
 import Colog (LogAction,logByteStringStdout)
 import Data.Time.Format.ISO8601
 import Data.Time.Clock.POSIX
@@ -207,8 +208,8 @@ getdiffintervalflow = do
      return (fisar,sndar)
      
 
-anlytoBuy :: R.Connection -> BL.ByteString ->  (TVar AS.Depthset) -> IO ()
-anlytoBuy conn msg tdepth = 
+anlytoBuy :: R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar String) -> IO ()
+anlytoBuy conn msg tdepth ostvar = 
    do
      res          <- runRedis conn (getdiffintervalflow) 
      kline        <- parsetokline msg
@@ -230,6 +231,14 @@ anlytoBuy conn msg tdepth =
                                      curtimestampi <- getcurtimestamp
                                      let curtime = fromInteger curtimestampi ::Double
                                      let stopclosegrid = 0.0005
+                                     atomically $ do 
+                                         orderstate <- readTVar ostvar
+                                         case (orderstate == (show $ fromEnum Done)) of 
+                                            True  -> do 
+                                                       let astate = show $ fromEnum Prepare
+                                                       writeTVar ostvar astate
+                                            False -> do 
+                                                       return ()
                                      logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
                                      runRedis conn $ do
                                         preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
@@ -240,6 +249,14 @@ anlytoBuy conn msg tdepth =
                     let stopclosegrid = snd biginterval
                     when (fst biginterval > 50) $ do 
                         logact logByteStringStdout $ BC.pack $ show ("normal open !",sumres,stopclosegrid,bigintervall)
+                        atomically $ do 
+                            orderstate <- readTVar ostvar
+                            case (orderstate == (show $ fromEnum Done)) of 
+                               True  -> do 
+                                          let astate = show $ fromEnum Prepare
+                                          writeTVar ostvar astate
+                               False -> do 
+                                          return ()
                         runRedis conn $ do
                            preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
 

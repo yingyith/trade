@@ -10,6 +10,7 @@
        Cronevent (ectype,eccont,Cronevent),
        addoeventtotbqueuestm,
        addeventtotbqueue,
+       addeventtotbqueuestm,
        addoeventtotbqueue
 ) where
 
@@ -48,6 +49,20 @@ addeventtotbqueue evt tbq = do
    `catch` (\(e :: SomeException) -> do
         logact logByteStringStdout $ B.pack $ show ("order ",e,evt)
      )
+
+addeventtotbqueuestm :: Opevent -> TBQueue Opevent -> STM ()
+addeventtotbqueuestm evt tbq = do 
+   res <- isFullTBQueue tbq
+   befevt <- tryPeekTBQueue tbq
+   case befevt of 
+      Nothing -> writeTBQueue tbq evt
+      Just l  -> do 
+                   let befevttype = etype l
+                   let befevtmatchpredi  =  (etype l == etype evt) && (DL.any (== befevttype ) ["bopen","sopen","scancel"])
+                   let respredi = res && befevtmatchpredi
+                   case respredi of 
+                      False   -> writeTBQueue tbq evt
+                      True    -> return () 
 
 
 data Cronevent = Cronevent {
