@@ -107,43 +107,43 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
    let shmergequan =  show mergequan
    let quanty = toInteger sumres
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"----preorcpre---------" )
-   when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
-       --append new order after cancel
-       let otype = "Reset" :: String
-       let quantity = quanty 
-       let orderid =  lastorderid 
-       let side = "BUY" :: String
-       let shprice =  showdouble lastpr
-       let minquan = (round (10/pr))+2 :: Integer
+  -- when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
+  --     --append new order after cancel
+  --     let otype = "Reset" :: String
+  --     let quantity = quanty 
+  --     let orderid =  lastorderid 
+  --     let side = "BUY" :: String
+  --     let shprice =  showdouble lastpr
+  --     let minquan = (round (10/pr))+2 :: Integer
 
-       let addquant =  case compare quantity minquan of
-                           LT -> show minquan
-                           _  -> show quantity
-       let shgrid = showdouble grid
-       let lmergequan = show (lastquan+mergequan)
+  --     let addquant =  case compare quantity minquan of
+  --                         LT -> show minquan
+  --                         _  -> show quantity
+  --     let shgrid = showdouble grid
+  --     let lmergequan = show (lastquan+mergequan)
 
-       when (pr<= (lastpr-grid)) $ do  
-           let shstate =  show $ fromEnum Done
-           let shquant = show (lastquan ) --new quan should equel to old quan ,then can double
-           let shprice = showdouble pr
-           let mergebefquan = show (lastquan)  --totlolly quan  = shquant + mergebefquan
-           --need more strict condition ,and double the quant`
-           let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
-           void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+  --     when (pr<= (lastpr-grid)) $ do  
+  --         let shstate =  show $ fromEnum Done
+  --         let shquant = show (lastquan ) --new quan should equel to old quan ,then can double
+  --         let shprice = showdouble pr
+  --         let mergebefquan = show (lastquan)  --totlolly quan  = shquant + mergebefquan
+  --         --need more strict condition ,and double the quant`
+  --         let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
+  --         void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
-       when (pr>= (lastpr+grid)) $ do  
-           let otype = "Oprep" :: String
-           let quantity = lastquan 
-           let orderid =  show stamp 
-           let side = "SELL" :: String
-           let shprice =  showdouble (lastpr)
-           let shquant =  show (quantity)
-           let shstate =  show $ fromEnum Cprepare
-           let lmergequan = show mergequan
-           let shgrid = showdouble lastgrid
-           when (quantity > 0) $ do
-               let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-               void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+  --     when (pr>= (lastpr+grid)) $ do  
+  --         let otype = "Oprep" :: String
+  --         let quantity = lastquan 
+  --         let orderid =  show stamp 
+  --         let side = "SELL" :: String
+  --         let shprice =  showdouble (lastpr)
+  --         let shquant =  show (quantity)
+  --         let shstate =  show $ fromEnum Cprepare
+  --         let lmergequan = show mergequan
+  --         let shgrid = showdouble lastgrid
+  --         when (quantity > 0) $ do
+  --             let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+  --             void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
        when (mergequan == 0 && quanty > 0) $ do

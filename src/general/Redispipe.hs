@@ -424,7 +424,7 @@ opclHandler tbq ostvar  channel  msg = do
                         False -> do 
                                     return ()
 
-         when ((orderstater == (show $ fromEnum Process) && ((curpr-orderpr)> 0.001 ) ) == True) $ do
+         when (orderstater == (show $ fromEnum Ccancel))  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
                                 let aevent = Opevent "reset"  0 pr 0 ordid
