@@ -503,13 +503,27 @@ opclHandler tbq ostvar  channel  msg = do
 
 detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthset) -> (TVar String) -> IO () 
 detailanalysHandler tbq conn tdepth orderst = do 
-    iterateM_  ( \lastetype -> do
+    iterateM_  ( \(timecountb,intervalcb) -> do
         logact logByteStringStdout $ B.pack $ show ("analys thread!")
         res      <- atomically $ readTBQueue tbq
         logact logByteStringStdout $ B.pack $ show ("tbq is !",res)
         tbqlen   <- atomically $ lengthTBQueue tbq
         logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
+
+        let timecounta   = (currtime `quot` 10000) 
+        let timecountpred = (timecounta - timecountb) >= 1 
+        let intervalcbpred = intervalcb == 0
+        returnres  <-  case (timecountpred,intervalcbpred) of 
+           (True ,True )   -> do
+                                  return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
+           (True ,False)   -> do  
+                                  return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
+           (False,True )   -> do  
+                                  return (timecountb,0)
+           (False,False)   -> do 
+                                  return (timecountb,0)--reset intercalcount
+
         let curtime = fromInteger currtime ::Double
         let et      = ectype res
         let etcont  = eccont res
@@ -522,13 +536,20 @@ detailanalysHandler tbq conn tdepth orderst = do
 
         when (et == "resethdeoth") $
             do 
-              depthdata <- initupddepth conn
-              logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!",depthdata)
-              atomically $ writeTVar tdepth depthdata
-              logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
-            `CE.catch` ( \e -> do 
-                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
-                  )
+               case (timecountpred,intervalcbpred) of 
+                  (True ,True )   -> do
+                                          depthdata <- initupddepth conn
+                                          atomically $ writeTVar tdepth depthdata
+                                     `CE.catch` ( \e -> do 
+                                              logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
+                                              )
+                  (True ,False)   -> do  
+                                         return ()                                  --no update timecounta     intervalcount+1
+                  (False,True )   -> do  
+                                         return ()
+                  (False,False)   -> do 
+                                         return ()--reset intercalcount
+
 
         when (et == "depthtor")  $  do 
               let originmsg        =  BL.fromStrict etcont
@@ -584,7 +605,7 @@ detailanalysHandler tbq conn tdepth orderst = do
 
                     return ()
 
-        return et)  ""
+        return returnres)  (0,0)
 
 sndklinetoredis ::  ByteString -> Redis ()
 sndklinetoredis  msg  = do 
