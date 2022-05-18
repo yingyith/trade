@@ -319,10 +319,13 @@ detailopHandler tbq ostvar conn = do
               case sqryord of 
                   [] ->  return ()
                   _  ->  do 
-                             CE.catch (mapM_ funcgetorderid  sqryord) ( \e -> do 
+                             CE.catch ( do 
+                                            mapM_ funcgetorderid  sqryord
+                                            runRedis conn (ccanordertorediszset  curtime)
+
+                                      ) ( \e -> do 
                                  logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
                                  )
-                             runRedis conn (ccanordertorediszset  curtime)
 
 
         when (et == "sopen") $ do 
@@ -417,6 +420,16 @@ opclHandler tbq ostvar  channel  msg = do
                                 addeventtotbqueuestm aevent tbq
                                 let astate = show $ fromEnum Done
                                 writeTVar ostvar astate
+
+        -- when ((orderstater == (show $ fromEnum Process)) == True )  $ do
+        --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+        --      atomically $ do
+        --                        orderstate <- readTVar ostvar
+        --                        unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef resetcommand ---------",orderstate)
+        --                        let aevent = Opevent "reset"  0 pr 0 ordid
+        --                        addeventtotbqueuestm aevent tbq
+        --                        let astate = show $ fromEnum Done
+        --                        writeTVar ostvar astate
 
          when ((orderstater == (show $ fromEnum Cprepare) ) == True) $ do 
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
