@@ -230,14 +230,15 @@ secondrule (a,b) = do
                      let res  = (abs (a-b))/(max a b)
                      let quan = case (a>b) of 
                                   True  -> case res of 
-                                    x|x<0.1 && x>=0   -> (depthrisksheet !! 0) 
-                                    x|x<0.3 && x>=0.1 ->( depthrisksheet !! 1) 
-                                    x|x<0.7 && x>=0.3 ->( depthrisksheet !! 2)
-                                    x|x<1.2 && x>=0.7 ->( depthrisksheet !! 3)
-                                    x|x<2.4 && x>=1.2 ->( depthrisksheet !! 4)
-                                    x|x<5   && x>=2.4 ->( depthrisksheet !! 5)
-                                    x|x>=5            ->( depthrisksheet !! 6)
-                                    _                 ->( depthrisksheet !! 0)
+                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  -> ( depthrisksheet !! 0) 
+                                      x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  -> ( depthrisksheet !! 1) 
+                                      x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  -> ( depthrisksheet !! 2)
+                                      x|x<(diffspreadsheet!!4) && x>= (diffspreadsheet!!3)  -> ( depthrisksheet !! 3)
+                                      x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  -> ( depthrisksheet !! 4)
+                                      x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  -> ( depthrisksheet !! 5)
+                                      x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  -> ( depthrisksheet !! 6)
+                                      x|x>= (diffspreadsheet!!7)                            -> ( depthrisksheet !! 6)
+                                      _                                                     -> ( depthrisksheet !! 0)
                                   False -> -100
                      return (quan,res)
 
