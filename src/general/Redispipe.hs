@@ -395,7 +395,7 @@ opclHandler tbq ostvar  channel  msg = do
          let orderstater = DL.last order
          kline <- getmsgfromstr  klinemsg 
          let curpr = read $ kclose kline :: Double
-         logact logByteStringStdout $ B.pack $ show (orderpr,curpr,ordergrid,"whynot!")
+         logact logByteStringStdout $ B.pack $ show (orderstater,orderpr,curpr,ordergrid,"whynot!")
          let accugridlevel = getnewgridlevel orderquan
          when ((orderstater == (show $ fromEnum Prepare)  ) == True) $ do
               atomically $ do
