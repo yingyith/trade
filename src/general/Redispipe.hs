@@ -147,7 +147,7 @@ msgordertempdo msg osdetail =  do
     let seperate = BLU.fromString ":::"
     let mmsg = osdetail <> seperate <> msg
 
-    when (DL.any (== orderstate) [(show $ fromEnum Cprepare),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
+    when (DL.any (== orderstate) [(show $ fromEnum Cprepare),(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit),
                                   (show $ fromEnum Prepare),(show $ fromEnum Process),(show $ fromEnum Ppartdone),(show $ fromEnum Proinit),(show $ fromEnum HalfDone)
                                  ]  )  $ do 
         liftIO $ logact logByteStringStdout "take order part"                             
