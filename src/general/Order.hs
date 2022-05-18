@@ -160,7 +160,7 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
-       when (mergequan /= 0 && quanty > 0) $ do
+       when (mergequan /= 0 && quanty > (toInteger $ (!!3) $ depthrisksheet )) $ do
            when (mergequan < 1000) $ do      -- high frq trade
                let otype = "Prep" :: String
                let orderid =  show stamp 
