@@ -51,6 +51,7 @@ import Numeric
 import Globalvar
 import Data.Typeable
 import Logger
+import Lib
 import Myutils
 import Colog (LogAction,logByteStringStdout)
 import Redisutils
@@ -167,7 +168,7 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
-               let shgrid = showdouble $  grid*5  --add pos = 10
+               let shgrid = showdouble $  getnewgrid mergequan  --add pos = 10
                let lmergequan = show mergequan
                let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
                void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
@@ -178,7 +179,7 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
-               let shgrid = showdouble  grid
+               let shgrid = showdouble $ getnewgrid mergequan
                let lmergequan = show mergequan
                let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
                void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
@@ -502,7 +503,7 @@ cendordertorediszset quan  otimestamp = do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-stamp,abyvaluestr)]
 
-settodefredisstate :: String -> String  -> String -> String -> Double -> Integer -> Double -> Int -> Double -> Redis ()
+settodefredisstate :: String -> String  -> String -> String -> Double -> Integer -> Double -> Integer -> Double -> Redis ()
 settodefredisstate side otype state orderid  pr quan grid  mergequan stamp = do 
    let abykeystr = BL.fromString orderkey
    let coin = "ADA" :: String

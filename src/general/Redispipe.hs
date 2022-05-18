@@ -349,7 +349,8 @@ detailopHandler tbq ostvar conn = do
               logact logByteStringStdout $ B.pack $ show ("reset detail is !",quan,pr,qrypos)
               let astate = show $ fromEnum Done
               let accugrid = getnewgrid quan 
-              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+              let mergequan = quan
+              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  mergequan  curtime)-- set to Done prepare 
 
         when (et == "acupd") $ do 
               runRedis conn (acupdtorediszset etquan etpr etimee )
