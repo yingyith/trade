@@ -82,15 +82,16 @@ crossminstra abc pr = do
                       x|x==6        -> (quanlist !! 4)
                       _             -> 0
     let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
-    let fstminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (2)) abc )
-    let sndminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
-    let thdminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
+    let fstminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (2)) abc )
+    let sndminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
+    let thdminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
     let forthminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (5)) abc )
-    let zerominsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
+    let zerominsupporttrendpred  = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
     let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,forthminsupporttrendpred) of 
-                           (False,False,False,True )     -> ((>  360 ) $ fst $ fst $ (!! (2)) abc  , (> -100) $ fst $ fst $ (!! (3)) abc, (> 100) $ fst $ fst $ (!! (4)) abc ) 
-                           (False,False,False,False)     -> ((>  380 ) $ fst $ fst $ (!! (2)) abc  , (> 380) $ fst $ fst $ (!! (3)) abc , (> 380) $ fst $ fst $ (!! (4)) abc ) 
-                           (_    ,_    ,_    ,_    )     -> ((>=  160 )  $ fst $ fst $ (!! (2)) abc, (> -180) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
+                           (False,False,False,True )     -> ((>   360 ) $ fst $ fst $ (!! (2)) abc, (> -100) $ fst $ fst $ (!! (3)) abc, (> 100 ) $ fst $ fst $ (!! (4)) abc ) 
+                           (False,False,False,False)     -> ((>   380 ) $ fst $ fst $ (!! (2)) abc, (> 380 ) $ fst $ fst $ (!! (3)) abc ,(> 380 ) $ fst $ fst $ (!! (4)) abc ) 
+                           (True ,False,False,_    )     -> ((>   240 ) $ fst $ fst $ (!! (2)) abc, (> 380 ) $ fst $ fst $ (!! (3)) abc ,(> 380 ) $ fst $ fst $ (!! (4)) abc ) 
+                           (_    ,_    ,_    ,_    )     -> ((>=  -100 ) $ fst $ fst $ (!! (2)) abc, (> -260) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
@@ -111,10 +112,10 @@ crossminstra abc pr = do
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     --let newgrid = stopprofitgrid 
     let (resquan,newgrid)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
-                          (False,False,False) -> ((round $ (1/8) * (fromIntegral resquanori:: Double) :: Int),3*basegrid)
-                          (False,_    ,_    ) -> (0,0)
-                          (_    ,False,_    ) -> (0,0) 
-                          (_    ,_    ,False) -> (0,0) 
+                          (False,False,False) -> ((minrulesheet!!0),8*basegrid)
+                          (False,_    ,_    ) -> ((minrulesheet!!3),basegrid)
+                          (_    ,False,_    ) -> ((minrulesheet!!2),2*basegrid) 
+                          (_    ,_    ,False) -> ((minrulesheet!!1),5*basegrid) 
                           (True ,True ,True ) -> (resquanori,basegrid)
     case (openpredi) of 
           True    -> return (resquan,newgrid)
@@ -193,7 +194,7 @@ minrule ahll pr interval  = do
                              x| x>12 && x<=18                                                         ->  120
                              x| x>8  && x<=12                                                         ->  240
                              x| x>5  && x<=8                                                          ->  360
-                             x| x>2  && x<=5                                                           ->  480
+                             x| x>2  && x<=5                                                          ->  480
                              x| x<=2                                                                  ->  600
 
    --logact logByteStringStdout $ B.pack  (show (maxhigh,minlow,rsiindexx,openpos))
@@ -219,14 +220,13 @@ gethlsheetsec index kll =  do
     let nextitemcp  = read $ kclose nextitem :: Double 
     let predication = (curitemcp - nextitemcp) 
     let res = case compare predication  0 of 
-                  LT   ->  (AS.Hlnode curitemt 0 curitemcp 0 "low"    "1s" curitemcp)
-                  GT   ->  (AS.Hlnode curitemt curitemcp 0 0 "high"   "1s" curitemcp)
-                  EQ   ->  (AS.Hlnode curitemt curitemcp 0 0 "wsmall" "1s" curitemcp)
+                  LT   ->  (AS.Hlnode curitemt 0         curitemcp 0 "low"    "1s" curitemcp)
+                  GT   ->  (AS.Hlnode curitemt curitemcp 0         0 "high"   "1s" curitemcp)
+                  EQ   ->  (AS.Hlnode curitemt curitemcp 0         0 "wsmall" "1s" curitemcp)
     return res
 
-
-secondrule ::  (Double,Double)  -> IO (Int,Double)
-secondrule (a,b) = do 
+getdiffgridnum :: (Double,Double)-> IO (Int,Double) 
+getdiffgridnum  (a,b) = do 
                      let res  = (abs (a-b))/(max a b)
                      let quan = case (a>b) of 
                                   True  -> case res of 
@@ -238,8 +238,21 @@ secondrule (a,b) = do
                                       x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  -> ( depthrisksheet !! 5)
                                       x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  -> ( depthrisksheet !! 6)
                                       x|x>= (diffspreadsheet!!7)                            -> ( depthrisksheet !! 6)
-                                      _                                                     -> ( depthrisksheet !! 0)
-                                  False -> -100
+                                      _                                                     -> 60
+                                  False -> -1000
                      return (quan,res)
+
+secondrule ::  [(Double,Double)]  -> IO (Int,Double)
+secondrule ablist = do 
+                     let itemf = (ablist !!0)
+                     let items = (ablist !!1)
+                     resf <- getdiffgridnum itemf
+                     ress <- getdiffgridnum items
+                     let totalquan = (fst resf)+(fst ress) 
+                     let resquan = case totalquan of 
+                                         x|x<=0 -> 0 
+                                         x|x>0  -> max (fst resf) (fst ress)
+                     return (resquan,max (snd resf) (snd ress))
+
 
 

@@ -24,24 +24,28 @@ module Globalvar (
     biddepth,
     askdepth,
     diffspreadsheet,
+    minrulesheet,
     depthrisksheet,
     holdposkey
 ) where
 
-defintervallist :: [String]
-defintervallist = ["3m","5m","15m","1h","4h","12h","3d"] 
+defintervallist   :: [String]
+defintervallist   = ["3m","5m","15m","1h","4h","12h","3d"] 
 
-quanlist :: [Int]
-quanlist = [300,500,1000,2000,4000,8300] -- 15m,1h,4h,12h
+quanlist          :: [Int]
+quanlist          = [300,500,1000,2000,4000,8300] -- 15m,1h,4h,12h
 
-stopprofitlist :: [Double]
-stopprofitlist = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
+stopprofitlist    :: [Double]
+stopprofitlist    = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
-diffspreadsheet :: [Double]
-diffspreadsheet = [0.06 ,0.1  ,0.2  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
+diffspreadsheet   :: [Double]
+diffspreadsheet   = [0.1 ,0.2  ,0.3  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
 
-depthrisksheet :: [Int] 
-depthrisksheet = [100  ,120  ,160 , 200 , 300, 400 , 520  ]   -- 
+depthrisksheet    :: [Int] 
+depthrisksheet    = [100  ,120  ,160 , 200 , 300, 400 , 520  ]   -- 
+
+minrulesheet      :: [Int] --base  to serious degree
+minrulesheet      = [ -500 ,-400  ,-300 , -200  ]   -- 
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"

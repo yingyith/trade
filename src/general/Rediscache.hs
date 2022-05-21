@@ -225,7 +225,7 @@ anlytoBuy conn msg tdepth ostvar =
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      case (fst biginterval < 1) of  
          True  -> do 
-                    let sumres = sndquan
+                    let sumres = sndquan+(fst biginterval)
                     case sumres of 
                         x|x<=0 -> return () 
                         x|x> 0 -> do
@@ -241,7 +241,7 @@ anlytoBuy conn msg tdepth ostvar =
                                                        writeTVar ostvar astate
                                             False -> do 
                                                        return ()
-                                     logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
+                                     logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,sndquan,(fst biginterval),stopclosegrid,sndratio)
                                      runRedis conn $ do
                                         preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
          False -> do 
