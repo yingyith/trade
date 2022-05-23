@@ -233,7 +233,7 @@ anlytoBuy conn msg tdepth ostvar =
                                      let stopclosegrid = 0.0005
                                      atomically $ do 
                                          orderstate <- readTVar ostvar
-                                         unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",orderstate)
+                                         unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",orderstate,sumres,sndquan,(fst biginterval))
                                          case (orderstate == (show $ fromEnum Done)) of 
                                             True  -> do 
                                                        let astate = show $ fromEnum Prepare
@@ -252,7 +252,7 @@ anlytoBuy conn msg tdepth ostvar =
                         logact logByteStringStdout $ BC.pack $ show ("normal open !",sumres,stopclosegrid,bigintervall)
                         atomically $ do 
                             orderstate <- readTVar ostvar
-                            unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",orderstate)
+                            unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",orderstate,sumres)
                             case (orderstate == (show $ fromEnum Done)) of 
                                True  -> do 
                                           let astate = show $ fromEnum Prepare
