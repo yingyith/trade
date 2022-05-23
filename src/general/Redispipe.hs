@@ -246,7 +246,7 @@ detailpubHandler tbq conn = do
         let curtime = fromInteger currtime ::Double
         let et      = ectype res
         let etcont  = eccont res
-        logact logByteStringStdout $ B.pack $ show ("dopubb len is !",tbqlen,etcont)
+        logact logByteStringStdout $ B.pack $ show ("dopubb len is !",tbqlen,et,etcont)
 
         when (et == "kline")   $  do 
            runRedis conn (msgklinedoredis currtime etcont )
@@ -450,6 +450,7 @@ opclHandler tbq ostvar  channel  msg = do
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = T.unpack $ outString eventstr 
+         logact logByteStringStdout $ B.pack $ show ("event type is",eventname)
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               let curorderstate  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
               let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
