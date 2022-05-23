@@ -125,7 +125,7 @@ matchmsgfun msg = do
     let  matchacmsg = BLU.fromString "ACCOUNT_UPDATE"
     let  matchorevent = DB.drop 90 $ DB.take 108 msg 
     let  matchormsg = BLU.fromString "ORDER_TRADE_UPDATE"
-    liftIO $ logact logByteStringStdout $ B.pack $  show (matchacevent,matchorevent)                         
+    --liftIO $ logact logByteStringStdout $ B.pack $  show (matchacevent,matchorevent)                         
     let klinepredi = matchkline == matchkmsg
     let depthpredi = matchdepth == matchdmsg
     let acpredi = matchacevent == matchacmsg
@@ -176,7 +176,7 @@ msgklinedoredis curtimestamp msg = do
       res <- replydo curtimestamp 
       let klineitem = fst res
       let orderitem = snd res
-      liftIO $ logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem)
+      --liftIO $ logact logByteStringStdout $ B.pack $ show ("index too large --------!",klineitem)
       let cachetime = case klineitem of
             Left _  ->  "some error"
             Right v ->   (v!!0)
@@ -516,7 +516,7 @@ detailanalysHandler tbq conn tdepth orderst = do
         res      <- atomically $ readTBQueue tbq
         --logact logByteStringStdout $ B.pack $ show ("tbq is !",res)
         tbqlen   <- atomically $ lengthTBQueue tbq
-        logact logByteStringStdout $ B.pack $ show ("analys len is !",tbqlen)
+--        logact logByteStringStdout $ B.pack $ show ("analys len is !",tbqlen)
         currtime <- getcurtimestamp 
 
         let timecounta   = (currtime `quot` 10000) 
