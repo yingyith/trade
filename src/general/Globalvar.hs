@@ -42,7 +42,7 @@ diffspreadsheet   :: [Double]
 diffspreadsheet   = [0.1 ,0.2  ,0.3  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
 
 depthrisksheet    :: [Int] 
-depthrisksheet    = [100  ,120  ,160 , 200 , 300, 400 , 620  ]   -- 
+depthrisksheet    = [100  ,120  ,200 , 300 , 410, 510 , 620  ]   -- 
 
 minrulesheet      :: [Int] --base  to serious degree
 minrulesheet      = [ -800 ,-650  ,-700 , -400  ]   -- 
