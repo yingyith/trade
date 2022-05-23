@@ -114,7 +114,7 @@ crossminstra abc pr = do
                           (_    ,False,_    ) -> ((minrulesheet!!2),2*basegrid) 
                           (_    ,_    ,False) -> ((minrulesheet!!1),5*basegrid) 
                           (True ,True ,True ) -> (resquanori,basegrid)
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",abc,itempredi,lowpredi,fstminsupportpredi,aindex,itempredi)
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",resquanori,abc,itempredi,lowpredi,fstminsupportpredi,sndminsupporttrendpred,thdminsupportpredi,aindex,itempredi)
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 
