@@ -117,7 +117,8 @@ crossminstra abc pr = do
     liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",resquanori,abc,itempredi,lowpredi,fstminsupportpredi,sndminsupporttrendpred,thdminsupportpredi,aindex,itempredi)
     case (openpredi) of 
           True    -> return (resquan,newgrid)
-          False   -> return ((min 0 resbquan) ,newgrid) 
+          False   -> return (resquan,newgrid) 
+          --False   -> return ((min 0 resbquan) ,newgrid) 
         --(False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
    -- return (130,0.0005)
                                           
