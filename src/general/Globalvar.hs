@@ -42,7 +42,7 @@ diffspreadsheet   :: [Double]
 diffspreadsheet   = [0.1 ,0.2  ,0.3  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
 
 depthrisksheet    :: [Int] 
-depthrisksheet    = [100  ,120  ,160 , 200 , 300, 400 , 520  ]   -- 
+depthrisksheet    = [100  ,120  ,160 , 200 , 300, 400 , 620  ]   -- 
 
 minrulesheet      :: [Int] --base  to serious degree
 minrulesheet      = [ -500 ,-400  ,-300 , -200  ]   -- 
@@ -67,4 +67,4 @@ depthkey = "depthkey"
 secondstick = 60 :: Integer
 sellorderid = "yid1sCrw2kRUAF9CvJDGK16IP"
 buyorderid = "yid1bCrw2kRUAF9CvJDGK16IP"
-minquan = 200 
+minquan = 100  :: Int

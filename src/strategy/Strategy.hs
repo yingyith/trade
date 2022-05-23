@@ -88,23 +88,23 @@ crossminstra abc pr = do
     let forthminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (5)) abc )
     let zerominsupporttrendpred  = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
     let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,forthminsupporttrendpred) of 
-                           (False,False,False,True )     -> ((>   360 ) $ fst $ fst $ (!! (2)) abc, (> -100) $ fst $ fst $ (!! (3)) abc, (> 100 ) $ fst $ fst $ (!! (4)) abc ) 
-                           (False,False,False,False)     -> ((>   380 ) $ fst $ fst $ (!! (2)) abc, (> 380 ) $ fst $ fst $ (!! (3)) abc ,(> 380 ) $ fst $ fst $ (!! (4)) abc ) 
-                           (True ,False,False,_    )     -> ((>   240 ) $ fst $ fst $ (!! (2)) abc, (> 380 ) $ fst $ fst $ (!! (3)) abc ,(> 380 ) $ fst $ fst $ (!! (4)) abc ) 
-                           (_    ,_    ,_    ,_    )     -> ((>=  -100 ) $ fst $ fst $ (!! (2)) abc, (> -260) $ fst $ fst $ (!! (3)) abc, (> -250) $ fst $ fst $ (!! (4)) abc ) 
+             (False,False,False,True )     -> ((>   360 ) $ fst $ fst $ (!! (2)) abc,  (> -100) $ fst $ fst $ (!! (3)) abc,  (> 100 ) $ fst $ fst $ (!! (4)) abc ) 
+             (False,False,False,False)     -> ((>   380 ) $ fst $ fst $ (!! (2)) abc,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
+             (True ,False,False,_    )     -> ((>   240 ) $ fst $ fst $ (!! (2)) abc,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
+             (_    ,_    ,_    ,_    )     -> ((>=  -100 ) $ fst $ fst $ (!! (2)) abc, (> -260) $ fst $ fst $ (!! (3)) abc,  (> -250) $ fst $ fst $ (!! (4)) abc ) 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
     let openpredi = itempredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi && zerominsupporttrendpred
     let stopprofitgrid = case fallklineindex of 
-                      x|x==1        -> (stopprofitlist !! 0)
-                      x|x==2        -> (stopprofitlist !! 1)
-                      x|x==3        -> (stopprofitlist !! 2)
-                      x|x==4        -> (stopprofitlist !! 2)
-                      x|x==5        -> (stopprofitlist !! 2)
-                      x|x==6        -> (stopprofitlist !! 2)
-                      _             -> 0.0004
+                              x|x==1        -> (stopprofitlist !! 0)
+                              x|x==2        -> (stopprofitlist !! 1)
+                              x|x==3        -> (stopprofitlist !! 2)
+                              x|x==4        -> (stopprofitlist !! 2)
+                              x|x==5        -> (stopprofitlist !! 2)
+                              x|x==6        -> (stopprofitlist !! 2)
+                              _             -> 0.0004
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     --let newgrid = stopprofitgrid 

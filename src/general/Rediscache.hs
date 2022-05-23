@@ -229,6 +229,7 @@ anlytoBuy conn msg tdepth ostvar =
                     case sumres of 
                         x|x<=0 -> return () 
                         x|x> 0 -> do
+                                     let aresquan = max minquan sumres
                                      curtimestampi <- getcurtimestamp
                                      let curtime = fromInteger curtimestampi ::Double
                                      let stopclosegrid = 0.0005
@@ -243,7 +244,7 @@ anlytoBuy conn msg tdepth ostvar =
                                                        return ()
                                      logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,sndquan,(fst biginterval),stopclosegrid,sndratio)
                                      runRedis conn $ do
-                                        preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
+                                        preorcpreordertorediszset aresquan dcp  curtimestampi stopclosegrid curtime
          False -> do 
                     let sumres = fst biginterval
                     curtimestampi <- getcurtimestamp
