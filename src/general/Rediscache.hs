@@ -221,6 +221,7 @@ anlytoBuy conn msg tdepth ostvar =
      apr          <- AS.depthmidpr atdepth
      let ares     =  AS.getBidAskNum apr atdepth
      (sndquan,sndratio)  <- secondrule ares
+     logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",sndquan,(fst biginterval))
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      case (fst biginterval < 1) of  
          True  -> do 
