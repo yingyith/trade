@@ -249,7 +249,7 @@ secondrule ablist = do
                      let totalquan = (fst resf)+(fst ress) 
                      let resquan = case totalquan of 
                                          x|x<=0 -> 0 
-                                         x|x>0  -> max (fst resf) (fst ress)
+                                         x|x>0  -> (fst resf)+ (fst ress)
                      return (resquan,max (snd resf) (snd ress))
 
 
