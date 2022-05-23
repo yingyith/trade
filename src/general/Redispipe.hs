@@ -201,7 +201,7 @@ publishThread :: TBQueue Cronevent ->  R.Connection -> NC.Connection -> IO (TVar
 publishThread tbq rc wc tvar ptid = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
       message <- (NC.receiveData wc)
-      logact logByteStringStdout $ message                              
+      --logact logByteStringStdout $ message                              
       curtimestamp <- round . (* 1000) <$> getPOSIXTime
       let timecounta   = (curtimestamp `quot` 60000) 
       let timecountpred = (timecounta - timecountb) >= 1 
@@ -246,7 +246,6 @@ detailpubHandler tbq conn = do
         let curtime = fromInteger currtime ::Double
         let et      = ectype res
         let etcont  = eccont res
-        logact logByteStringStdout $ B.pack $ show ("dopubb len is !",tbqlen,et,etcont)
 
         when (et == "kline")   $  do 
            runRedis conn (msgklinedoredis currtime etcont )
@@ -256,6 +255,7 @@ detailpubHandler tbq conn = do
                void $ publish "depth:1" ( etcont)
 
         when (et == "other")   $  do 
+           logact logByteStringStdout $ B.pack $ show ("dopubb len is !",tbqlen,et,etcont)
            runRedis conn $ do 
                res <- replydo currtime
                let orderitem = snd res
