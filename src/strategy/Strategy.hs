@@ -110,9 +110,12 @@ crossminstra abc pr = do
     --let newgrid = stopprofitgrid 
     let (resquan,newgrid)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
                           (False,False,False) -> ((minrulesheet!!0),8*basegrid)
-                          (False,_    ,_    ) -> ((minrulesheet!!3),basegrid)
-                          (_    ,False,_    ) -> ((minrulesheet!!2),2*basegrid) 
-                          (_    ,_    ,False) -> ((minrulesheet!!1),5*basegrid) 
+                          (False,False,True ) -> ((minrulesheet!!3),basegrid)
+                          (False,True ,True ) -> (resquanori,basegrid)
+                          (False,True ,False) -> ((minrulesheet!!2),basegrid)
+                          (True ,False,False) -> ((minrulesheet!!0),2*basegrid) 
+                          (True ,False,True ) -> ((minrulesheet!!3),2*basegrid) 
+                          (True ,True ,False) -> ((minrulesheet!!1),5*basegrid) 
                           (True ,True ,True ) -> (resquanori,basegrid)
     liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",resquanori,abc,itempredi,lowpredi,fstminsupportpredi,sndminsupporttrendpred,thdminsupportpredi,aindex,itempredi)
     case (openpredi) of 
