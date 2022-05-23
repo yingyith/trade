@@ -96,9 +96,6 @@ crossminstra abc pr = do
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
-    liftIO $ logact logByteStringStdout $ B.pack $ show (itempredi,lowpredi,fstminsupportpredi,aindex)
-  -- current market serious degree
-    liftIO $ logact logByteStringStdout $ B.pack $ show (itempredi)
     let openpredi = itempredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi && zerominsupporttrendpred
     let stopprofitgrid = case fallklineindex of 
                       x|x==1        -> (stopprofitlist !! 0)
@@ -117,6 +114,7 @@ crossminstra abc pr = do
                           (_    ,False,_    ) -> ((minrulesheet!!2),2*basegrid) 
                           (_    ,_    ,False) -> ((minrulesheet!!1),5*basegrid) 
                           (True ,True ,True ) -> (resquanori,basegrid)
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("cross is---",abc,itempredi,lowpredi,fstminsupportpredi,aindex,itempredi)
     case (openpredi) of 
           True    -> return (resquan,newgrid)
           False   -> return ((min 0 resbquan) ,newgrid) 

@@ -217,7 +217,6 @@ anlytoBuy conn msg tdepth ostvar =
      let dcp      =  read $ kclose kline :: Double
      bigintervall <- analysismindo (fst res ) dcp 
      biginterval  <- crossminstra bigintervall dcp
-    -- logact logByteStringStdout $ BC.pack $ show ("fqtrade bef atdepth !")
      atdepth      <- readTVarIO tdepth 
      apr          <- AS.depthmidpr atdepth
      let ares     =  AS.getBidAskNum apr atdepth
