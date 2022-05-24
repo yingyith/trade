@@ -356,7 +356,9 @@ detailopHandler tbq ostvar conn = do
               runRedis conn (acupdtorediszset etquan etpr etimee )
 
         when (et == "fill") $ do 
+              logact logByteStringStdout $ B.pack $ show ("start fill command is !")
               runRedis conn (endordertorediszset etquan etpr etimee curtime)  
+              logact logByteStringStdout $ B.pack $ show ("stop fill command is !")
 
         when (et == "init") $ do 
             --  logact logByteStringStdout $ B.pack $ show ("aft init!")
@@ -490,6 +492,7 @@ opclHandler tbq ostvar  channel  msg = do
                               addeventtotbqueuestm aevent tbq
                               let astate = show $ fromEnum Done
                               writeTVar ostvar astate
+                          logact logByteStringStdout $ B.pack $ show ("end filled---------")
 
               when ((DL.any (curorderstate ==) ["NEW"     ])==True) $ do 
                   atomically $ do
