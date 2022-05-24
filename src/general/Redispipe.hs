@@ -434,17 +434,20 @@ opclHandler tbq ostvar  channel  msg = do
 
          when ((orderstater == (show $ fromEnum Cprepare) ) == True) $ do 
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-              let aevent = Opevent "sopen" 0 pr 0 ordid
-              addeventtotbqueue aevent tbq
+              atomically $ do
+                  let aevent = Opevent "sopen" 0 pr 0 ordid
+                  addeventtotbqueuestm aevent tbq
 
          when ((orderstater == (show $ fromEnum HalfDone) )==True) $ do 
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-              let aevent = Opevent "cprep" 0 pr 0 ordid
-              addeventtotbqueue aevent tbq
+              atomically $ do
+                  let aevent = Opevent "cprep" 0 pr 0 ordid
+                  addeventtotbqueuestm aevent tbq
 
          when ((DL.any (== orderstater) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  ) == True ) $ do 
-              let aevent = Opevent "scancel" 0 0 0 ordid
-              addeventtotbqueue aevent tbq
+              atomically $ do
+                  let aevent = Opevent "scancel" 0 0 0 ordid
+                  addeventtotbqueuestm aevent tbq
               
               
     when (dettype /= "adausdt@kline_1m") $ do 
@@ -470,15 +473,18 @@ opclHandler tbq ostvar  channel  msg = do
               let curorquanty    = round curortyy      :: Integer
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
-                  logact logByteStringStdout $ B.pack $ show ("aft filled---------")
+                  logact logByteStringStdout $ B.pack $ show ("choose filled---------")
                   when (curquanty < curorquanty)  $ do 
-                     let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid
-                     addeventtotbqueue aevent tbq
+                     atomically $ do
+                           let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid
+                           addeventtotbqueuestm aevent tbq
                   when (curquanty == curorquanty) $ do 
                      when (curside == "BUY")  $  do 
-                          let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
-                          addeventtotbqueue aevent tbq
+                         atomically $ do
+                             let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
+                             addeventtotbqueuestm aevent tbq
                      when (curside == "SELL") $  do 
+                          logact logByteStringStdout $ B.pack $ show ("start filled---------")
                           atomically $ do
                               let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
                               addeventtotbqueuestm aevent tbq
@@ -486,8 +492,9 @@ opclHandler tbq ostvar  channel  msg = do
                               writeTVar ostvar astate
 
               when ((DL.any (curorderstate ==) ["NEW"     ])==True) $ do 
-                  let aevent = Opevent "init" curquanty coriginpr otimestamp corderid
-                  addeventtotbqueue aevent tbq
+                  atomically $ do
+                      let aevent = Opevent "init" curquanty coriginpr otimestamp corderid
+                      addeventtotbqueuestm aevent tbq
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
                   atomically $ do 
@@ -507,8 +514,9 @@ opclHandler tbq ostvar  channel  msg = do
               let orderpos    = read $ T.unpack $ outString $ (!!0)  orderposo :: Integer
               let usdtbal     = round (read $ T.unpack $ outString $ (!!0)  usdtbalo :: Double) :: Int
               let orderpr     = read $ T.unpack $ outString $ (!!0)  orderpro  :: Double
-              let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
-              addeventtotbqueue aevent tbq
+              atomically $ do
+                  let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
+                  addeventtotbqueuestm aevent tbq
 
 detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthset) -> (TVar String) -> IO () 
 detailanalysHandler tbq conn tdepth orderst = do 
