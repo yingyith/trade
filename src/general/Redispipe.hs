@@ -450,7 +450,7 @@ opclHandler tbq ostvar  channel  msg = do
     when (dettype /= "adausdt@kline_1m") $ do 
          let eventstr = fromJust $ detdata ^? key "e"
          let eventname = T.unpack $ outString eventstr 
-         logact logByteStringStdout $ B.pack $ show ("event type is",eventname)
+         logact logByteStringStdout $ B.pack $ show ("event type is",eventname,detdata)
          when (eventname == "ORDER_TRADE_UPDATE") $ do 
               let curorderstate  = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "X") 
               let curside        = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "S")
@@ -470,8 +470,8 @@ opclHandler tbq ostvar  channel  msg = do
               let curorquanty    = round curortyy      :: Integer
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
+                  logact logByteStringStdout $ B.pack $ show ("aft filled---------")
                   when (curquanty < curorquanty)  $ do 
-                     logact logByteStringStdout $ B.pack $ show ("bef order update partfilled redis---------")
                      let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid
                      addeventtotbqueue aevent tbq
                   when (curquanty == curorquanty) $ do 
