@@ -90,6 +90,7 @@ crossminstra abc pr = do
     let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,forthminsupporttrendpred) of 
              (False,False,False,True )     -> ((>   360 ) $ fst $ fst $ (!! (2)) abc ,  (> -100) $ fst $ fst $ (!! (3)) abc,  (> 100 ) $ fst $ fst $ (!! (4)) abc ) 
              (False,False,False,False)     -> ((>   380 ) $ fst $ fst $ (!! (2)) abc ,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
+             (True ,True ,False,False)     -> ((>   160 ) $ fst $ fst $ (!! (2)) abc ,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
              (True ,False,False,_    )     -> ((>   240 ) $ fst $ fst $ (!! (2)) abc ,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
              (_    ,_    ,_    ,_    )     -> ((>=  -100 ) $ fst $ fst $ (!! (2)) abc,  (> -260) $ fst $ fst $ (!! (3)) abc,  (> -250) $ fst $ fst $ (!! (4)) abc ) 
     let grid = 0.2* ((fst gridspan) - (snd gridspan))

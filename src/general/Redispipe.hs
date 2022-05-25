@@ -296,7 +296,6 @@ detailopHandler tbq ostvar conn = do
        -- logact logByteStringStdout $ B.pack $ show ("killbef thread!")
         res <- atomically $ readTBQueue tbq
         tbqlen <- atomically $ lengthTBQueue tbq
-        --logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen)
         currtime <- getcurtimestamp 
         let curtime = fromInteger currtime ::Double
         let et = etype res
@@ -311,6 +310,7 @@ detailopHandler tbq ostvar conn = do
         let newforbidtime = case (curtime<diffbasetime) of 
                                 True  -> diffbasetime
                                 False -> 0
+        logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen,et)
         
         when (et == "scancel") $  do 
              -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
