@@ -39,13 +39,13 @@ stopprofitlist    :: [Double]
 stopprofitlist    = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 diffspreadsheet   :: [Double]
-diffspreadsheet   = [0.1 ,0.2  ,0.3  ,0.4  ,0.8  ,1.2  ,1.6  ,2] 
+diffspreadsheet   = [0.1 ,0.2  ,0.4  ,0.7  ,1  ,1.4  ,1.9  ,2.5] 
 
 depthrisksheet    :: [Int] 
-depthrisksheet    = [100  ,120  ,200 , 300 , 410, 510 , 620  ]   -- 
+depthrisksheet    = [110  ,210  ,310 , 410 , 510, 610 , 710 ]   -- 
 
 minrulesheet      :: [Int] --base  to serious degree
-minrulesheet      = [ -800 ,-650  ,-700 , -400  ]   -- 
+minrulesheet      = [ -900 ,-800  ,-700 , -500  ]   -- 
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
