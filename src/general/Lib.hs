@@ -51,6 +51,7 @@ getnewgrid quan =
 getnewgriddiff :: Double -> Double
 getnewgriddiff grid = 
                   case grid of 
+                      x|x<=0.0003            -> 7 * grid
                       x|x<=0.0008            -> 4 * grid
                       x|x<=0.002             -> 2 * grid
                       x|x<=0.01              -> 2 * grid
