@@ -45,7 +45,7 @@ depthrisksheet    :: [Int]
 depthrisksheet    = [110  ,210  ,310 , 410 , 510, 610 , 710 ]   -- 
 
 minrulesheet      :: [Int] --base  to serious degree
-minrulesheet      = [ -900 ,-800  ,-700 , -500  ]   -- 
+minrulesheet      = [ -900 ,-800  ,-700 , -400  ]   -- 
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"

@@ -200,42 +200,43 @@ getliskeyfromredis =  return ()
 publishThread :: TBQueue Cronevent ->  R.Connection -> NC.Connection -> IO (TVar a) -> ThreadId -> IO ()
 publishThread tbq rc wc tvar ptid = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
-      message <- (NC.receiveData wc)
-      --logact logByteStringStdout $ message                              
-      curtimestamp <- round . (* 1000) <$> getPOSIXTime
-      let timecounta   = (curtimestamp `quot` 60000) 
-      let timecountpred = (timecounta - timecountb) >= 1 
-      let intervalcbpred = intervalcb == 0
-      matchoevt  <- matchmsgfun message
-      returnres  <-  case (timecountpred,intervalcbpred) of 
-           (True ,True )   -> do
-                                  sendpongdo wc
-                                  let aevent = Cronevent "cachep"  message
-                                  addoeventtotbqueue aevent tbq
-                                  return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
-           (True ,False)   -> do  
-                                  return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
-           (False,True )   -> do  
-                                  return (timecountb,0)
-           (False,False)   -> do 
-                                  return (timecountb,0)--reset intercalcount
+         message <- (NC.receiveData wc)
+         --logact logByteStringStdout $ message                              
+         curtimestamp <- round . (* 1000) <$> getPOSIXTime
+         let timecounta   = (curtimestamp `quot` 60000) 
+         let timecountpred = (timecounta - timecountb) >= 1 
+         let intervalcbpred = intervalcb == 0
+         matchoevt  <- matchmsgfun message
+         returnres  <-  case (timecountpred,intervalcbpred) of 
+              (True ,True )   -> do
+                                     sendpongdo wc
+                                     let aevent = Cronevent "cachep"  message
+                                     addoeventtotbqueue aevent tbq
+                                     return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
+              (True ,False)   -> do  
+                                     return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
+              (False,True )   -> do  
+                                     return (timecountb,0)
+              (False,False)   -> do 
+                                     return (timecountb,0)--reset intercalcount
 
 
 
-      when (matchoevt == "kline") $ do
-           let aevent = Cronevent "kline"  message
-           addoeventtotbqueue aevent tbq
+         when (matchoevt == "kline") $ do
+              let aevent = Cronevent "kline"  message
+              addoeventtotbqueue aevent tbq
 
 
-      when (matchoevt == "or" || matchoevt == "ac" || matchoevt == "no") $ do
-           let aevent = Cronevent "other"  message
-           addoeventtotbqueue aevent tbq
+         when (matchoevt == "or" || matchoevt == "ac" || matchoevt == "no") $ do
+              let aevent = Cronevent "other"  message
+              addoeventtotbqueue aevent tbq
 
-      when (matchoevt == "depth") $ do
-           let aevent = Cronevent "depth"  message
-           addoeventtotbqueue aevent tbq
+         when (matchoevt == "depth") $ do
+              let aevent = Cronevent "depth"  message
+              addoeventtotbqueue aevent tbq
 
-      return returnres )  (0,0)
+         return returnres 
+      )  (0,0)
       
 detailpubHandler :: TBQueue Cronevent  -> R.Connection -> IO () 
 detailpubHandler tbq conn = do 
@@ -292,90 +293,113 @@ handlerThread conn ctrl tvar = do
 detailopHandler :: TBQueue Opevent ->  (TVar String) -> R.Connection -> IO () 
 detailopHandler tbq ostvar conn = do 
     iterateM_  ( \(lastetype,forbidtime) -> 
-      do
-       -- logact logByteStringStdout $ B.pack $ show ("killbef thread!")
-        res <- atomically $ readTBQueue tbq
-        tbqlen <- atomically $ lengthTBQueue tbq
-        currtime <- getcurtimestamp 
-        let curtime = fromInteger currtime ::Double
-        let et = etype res
-        let etquan = quant res
-        let etpr = price res
-        let etimee = etime res
-        let eordid = ordid res
-        let diffbasetime  = case (et == "forbid") of
-                                True -> (fromIntegral etimee :: Double)
-                                False -> 0
+         do
+             -- logact logByteStringStdout $ B.pack $ show ("killbef thread!")
+              res <- atomically $ readTBQueue tbq
+              tbqlen <- atomically $ lengthTBQueue tbq
+              currtime <- getcurtimestamp 
+              let curtime = fromInteger currtime ::Double
+              let et = etype res
+              let etquan = quant res
+              let etpr = price res
+              let etimee = etime res
+              let eordid = ordid res
+              let diffbasetime  = case (et == "forbid") of
+                                      True -> (fromIntegral etimee :: Double)
+                                      False -> 0
 
-        let newforbidtime = case (curtime<diffbasetime) of 
-                                True  -> diffbasetime
-                                False -> 0
-        logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen,et)
-        
-        when (et == "scancel") $  do 
-             -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
-              qryord <- queryorder
-              let sqryord = snd qryord
-              case sqryord of 
-                  [] ->  return ()
-                  _  ->  do 
-                             CE.catch ( do 
-                                            mapM_ funcgetorderid  sqryord
-                                            runRedis conn (ccanordertorediszset  curtime)
+              let newforbidtime = case (curtime<diffbasetime) of 
+                                      True  -> diffbasetime
+                                      False -> 0
+              logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen,et)
+              
+              when (et == "scancel") $  do 
+                   -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
+                    qryord <- queryorder
+                    let sqryord = snd qryord
+                    case sqryord of 
+                        [] ->  return ()
+                        _  ->  do 
+                                   CE.catch ( do 
+                                                  mapM_ funcgetorderid  sqryord
+                                                  runRedis conn (ccanordertorediszset  curtime)
 
-                                      ) ( \e -> do 
-                                 logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
-                                 )
-
-
-        when (et == "sopen") $ do 
-              (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
-              case (et == lastetype) of  
-                 False -> do
-                              case res of 
-                                 True  -> takeorder "SELL" (lastquan) apr
-                                 False -> return () 
-                 True  -> return ()
-
-        when (et == "merge") $ do 
-              runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
-
-        when (et == "cprep") $ do 
-              runRedis conn (preorcpreordertorediszset 0 etpr  0  0 curtime)
-
-        when (et == "reset") $ do 
-              qrypos <- querypos
-              (quan,pr) <- funcgetposinf qrypos
-              logact logByteStringStdout $ B.pack $ show ("reset detail is !",quan,pr,qrypos)
-              let astate = show $ fromEnum Done
-              let accugrid = getnewgrid quan 
-              let mergequan = quan
-              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  mergequan  curtime)-- set to Done prepare 
-
-        when (et == "acupd") $ do 
-              runRedis conn (acupdtorediszset etquan etpr etimee )
-
-        when (et == "fill") $ do 
-              logact logByteStringStdout $ B.pack $ show ("start fill command is !")
-              runRedis conn (endordertorediszset etquan etpr etimee curtime)  
-              logact logByteStringStdout $ B.pack $ show ("stop fill command is !")
-
-        when (et == "init") $ do 
-            --  logact logByteStringStdout $ B.pack $ show ("aft init!")
-              runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
-
-        when (et == "bopen") $ do 
-             -- logact logByteStringStdout $ B.pack $ show ("bef bopen!")
-              case (et == lastetype) of  
-                 False -> do
-                            (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
-                            case res of 
-                               True  -> takeorder "BUY" lastquan apr
-                               False -> return () 
-                 True  -> return ()
+                                            ) ( \e -> do 
+                                       logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
+                                       )
+                 `catch` (\(e :: SomeException) -> do
+                    SI.hPutStrLn stderr $ "Gotscancelerror1: " ++ show e)
 
 
-        return (et,newforbidtime))  ("",0)
+              when (et == "sopen") $ do 
+                    (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
+                    case (et == lastetype) of  
+                       False -> do
+                                    case res of 
+                                       True  -> takeorder "SELL" (lastquan) apr
+                                       False -> return () 
+                       True  -> return ()
+                 `catch` (\(e :: SomeException) -> do
+                    SI.hPutStrLn stderr $ "Gotsopenerror1: " ++ show e)
+
+              when (et == "merge") $ do 
+                    runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
+                 `catch` (\(e :: SomeException) -> do
+                    SI.hPutStrLn stderr $ "Gotsmergeerror1: " ++ show e)
+
+              when (et == "cprep") $ do 
+                    runRedis conn (preorcpreordertorediszset 0 etpr  0  0 curtime)
+                 `catch` (\(e :: SomeException) -> do
+                    SI.hPutStrLn stderr $ "Gotsscpreerror1: " ++ show e)
+
+              when (et == "reset") $ do 
+                    qrypos <- querypos
+                    (quan,pr) <- funcgetposinf qrypos
+                    logact logByteStringStdout $ B.pack $ show ("reset detail is !",quan,pr,qrypos)
+                    let astate = show $ fromEnum Done
+                    let accugrid = getnewgrid quan 
+                    let mergequan = quan
+                    runRedis conn (settodefredisstate "SELL" "Done" astate "0"  pr  quan   accugrid  mergequan  curtime)-- set to Done prepare 
+                 `catch` (\(e :: SomeException) -> do
+                    SI.hPutStrLn stderr $ "Gotssreseterror1: " ++ show e)
+
+              when (et == "acupd") $ do 
+                    runRedis conn (acupdtorediszset etquan etpr etimee )
+                `catch` (\(e :: SomeException) -> do
+                   SI.hPutStrLn stderr $ "acpuerror: " ++ show e
+                 )
+
+              when (et == "fill") $ do 
+                    logact logByteStringStdout $ B.pack $ show ("start fill command is !")
+                    runRedis conn (endordertorediszset etquan etpr etimee curtime)  
+                    logact logByteStringStdout $ B.pack $ show ("stop fill command is !")
+                `catch` (\(e :: SomeException) -> do
+                   SI.hPutStrLn stderr $ "fillerror: " ++ show e
+                 )
+
+              when (et == "init") $ do 
+                  --  logact logByteStringStdout $ B.pack $ show ("aft init!")
+                    runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
+                `catch` (\(e :: SomeException) -> do
+                   SI.hPutStrLn stderr $ "initerror: " ++ show e
+                 )
+
+              when (et == "bopen") $ do 
+                   -- logact logByteStringStdout $ B.pack $ show ("bef bopen!")
+                    case (et == lastetype) of  
+                       False -> do
+                                  (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
+                                  case res of 
+                                     True  -> takeorder "BUY" lastquan apr
+                                     False -> return () 
+                       True  -> return ()
+                `catch` (\(e :: SomeException) -> do
+                   SI.hPutStrLn stderr $ "bopenerror: " ++ show e
+                 )
+
+
+              return (et,newforbidtime)
+      )  ("",0)
         
 
 opclHandler :: TBQueue Opevent -> (TVar String) -> RedisChannel -> ByteString  -> IO ()
