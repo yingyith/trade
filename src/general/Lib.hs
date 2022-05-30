@@ -3,6 +3,7 @@ module Lib
     ( 
      getrsi,
      getnewgrid,
+     getnewgriddiff,
      getnewgridlevel
     ) where
 import GHC.Generics
@@ -46,6 +47,17 @@ getnewgrid quan =
                       x|x<=8000&&x>4000   -> 0.03
                       x|x<=16000&&x>8000  -> 0.09
                       _                   -> 0.09
+
+getnewgriddiff :: Double -> Double
+getnewgriddiff grid = 
+                  case grid of 
+                      x|x<=0.0008            -> 4 * grid
+                      x|x<=0.002             -> 2 * grid
+                      x|x<=0.01              -> 2 * grid
+                      x|x<=0.07              -> grid
+                      x|x<=0.2               -> grid
+                      x|x<=0.5               -> grid
+                      _                      -> grid
 
 getnewgridlevel :: Integer -> Double
 getnewgridlevel quan = 

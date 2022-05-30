@@ -424,6 +424,7 @@ opclHandler tbq ostvar  channel  msg = do
          let curpr = read $ kclose kline :: Double
          logact logByteStringStdout $ B.pack $ show (orderstater,orderpr,curpr,ordergrid,"whynot!")
          let accugridlevel = getnewgridlevel orderquan
+         let accugriddiff = getnewgriddiff ordergrid
          when ((orderstater == (show $ fromEnum Prepare)  ) == True) $ do
               atomically $ do
                      orderstate <- readTVar ostvar
@@ -438,7 +439,7 @@ opclHandler tbq ostvar  channel  msg = do
                         False -> do 
                                     return ()
 
-         when ((orderstater == (show $ fromEnum Ccancel)) == True)  $ do
+         when ((orderstater == (show $ fromEnum Ccancel)) == True && ((orderpr-curpr) > (accugriddiff)))  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
                                 orderstate <- readTVar ostvar
@@ -470,7 +471,7 @@ opclHandler tbq ostvar  channel  msg = do
                   let aevent = Opevent "cprep" 0 pr 0 ordid
                   addeventtotbqueuestm aevent tbq
 
-         when ((DL.any (== orderstater) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  ) == True ) $ do 
+         when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  ) == True ) $ do 
               atomically $ do
                   let aevent = Opevent "scancel" 0 0 0 ordid
                   addeventtotbqueuestm aevent tbq
