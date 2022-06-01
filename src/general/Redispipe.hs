@@ -474,7 +474,7 @@ opclHandler tbq ostvar  channel  msg = do
                   let aevent = Opevent "cprep" 0 pr 0 ordid
                   addeventtotbqueuestm aevent tbq
 
-         when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugridlevel*ordergrid))  ) == True ) $ do 
+         when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugriddiff))  ) == True ) $ do 
               atomically $ do
                   let aevent = Opevent "scancel" 0 0 0 ordid
                   addeventtotbqueuestm aevent tbq
