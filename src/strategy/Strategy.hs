@@ -110,14 +110,14 @@ crossminstra abc pr = do
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     --let newgrid = stopprofitgrid 
     let (resquan,newgrid)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
-                          (False,False,False) -> ((minrulesheet!!0),5*basegrid)
-                          (False,False,True ) -> ((minrulesheet!!2),  basegrid)
-                          (False,True ,True ) -> (resquanori       ,  basegrid)
-                          (False,True ,False) -> ((minrulesheet!!1),  basegrid)
-                          (True ,False,False) -> ((minrulesheet!!0),2*basegrid) 
-                          (True ,False,True ) -> ((minrulesheet!!2),2*basegrid) 
-                          (True ,True ,False) -> ((minrulesheet!!1),5*basegrid) 
-                          (True ,True ,True ) -> (resquanori       ,  basegrid)
+                          (False,False,False) -> ((minrulesheet!!0), 5*basegrid)
+                          (False,False,True ) -> ((minrulesheet!!2),   basegrid)
+                          (False,True ,True ) -> (resquanori       ,   basegrid)
+                          (False,True ,False) -> ((minrulesheet!!1),   basegrid)
+                          (True ,False,False) -> ((minrulesheet!!0), 2*basegrid) 
+                          (True ,False,True ) -> ((minrulesheet!!2), 2*basegrid) 
+                          (True ,True ,False) -> ((minrulesheet!!1), 5*basegrid) 
+                          (True ,True ,True ) -> (resquanori       ,   basegrid)
     liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",resquanori,abc,itempredi,lowpredi,fstminsupportpredi,sndminsupporttrendpred,thdminsupportpredi,aindex,itempredi)
     case (openpredi) of 
           True    -> return (resquan,newgrid)

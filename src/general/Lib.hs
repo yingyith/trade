@@ -34,14 +34,18 @@ getrsi hl hllen = do
   let rsi  = (100 - (100 /(1+rs)))
   return (round rsi,"")
 
+getboll :: [Hlnode] -> Int -> IO (Int,String)--
+getboll hl hllen = pure (0,"")
+
 getnewgrid :: Integer -> Double
 getnewgrid quan = 
                   case quan of 
-                      x|x<=100            -> 0.0003
+                      x|x<=100            -> 0.0005
                       x|x<=200            -> 0.0005
-                      x|x<=360            -> 0.001
+                      x|x<=360            -> 0.0012
                       x|x<=500            -> 0.002
-                      x|x<=1000&&x>500    -> 0.002
+                      x|x<1000&&x>500     -> 0.002
+                      x|x==1000           -> 0.0006
                       x|x<=2000&&x>1000   -> 0.006
                       x|x<=4000&&x>2000   -> 0.01
                       x|x<=8000&&x>4000   -> 0.03
@@ -51,11 +55,13 @@ getnewgrid quan =
 getnewgriddiff :: Double -> Double
 getnewgriddiff grid = 
                   case grid of 
-                      x|x<=0.0003            -> 7 * grid
+                      x|x<=0.0005            -> 5 * grid
+                      x|x==0.0006            -> 10 * grid
                       x|x<=0.0008            -> 4 * grid
+                      x|x<=0.0012            -> 2 * grid
                       x|x<=0.002             -> 2 * grid
-                      x|x<=0.01              -> 2 * grid
-                      x|x<=0.07              -> grid
+                      x|x<=0.06              -> 2 * grid
+                      x|x<=0.01              -> grid
                       x|x<=0.2               -> grid
                       x|x<=0.5               -> grid
                       _                      -> grid

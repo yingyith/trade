@@ -246,7 +246,7 @@ anlytoBuy conn msg tdepth ostvar =
                                      runRedis conn $ do
                                         preorcpreordertorediszset aresquan dcp  curtimestampi stopclosegrid curtime
          False -> do 
-                    let sumres = sndquan + (fst biginterval)
+                    let sumres = (fst biginterval)
                     curtimestampi <- getcurtimestamp
                     let curtime = fromInteger curtimestampi ::Double
                     let stopclosegrid = snd biginterval
