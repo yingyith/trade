@@ -42,10 +42,13 @@ getnewgrid quan =
                   case quan of 
                       x|x<=100            -> 0.0005
                       x|x<=200            -> 0.0005
+                      x|x==1000           -> 0.0006
+                      x|x==2000           -> 0.001
+                      x|x==4000           -> 0.004
+                      x|x==8000           -> 0.0007
                       x|x<=360            -> 0.0012
                       x|x<=500            -> 0.002
                       x|x<1000&&x>500     -> 0.002
-                      x|x==1000           -> 0.0006
                       x|x<=2000&&x>1000   -> 0.006
                       x|x<=4000&&x>2000   -> 0.01
                       x|x<=8000&&x>4000   -> 0.03
@@ -55,13 +58,16 @@ getnewgrid quan =
 getnewgriddiff :: Double -> Double
 getnewgriddiff grid = 
                   case grid of 
-                      x|x<=0.0005            -> 5 * grid
-                      x|x==0.0006            -> 10 * grid
-                      x|x<=0.0008            -> 4 * grid
-                      x|x<=0.0012            -> 2 * grid
-                      x|x<=0.002             -> 2 * grid
-                      x|x<=0.06              -> 2 * grid
-                      x|x<=0.01              -> grid
+                      x|x<=0.0005            -> 5   * grid
+                      x|x==0.0006            -> 10  * grid
+                      x|x==0.0007            -> 500 * grid
+                      x|x==0.001             -> 10  * grid
+                      x|x==0.004             -> 25  * grid
+                      x|x<=0.0012            -> 2   * grid
+                      x|x<=0.002             -> 10  * grid
+                      x|x<=0.006             -> 20  * grid
+                      x|x<=0.01              -> 40  * grid
+                      x|x<=0.03              -> 40  * grid
                       x|x<=0.2               -> grid
                       x|x<=0.5               -> grid
                       _                      -> grid
