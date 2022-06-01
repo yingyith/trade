@@ -449,6 +449,9 @@ opclHandler tbq ostvar  channel  msg = do
                                 let astate = show $ fromEnum Done
                                 writeTVar ostvar astate
 
+        -- when ((orderstater == (show $ fromEnum Ccancel)) == True && ((orderpr-curpr) < accugridlevel*ordergrid)  $ do
+        --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+
         -- when ((orderstater == (show $ fromEnum Process)) == True )  $ do
         --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
         --      atomically $ do
