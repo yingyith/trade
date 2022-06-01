@@ -65,7 +65,7 @@ getnewgriddiff grid =
                       x|x==0.004             -> 25  * grid
                       x|x<=0.0012            -> 2   * grid
                       x|x<=0.002             -> 10  * grid
-                      x|x<=0.006             -> 20  * grid
+                      x|x<=0.006             -> 60  * grid
                       x|x<=0.01              -> 40  * grid
                       x|x<=0.03              -> 40  * grid
                       x|x<=0.2               -> grid
