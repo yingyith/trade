@@ -525,8 +525,8 @@ funcgetorderid :: Value -> IO ()
 funcgetorderid avalue = do 
     let aorderidobj = avalue ^? key "orderId"
     let aorderid            = T.unpack $ outString $ fromJust aorderidobj 
-    cancelorder aorderid
-    
+--    cancelorder aorderid
+    return ()  
 
 funcgetposinf :: [Value] -> IO (Integer,Double)
 funcgetposinf avalues = do 
