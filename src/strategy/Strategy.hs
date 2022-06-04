@@ -232,7 +232,8 @@ gethlsheetsec index kll =  do
 getdiffgridnum :: (Double,Double)-> IO (Int,Double) 
 getdiffgridnum  (a,b) = do 
                      let res  = (abs (a-b))/(max a b)
-                     logact logByteStringStdout $ B.pack $ show ("baratiois--------",showdouble res )
+                     let resl  = (a-b)/(max a b)
+                     logact logByteStringStdout $ B.pack $ show ("baratiois--------",showdouble res,showdouble resl )
                      let quan = case (a>b) of 
                                   True  -> case res of 
                                       x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  -> ( depthrisksheet !! 0) 
