@@ -231,9 +231,7 @@ gethlsheetsec index kll =  do
 
 getdiffgridnum :: (Double,Double)-> IO (Int,Double) 
 getdiffgridnum  (a,b) = do 
-                     let res  = (abs (a-b))/(max a b)
-                     let resl  = (a-b)/(max a b)
-                     logact logByteStringStdout $ B.pack $ show ("baratiois--------",showdouble res,showdouble resl )
+                     let res  = (a-b)/(max a b)
                      let quan = case (a>b) of 
                                   True  -> case res of 
                                       x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  -> ( depthrisksheet !! 0) 
@@ -254,10 +252,11 @@ secondrule ablist = do
                      let items = (ablist !!1)
                      resf <- getdiffgridnum itemf
                      ress <- getdiffgridnum items
+                     logact logByteStringStdout $ B.pack $ show ("baratiois--------",showdouble $ snd resf ,showdouble $ snd ress )
                      let totalquan = (fst resf)+(fst ress) 
-                     let resquan = case totalquan of 
-                                         x|x<=0 -> 0 
-                                         x|x>0  -> (fst resf)+ (fst ress)
+                     let resquan = case ((fst resf) >0 ,(fst ress) > 0) of 
+                                        (True ,True ) -> (fst resf)+ (fst ress)
+                                        (_    ,_    ) -> -800
                      return (resquan,max (snd resf) (snd ress))
 
 

@@ -222,7 +222,7 @@ anlytoBuy conn msg tdepth ostvar =
      let ares     =  AS.getBidAskNum apr atdepth
      (sndquan,sndratio)  <- secondrule ares
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-     logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",sndquan,(fst biginterval),timecurtime)
+     logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",sndquan,(fst biginterval),timecurtime,dcp)
      case (fst biginterval < 1) of  
          True  -> do 
                     let sumres = sndquan+(fst biginterval)
