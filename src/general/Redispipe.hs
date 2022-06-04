@@ -390,9 +390,8 @@ detailopHandler tbq ostvar conn = do
                        False -> do
                                   (lastquan,(res,apr)) <- runRedis conn (proordertorediszset  etpr curtime)
                                   case res of 
---                                     True  -> takeorder "BUY" lastquan apr
+                                     True  -> takeorder "BUY" lastquan apr
                                      False -> return () 
-                                     True  -> return () 
 
                        True  -> return ()
                 `catch` (\(e :: SomeException) -> do
