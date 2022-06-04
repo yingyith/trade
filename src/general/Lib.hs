@@ -40,12 +40,12 @@ getboll hl hllen = pure (0,"")
 getnewgrid :: Integer -> Double
 getnewgrid quan = 
                   case quan of 
+                      x|x==1000           -> 0.0006        -- map to 1000
+                      x|x==2000           -> 0.001         -- map to 2000
+                      x|x==4000           -> 0.004         -- map to 4000
+                      x|x==8000           -> 0.08          -- map to 8000
                       x|x<=100            -> 0.0005
                       x|x<=200            -> 0.0005
-                      x|x==1000           -> 0.0006
-                      x|x==2000           -> 0.001
-                      x|x==4000           -> 0.004
-                      x|x==8000           -> 0.0007
                       x|x<=360            -> 0.0012
                       x|x<=500            -> 0.002
                       x|x<1000&&x>500     -> 0.002
@@ -58,14 +58,14 @@ getnewgrid quan =
 getnewgriddiff :: Double -> Double
 getnewgriddiff grid = 
                   case grid of 
-                      x|x<=0.0005            -> 5   * grid
-                      x|x==0.0006            -> 10  * grid
-                      x|x==0.0007            -> 500 * grid
-                      x|x==0.001             -> 10  * grid
-                      x|x==0.004             -> 25  * grid
-                      x|x<=0.0012            -> 2   * grid
-                      x|x<=0.002             -> 10  * grid
-                      x|x<=0.006             -> 60  * grid
+                      x|x==0.0006            -> 10  * grid  -- map to 1000
+                      x|x==0.001             -> 60  * grid  -- map to 2000
+                      x|x==0.004             -> 60  * grid  -- map to 4000
+                      x|x==0.08              -> 10  * grid  -- map to 8000
+                      x|x<=0.0005            -> 8   * grid
+                      x|x<=0.0012            -> 10  * grid
+                      x|x<=0.002             -> 40  * grid
+                      x|x<=0.006             -> 40  * grid
                       x|x<=0.01              -> 40  * grid
                       x|x<=0.03              -> 40  * grid
                       x|x<=0.2               -> grid
