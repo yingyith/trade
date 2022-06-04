@@ -55,13 +55,15 @@ addeventtotbqueuestm evt tbq = do
    res <- isFullTBQueue tbq
    befevt <- tryPeekTBQueue tbq
    case befevt of 
-      Nothing -> writeTBQueue tbq evt
+      --Nothing -> writeTBQueue tbq evt
+      Nothing -> return ()
       Just l  -> do 
                    let befevttype = etype l
                    let befevtmatchpredi  =  (etype l == etype evt) && (DL.any (== befevttype ) ["bopen","sopen","scancel"])
                    let respredi = res && befevtmatchpredi
                    case respredi of 
-                      False   -> writeTBQueue tbq evt
+                     -- False   -> writeTBQueue tbq evt
+                      False   -> return () 
                       True    -> return () 
 
 
