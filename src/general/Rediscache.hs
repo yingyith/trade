@@ -218,7 +218,7 @@ anlytoBuy conn msg tdepth ostvar =
      bigintervall <- analysismindo (fst res ) dcp 
      biginterval  <- crossminstra bigintervall dcp
      atdepth      <- readTVarIO tdepth 
-     apr          <- AS.depthmidpr atdepth
+     apr          <- AS.depthmidpr atdepth dcp
      let ares     =  AS.getBidAskNum apr atdepth
      (sndquan,sndratio)  <- secondrule ares
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
