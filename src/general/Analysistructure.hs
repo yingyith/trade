@@ -54,8 +54,8 @@ depthmidpr adepth dcp  = do
     let b   = askset adepth
     let ins = intersset  adepth
     let alist = map convbstodoublelist $  DHM.toList $ ins 
-    let minprt = foldr (\(xf,xs) (yf,ys) -> if ((xf < yf) && ((abs (xf-dcp))<0.001))   then (xf,xs) else (yf,ys) )  (1111,1111) alist 
-    let maxprt = foldr (\(xf,xs) (yf,ys) -> if ((xf > yf) && ((abs (xf-dcp))<0.001))   then (xf,xs) else (yf,ys) )  (0   ,0   ) alist
+    let minprt = foldr (\(xf,xs) (yf,ys) -> if ((xf < yf) && ((abs (xf-dcp))<0.0007))   then (xf,xs) else (yf,ys) )  (1111,1111) alist 
+    let maxprt = foldr (\(xf,xs) (yf,ys) -> if ((xf > yf) && ((abs (xf-dcp))<0.0007))   then (xf,xs) else (yf,ys) )  (0   ,0   ) alist
     liftIO $ logact logByteStringStdout $ B.pack  (show ("get startpr is -----",alist,minprt,maxprt))
     return (fst minprt,fst maxprt)
 
