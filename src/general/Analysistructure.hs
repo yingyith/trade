@@ -54,8 +54,8 @@ depthmidpr adepth dcp  = do
     let b   = askset adepth
     let ins = intersset  adepth
     let alist = map convbstodoublelist $  DHM.toList $ ins 
-    let minprt = foldr (\(xf,xs) (yf,ys) -> if ((xf < yf) && ((abs (xf-dcp))<0.0003))   then (xf,xs) else (yf,ys) )  (11,11) alist 
-    let maxprt = foldr (\(xf,xs) (yf,ys) -> if ((xf > yf) && ((abs (xf-dcp))<0.0003))   then (xf,xs) else (yf,ys) )  (0   ,0   ) alist
+    let minprt = foldr (\(xf,xs) (yf,ys) -> if ((xf < yf) && ((abs (xf-dcp))<0.0005))   then (xf,xs) else (yf,ys) )  (11,11) alist 
+    let maxprt = foldr (\(xf,xs) (yf,ys) -> if ((xf > yf) && ((abs (xf-dcp))<0.0005))   then (xf,xs) else (yf,ys) )  (0   ,0   ) alist
     liftIO $ logact logByteStringStdout $ B.pack  (show ("get startpr is -----",alist,minprt,maxprt))
     return (fst minprt,fst maxprt)
 
@@ -73,12 +73,12 @@ getaskdiffquanpred  checkpr diff  key value  =
         _                                           ->  False
     
 
-getBidAskNum :: (Double,Double) -> Depthset -> [(Double,Double)]  --diff have 0.0005,0.001,0.002
-getBidAskNum apr dpdata = [(sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (fst apr) 0.0008 ) $ bidset  dpdata ,
+getBidAskNum :: (Double,Double) -> Depthset -> [(Double,Double)]  --diff have 0.0005,0.001,0.002,for up trend use all max data,for low trend ,use all min data
+getBidAskNum apr dpdata = [(sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0008 ) $ bidset  dpdata ,
                            sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0008 ) $ askset  dpdata 
                            ),
-                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (fst apr) 0.0015 ) $ bidset  dpdata ,
-                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.0015 ) $ askset  dpdata 
+                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.002 ) $ bidset  dpdata ,
+                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred (snd apr) 0.002 ) $ askset  dpdata 
                            )]
 
 getcurpraccu ::  Depthset -> Int     
