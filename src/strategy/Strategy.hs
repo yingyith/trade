@@ -229,34 +229,40 @@ gethlsheetsec index kll =  do
                   EQ   ->  (AS.Hlnode curitemt curitemcp 0         0 "wsmall" "1s" curitemcp)
     return res
 
-getdiffgridnum :: (Double,Double)-> IO (Int,Double) 
-getdiffgridnum  (a,b) = do 
-                     let res  = (a-b)/(max a b)
-                     let quan = case (a>b) of 
+getdiffgridnum :: (Double,Double)-> (Int,Double) 
+getdiffgridnum  (a,b) = case (a>b) of 
                                   True  -> case res of 
-                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  -> ( depthrisksheet !! 0) 
-                                      x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  -> ( depthrisksheet !! 1) 
-                                      x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  -> ( depthrisksheet !! 2)
-                                      x|x<(diffspreadsheet!!4) && x>= (diffspreadsheet!!3)  -> ( depthrisksheet !! 3)
-                                      x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  -> ( depthrisksheet !! 4)
-                                      x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  -> ( depthrisksheet !! 5)
-                                      x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  -> ( depthrisksheet !! 6)
-                                      x|x>= (diffspreadsheet!!7)                            -> ( depthrisksheet !! 6)
-                                      _                                                     -> 60
-                                  False -> -1000
-                     return (quan,res)
+                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->( ( depthrisksheet !! 0),res) 
+                                      x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->( ( depthrisksheet !! 1),res) 
+                                      x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  ->( ( depthrisksheet !! 2),res)
+                                      x|x<(diffspreadsheet!!4) && x>= (diffspreadsheet!!3)  ->( ( depthrisksheet !! 3),res)
+                                      x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  ->( ( depthrisksheet !! 4),res)
+                                      x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  ->( ( depthrisksheet !! 5),res)
+                                      x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  ->( ( depthrisksheet !! 6),res)
+                                      x|x>= (diffspreadsheet!!7)                            ->( ( depthrisksheet !! 6),res)
+                                      _                                                     ->( 60,res)
+                                  False -> case (abs res) of 
+                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->( -( depthrisksheet !! 0),res)
+                                      x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->( -( depthrisksheet !! 1),res) 
+                                      x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  ->( -( depthrisksheet !! 2),res)
+                                      x|x<(diffspreadsheet!!4) && x>= (diffspreadsheet!!3)  ->( -( depthrisksheet !! 3),res)
+                                      x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  ->( -( depthrisksheet !! 4),res)
+                                      x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  ->( -( depthrisksheet !! 5),res)
+                                      x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  ->( -( depthrisksheet !! 6),res)
+                                      x|x>= (diffspreadsheet!!7)                            ->( -( depthrisksheet !! 6),res)
+                                      _                                                     ->( -60,res)
+                           where res  = (a-b)/(max a b)
+
+                     --return (quan,res)
 
 secondrule ::  [(Double,Double)]  -> IO (Int,Double)
 secondrule ablist = do 
-                     let itemf = (ablist !!0)
-                     let items = (ablist !!1)
-                     resf <- getdiffgridnum itemf
-                     ress <- getdiffgridnum items
-                     logact logByteStringStdout $ B.pack $ show ("baratiois--------",showdouble $ snd resf ,showdouble $ snd ress )
+                     let ratiol = DT.map getdiffgridnum ablist
+                     let resf = (ratiol !! 0)
+                     let ress = (ratiol !! 1)
+                     logact logByteStringStdout $ B.pack $ show ("baratiois--------",showdouble $ snd resf ,showdouble $ snd ress,showdouble $ snd (ratiol !!2),showdouble $ snd (ratiol !!3),showdouble $ snd (ratiol !!4),showdouble $ snd (ratiol !!5) )
                      let totalquan = (fst resf)+(fst ress) 
-                     let resquan = case ((fst resf) >0 ,(fst ress) > 0) of 
-                                        (True ,True ) -> (fst resf)+ (fst ress)
-                                        (_    ,_    ) -> -800
+                     let resquan = (fst resf)+ (fst ress)
                      return (resquan,max (snd resf) (snd ress))
 
 

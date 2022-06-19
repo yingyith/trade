@@ -153,49 +153,69 @@ initpos  = do
     let accugrid = getnewgrid quan  
     return (accugrid,(quan,pr))
 
-initbal :: R.Connection -> Double -> Integer -> Double -> [Value] -> [Value] -> Double -> IO String
+initbal :: R.Connection -> Double -> Integer -> Double -> [Value] -> [Value] -> Double -> IO Curorder
 initbal conn accugrid quan pr bqryord sqryord curtime= do 
     resstate <-  case (quan==0,bqryord,sqryord) of 
                        (True  ,[] ,[] ) ->  do
                                              let astate = show $ fromEnum Done
                                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             let curorder = Curorder SELL Done  
+                                             return curorder
                        (True  ,_  ,[] ) ->  do -- cancel the order ,set to prepare
+                                             let curorder = Curorder SELL Done  
                                              let astate = show $ fromEnum Done
                                              mapM_ funcgetorderid  sqryord
                                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             return curorder
                        (True  ,[] ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare 
+                                             let curorder = Curorder SELL Done  
                                              let astate = show $ fromEnum Done
                                              mapM_ funcgetorderid  bqryord
                                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             return curorder
                        (True  ,_  ,_  ) ->  do -- cannot appear ,cancel the order,set to prepare
+                                             let curorder = Curorder SELL Done  
                                              let astate = show $ fromEnum Done
                                              mapM_ funcgetorderid  bqryord
                                              mapM_ funcgetorderid  sqryord
                                              runRedis conn (settodefredisstate "SELL" "Done" astate "0"  0   0      accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             return curorder
                        (False ,[] ,[] ) ->  do -- set to halfdone
                                              let astate = show $ fromEnum HalfDone
+                                             let side = case quan of 
+                                                           x|x>0 -> BUY      --hold the long side pos
+                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let curorder = Curorder side HalfDone  
                                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             return curorder
                        (False ,[] ,_  ) ->  do-- set to cproinit --detail judge merge or init
                                              let astate = show $ fromEnum HalfDone
+                                             let side = case quan of 
+                                                           x|x>0 -> BUY      --hold the long side pos
+                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let curorder = Curorder side HalfDone  
                                              mapM_ funcgetorderid  bqryord
                                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             return curorder
                        (False ,_  ,[] ) ->  do-- set to promerge
                                              let astate = show $ fromEnum HalfDone
+                                             let side = case quan of 
+                                                           x|x>0 -> BUY      --hold the long side pos
+                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let curorder = Curorder side HalfDone  
                                              mapM_ funcgetorderid  sqryord
                                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             return curorder
                        (False ,_  ,_  ) ->  do-- not allow to appear,cancel the border and sorder,set state to hlddoaccugride 
                                              let astate = show $ fromEnum HalfDone
+                                             let side = case quan of 
+                                                           x|x>0 -> BUY      --hold the long side pos
+                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let curorder = Curorder side HalfDone  
                                              mapM_ funcgetorderid  bqryord
                                              mapM_ funcgetorderid  sqryord
                                              runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
-                                             return astate
+                                             return curorder
     return resstate
     
 ws :: ClientApp ()
@@ -210,9 +230,9 @@ ws connection = do
     logact logByteStringStdout $ B.pack $ show ("qryord is -----",qryord)
     currtime               <- getcurtimestamp 
     let curtime            =  fromInteger currtime ::Double
-    let bqryord            =  fst qryord
-    let sqryord            =  snd qryord
-    initostate             <- initbal conn accugrid quan pr bqryord sqryord curtime
+    let openqryord         =  fst qryord
+    let closeqryord        =  snd qryord
+    initostate             <- initbal conn accugrid quan pr openqryord closeqryord curtime
     depthdata              <- initupddepth conn
     depthtvar              <- newTVarIO depthdata
     orderst                <- newTVarIO initostate

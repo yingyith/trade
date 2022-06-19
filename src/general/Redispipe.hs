@@ -290,7 +290,7 @@ handlerThread conn ctrl tvar = do
 
 
 
-detailopHandler :: TBQueue Opevent ->  (TVar String) -> R.Connection -> IO () 
+detailopHandler :: TBQueue Opevent ->  (TVar Curorder) -> R.Connection -> IO () 
 detailopHandler tbq ostvar conn = do 
     iterateM_  ( \(lastetype,forbidtime) -> 
          do
@@ -313,7 +313,7 @@ detailopHandler tbq ostvar conn = do
                                       False -> 0
               logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen,et)
               
-              when (et == "scancel") $  do 
+              when (et == "endcancel") $  do 
                    -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
                     qryord <- queryorder
                     let sqryord = snd qryord
@@ -331,7 +331,7 @@ detailopHandler tbq ostvar conn = do
                     SI.hPutStrLn stderr $ "Gotscancelerror1: " ++ show e)
 
 
-              when (et == "sopen") $ do 
+              when (et == "endopen") $ do 
                     (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
                     case (et == lastetype) of  
                        False -> do
@@ -384,7 +384,7 @@ detailopHandler tbq ostvar conn = do
                    SI.hPutStrLn stderr $ "initerror: " ++ show e
                  )
 
-              when (et == "bopen") $ do 
+              when (et == "initopen") $ do 
                    -- logact logByteStringStdout $ B.pack $ show ("bef bopen!")
                     case (et == lastetype) of  
                        False -> do
@@ -395,7 +395,7 @@ detailopHandler tbq ostvar conn = do
 
                        True  -> return ()
                 `catch` (\(e :: SomeException) -> do
-                   SI.hPutStrLn stderr $ "bopenerror: " ++ show e
+                   SI.hPutStrLn stderr $ "initopenerror: " ++ show e
                  )
 
 
@@ -403,7 +403,7 @@ detailopHandler tbq ostvar conn = do
       )  ("",0)
         
 
-opclHandler :: TBQueue Opevent -> (TVar String) -> RedisChannel -> ByteString  -> IO ()
+opclHandler :: TBQueue Opevent -> (TVar Curorder) -> RedisChannel -> ByteString  -> IO ()
 opclHandler tbq ostvar  channel  msg = do
     let seperatemark = BLU.fromString ":::"
     let strturple = BL.fromStrict  $ B.drop 3 $ snd $  B.breakSubstring seperatemark  msg
@@ -428,45 +428,37 @@ opclHandler tbq ostvar  channel  msg = do
          let accugriddiff = getnewgriddiff ordergrid
          when ((orderstater == (show $ fromEnum Prepare)  ) == True) $ do
               atomically $ do
-                     orderstate <- readTVar ostvar
-                     unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate)
-                     case (orderstate == (show $ fromEnum Prepare)) of 
+                     curorder <- readTVar ostvar
+                     unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
+                     case ((orderstate curorder) == Prepare) of 
                         True  -> do 
                                     let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-                                    let aevent = Opevent "bopen"  0 pr 0 ordid
+                                    let aevent = Opevent "initopen"  0 pr 0 ordid
                                     addeventtotbqueuestm aevent tbq
-                                    let astate = show $ fromEnum Process
-                                    writeTVar ostvar astate
+                                    let astate = Process
+                                    let curoside = orderside curorder
+                                    let newcurorder = Curorder curoside astate 
+                                    writeTVar ostvar newcurorder
                         False -> do 
                                     return ()
 
          when ((orderstater == (show $ fromEnum Ccancel)) == True && ((orderpr-curpr) > (accugriddiff)))  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
-                                orderstate <- readTVar ostvar
-                                unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef resetcommand ---------",orderstate)
+                                curorder <- readTVar ostvar
+                                unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef resetcommand ---------",orderstate curorder)
                                 let aevent = Opevent "reset"  0 pr 0 ordid
                                 addeventtotbqueuestm aevent tbq
-                                let astate = show $ fromEnum Done
-                                writeTVar ostvar astate
+                                let astate =  Done
+                                let curoside = orderside curorder
+                                let newcurorder = Curorder curoside astate 
+                                writeTVar ostvar newcurorder
 
-        -- when ((orderstater == (show $ fromEnum Ccancel)) == True && ((orderpr-curpr) < accugridlevel*ordergrid)  $ do
-        --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-
-        -- when ((orderstater == (show $ fromEnum Process)) == True )  $ do
-        --      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-        --      atomically $ do
-        --                        orderstate <- readTVar ostvar
-        --                        unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef resetcommand ---------",orderstate)
-        --                        let aevent = Opevent "reset"  0 pr 0 ordid
-        --                        addeventtotbqueuestm aevent tbq
-        --                        let astate = show $ fromEnum Done
-        --                        writeTVar ostvar astate
 
          when ((orderstater == (show $ fromEnum Cprepare) ) == True) $ do 
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
-                  let aevent = Opevent "sopen" 0 pr 0 ordid
+                  let aevent = Opevent "endopen" 0 pr 0 ordid
                   addeventtotbqueuestm aevent tbq
 
          when ((orderstater == (show $ fromEnum HalfDone) )==True) $ do 
@@ -477,7 +469,7 @@ opclHandler tbq ostvar  channel  msg = do
 
          when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugriddiff))  ) == True ) $ do 
               atomically $ do
-                  let aevent = Opevent "scancel" 0 0 0 ordid
+                  let aevent = Opevent "endcancel" 0 0 0 ordid
                   addeventtotbqueuestm aevent tbq
               
               
@@ -505,23 +497,27 @@ opclHandler tbq ostvar  channel  msg = do
               when ((DL.any (curorderstate ==) ["FILLED","PARTIALLY_FILLED"])==True) $ do 
                   let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
                   logact logByteStringStdout $ B.pack $ show ("choose filled---------")
-                  when (curquanty < curorquanty)  $ do 
+                  when ((abs curquanty) < (abs curorquanty))  $ do 
                      atomically $ do
                            let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid
                            addeventtotbqueuestm aevent tbq
-                  when (curquanty == curorquanty) $ do 
-                     when (curside == "BUY")  $  do 
-                         atomically $ do
-                             let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
-                             addeventtotbqueuestm aevent tbq
-                     when (curside == "SELL") $  do 
-                          logact logByteStringStdout $ B.pack $ show ("start filled---------")
-                          atomically $ do
-                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
-                              addeventtotbqueuestm aevent tbq
-                              let astate = show $ fromEnum Done
-                              writeTVar ostvar astate
-                          logact logByteStringStdout $ B.pack $ show ("end filled---------")
+                  when ((abs curquanty) == (abs curorquanty)) $ do 
+                     atomically $ do
+                           curorder <- readTVar ostvar
+                           when (curside == (show curorder))  $  do 
+                               let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
+                               addeventtotbqueuestm aevent tbq
+                  when (curside == "SELL") $  do 
+                     logact logByteStringStdout $ B.pack $ show ("start filled---------")
+                     atomically $ do
+                           curorder <- readTVar ostvar
+                           let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid
+                           addeventtotbqueuestm aevent tbq
+                           let astate = Done
+                           let curoside = orderside curorder
+                           let newcurorder = Curorder curoside astate 
+                           writeTVar ostvar newcurorder
+                           unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end filled---------")
 
               when ((DL.any (curorderstate ==) ["NEW"     ])==True) $ do 
                   atomically $ do
@@ -530,12 +526,14 @@ opclHandler tbq ostvar  channel  msg = do
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
                   atomically $ do 
-                      orderstate <- readTVar ostvar
-                      unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("confirm cancel ---------",orderstate)
+                      curorder <- readTVar ostvar
+                      unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("confirm cancel ---------",orderstate curorder)
                       let aevent = Opevent "reset" curorquanty curorderpr otimestamp corderid
                       addeventtotbqueuestm aevent tbq
-                      let astate = show $ fromEnum Done
-                      writeTVar ostvar astate
+                      let astate = Done
+                      let curoside = orderside curorder
+                      let newcurorder = Curorder curoside astate 
+                      writeTVar ostvar newcurorder
                       orderstate <- readTVar ostvar
                       unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("confirm cancel ---------",orderstate)
 
@@ -550,7 +548,7 @@ opclHandler tbq ostvar  channel  msg = do
                   let aevent      = Opevent "acupd" orderpos  orderpr usdtbal ""
                   addeventtotbqueuestm aevent tbq
 
-detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthset) -> (TVar String) -> IO () 
+detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
 detailanalysHandler tbq conn tdepth orderst = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
         res      <- atomically $ readTBQueue tbq

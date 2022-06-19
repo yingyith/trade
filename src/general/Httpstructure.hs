@@ -176,7 +176,7 @@ querypos = do
       response  <- areq
       let result = responseBody response :: Value
       let borders = (result^..values.filtered (has (key "symbol"._String.only "ADAUSDT"))) 
-      --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querypos ----",borders,"+++++")
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("querypos ----",borders,"+++++")
       return borders
 
 queryforder :: IO ()
