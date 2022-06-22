@@ -260,7 +260,15 @@ secondrule ablist = do
                      let ratiol = DT.map getdiffgridnum ablist
                      let resf = (ratiol !! 0)
                      let ress = (ratiol !! 1)
-                     logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble $ snd resf) ,"b"++(showdouble $ snd ress),"c"++(showdouble $ snd (ratiol !!2)),"aa"++(showdouble $ snd (ratiol !!3)),"bb"++(showdouble $ snd (ratiol !!4)),"cc"++(showdouble $ snd (ratiol !!5)) )
+                     logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd resf        ),
+                                                                                     "b"++(showdouble   $ snd ress        ),
+                                                                                     "c"++(showdouble   $ snd (ratiol !!2)),
+                                                                                     "aa"++(showdouble  $ snd (ratiol !!3)),
+                                                                                     "bb"++(showdouble  $ snd (ratiol !!4)),
+                                                                                     "cc"++(showdouble  $ snd (ratiol !!5)), 
+                                                                                     "aaa"++(showdouble $ snd (ratiol !!6)),
+                                                                                     "bbb"++(showdouble $ snd (ratiol !!7)),
+                                                                                     "ccc"++(showdouble $ snd (ratiol !!8)))
                      let totalquan = (fst resf)+(fst ress) 
                      let resquan = (fst resf)+ (fst ress)
                      return (resquan,max (snd resf) (snd ress))
