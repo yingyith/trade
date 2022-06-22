@@ -39,7 +39,7 @@ stopprofitlist    :: [Double]
 stopprofitlist    = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 diffspreadsheet   :: [Double]
-diffspreadsheet   = [0.1 ,0.4  ,0.54  ,0.7  ,0.82  ,0.91  ,0.95  ,1] 
+diffspreadsheet   = [0.2 ,0.54  ,0.73  ,0.86  ,0.92  ,0.96  ,0.98  ,1] 
 
 depthrisksheet    :: [Int] 
 depthrisksheet    = [110  ,210  ,410 , 510 , 610, 710 , 810 ]   -- 
