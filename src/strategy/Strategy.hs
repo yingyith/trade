@@ -268,7 +268,9 @@ secondrule ablist = do
                                                                                      "cc"++(showdouble  $ snd (ratiol !!5)), 
                                                                                      "aaa"++(showdouble $ snd (ratiol !!6)),
                                                                                      "bbb"++(showdouble $ snd (ratiol !!7)),
-                                                                                     "ccc"++(showdouble $ snd (ratiol !!8)))
+                                                                                     "ccc"++(showdouble $ snd (ratiol !!8)),
+                                                                                     "ddd"++(showdouble $ snd (ratiol !!9)),
+                                                                                     "eee"++(showdouble $ snd (ratiol !!10)))
                      let totalquan = (fst resf)+(fst ress) 
                      let resquan = (fst resf)+ (fst ress)
                      return (resquan,max (snd resf) (snd ress))
