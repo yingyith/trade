@@ -373,8 +373,8 @@ endordertorediszset quan pr otimestamp insertstamp = do
 
 
 --
-cproordertorediszset :: Double  -> Redis (Integer,(Bool,Double))
-cproordertorediszset stamp  = do 
+cproordertorediszset :: Double -> Orderside  -> Redis (Integer,(Bool,Double))
+cproordertorediszset stamp oside  = do 
    let abykeystr = BL.fromString orderkey
    let coin = "ADA" :: String
    let otype = "Taken" :: String
@@ -398,11 +398,14 @@ cproordertorediszset stamp  = do
    let shmergequan =  show mergequan
    let shgrid = show lastgrid
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"-------cpro---------")
+   let closepr = case oside of 
+                        BUY  -> lastpr+lastgrid 
+                        SELL -> lastpr-lastgrid
    case (recordstate == (show $ fromEnum Cprepare) ) of 
        True ->  do
                   let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
                   void $ zadd abykeystr [(-stamp,abyvaluestr)]
-                  return (lastquan,(True,lastpr+lastgrid))
+                  return (lastquan,(True,closepr))
        False -> return (0,(False,0))
 
 ccanordertorediszset :: Double -> Redis ()

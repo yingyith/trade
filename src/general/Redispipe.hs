@@ -333,7 +333,7 @@ detailopHandler tbq ostvar conn = do
 
 
               when (et == "endopen") $ do 
-                    (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime)
+                    (lastquan,(res,apr)) <- runRedis conn (cproordertorediszset curtime eside)
                     case (et == lastetype) of  
                        False -> do
                                     let side = case eside of 
