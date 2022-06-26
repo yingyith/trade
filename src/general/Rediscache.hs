@@ -212,18 +212,18 @@ getdiffintervalflow = do
 anlytoBuy :: R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
 anlytoBuy conn msg tdepth ostvar = 
    do
-     res          <- runRedis conn (getdiffintervalflow) 
-     kline        <- parsetokline msg
-     let dcp      =  read $ kclose kline :: Double
-     bigintervall <- analysismindo (fst res ) dcp 
+     res                          <- runRedis conn (getdiffintervalflow) 
+     kline                        <- parsetokline msg
+     let dcp                      =  read $ kclose kline :: Double
+     bigintervall                 <- analysismindo (fst res ) dcp 
      (thresholdup,thresholddo)    <- crossminstra bigintervall dcp
-     atdepth      <- readTVarIO tdepth 
-     apr          <- AS.depthmidpr atdepth dcp
-     let ares     =  AS.getBidAskNum apr atdepth
-     (sndquan,sedtrend)  <- secondrule ares
-     timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-     curtimestampi <- getcurtimestamp
-     let curtime = fromInteger curtimestampi ::Double
+     atdepth                      <- readTVarIO tdepth 
+     apr                          <- AS.depthmidpr atdepth dcp
+     let ares                     =  AS.getBidAskNum apr atdepth
+     (sndquan,sedtrend)           <- secondrule apr ares
+     timecurtime                  <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
+     curtimestampi                <- getcurtimestamp
+     let curtime                  =  fromInteger curtimestampi ::Double
      --logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",thresholdup,thresholddo,sndquan,timecurtime,dcp)
      case sedtrend of 
          AS.UP -> do 

@@ -252,11 +252,14 @@ getdiffgridnum  (a,b) = case (a>b) of
 
                      --return (quan,res)
 
-secondrule ::  [(Double,Double)]  -> IO (Int,Trend)
-secondrule ablist = do 
-                     let ratiol = DT.map getdiffgridnum ablist
+secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO (Int,Trend)
+secondrule diffpr ablist = do 
+                     let ratiol        = DT.map getdiffgridnum ablist
                      let curprsfstdiff = fst (ratiol !! 6)
                      let curprmsnddiff = fst (ratiol !! 7)
+                     let maxpr         = fst $ fst  diffpr
+                     let minpr         = snd $ fst  diffpr
+                     let basepr        = snd  diffpr
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd (ratiol !!0)),
                                                                                      "b"++(showdouble   $ snd (ratiol !!1)),
                                                                                      "c"++(showdouble   $ snd (ratiol !!2)),
@@ -274,7 +277,9 @@ secondrule ablist = do
                                       (False,True )   -> AS.ND
                                       (False,False)   -> AS.DO
 
-                     let totalquan = curprsfstdiff + curprmsnddiff
+                     let totalquan = case (basepr < minpr || basepr > maxpr) of 
+                                        True  -> 0
+                                        False -> (curprsfstdiff + curprmsnddiff)
                      return (totalquan,trend)
 
 
