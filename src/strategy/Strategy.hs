@@ -118,8 +118,8 @@ crossminstra abc pr = do
                           (False,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!3))     -- left for hard degree of UP,right for hard degree of DOWN
                           (True ,False,False) ->  ((minrulethreshold!!1),(minrulethreshold!!2))   
                           (False,True ,False) ->  ((minrulethreshold!!2),(minrulethreshold!!2))  
-                          (True ,True ,False) ->  ((minrulethreshold!!3),(minrulethreshold!!2))   
-                          (False,False,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!3))
+                          (True ,True ,False) ->  ((minrulethreshold!!3),(minrulethreshold!!1))   
+                          (False,False,True ) ->  ((minrulethreshold!!1),(minrulethreshold!!3))
                           (True ,False,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!2))  
                           (False,True ,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!1)) 
                           (True ,True ,True ) ->  ((minrulethreshold!!3),(minrulethreshold!!0)) 
