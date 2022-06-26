@@ -342,12 +342,13 @@ endordertorediszset quan pr otimestamp insertstamp = do
    let side = lastside
    holdpospr <- getkvfromredis holdprkey
    holdposquan <- getkvfromredis holdposkey
+
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let orderid =  lastorderid
    --let shquant =  show quan
-   let shquant =  holdposquan
+   let shquant = show (abs $  read holdposquan :: Int)
    let shgrid  = showdouble lastgrid
 
    when (DL.any (== recordstate) [(show $ fromEnum Proinit),(show $ fromEnum Ppartdone)] ) $ do
