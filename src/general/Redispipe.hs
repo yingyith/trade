@@ -514,40 +514,39 @@ opclHandler tbq ostvar  channel  msg = do
               when (curorderstate == "FILLED") $ do 
                   let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
                   logact logByteStringStdout $ B.pack $ show ("choose filled---------",curorderstate)
-                  when (curside == "SELL") $  do 
-                     logact logByteStringStdout $ B.pack $ show ("start filled---------")
-                     atomically $ do
-                           curorder <- readTVar ostvar
-                           let oside = orderside curorder
-                           case (oside,curside) of 
-                               (BUY  ,"BUY" ) -> do 
-                                                 let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
-                                                 addeventtotbqueuestm aevent tbq
-                                                 let astate = HalfDone
-                                                 let newcurorder = Curorder oside astate 
-                                                 writeTVar ostvar newcurorder
-                                                 unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end open buy---------")
-                               (BUY  ,"SELL") -> do 
-                                                 let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
-                                                 addeventtotbqueuestm aevent tbq
-                                                 let astate = Done
-                                                 let newcurorder = Curorder oside astate 
-                                                 writeTVar ostvar newcurorder
-                                                 unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end close buy---------")
-                               (SELL ,"SELL") -> do 
-                                                 let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
-                                                 addeventtotbqueuestm aevent tbq
-                                                 let astate = HalfDone
-                                                 let newcurorder = Curorder oside astate 
-                                                 writeTVar ostvar newcurorder
-                                                 unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end open sell---------")
-                               (SELL ,"BUY" ) -> do 
-                                                 let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
-                                                 addeventtotbqueuestm aevent tbq
-                                                 let astate = Done
-                                                 let newcurorder = Curorder oside astate 
-                                                 writeTVar ostvar newcurorder
-                                                 unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end close sell---------")
+                  logact logByteStringStdout $ B.pack $ show ("start filled---------")
+                  atomically $ do
+                        curorder <- readTVar ostvar
+                        let oside = orderside curorder
+                        case (oside,curside) of 
+                            (BUY  ,"BUY" ) -> do 
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              addeventtotbqueuestm aevent tbq
+                                              let astate = HalfDone
+                                              let newcurorder = Curorder oside astate 
+                                              writeTVar ostvar newcurorder
+                                              unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end open buy---------")
+                            (BUY  ,"SELL") -> do 
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              addeventtotbqueuestm aevent tbq
+                                              let astate = Done
+                                              let newcurorder = Curorder oside astate 
+                                              writeTVar ostvar newcurorder
+                                              unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end close buy---------")
+                            (SELL ,"SELL") -> do 
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              addeventtotbqueuestm aevent tbq
+                                              let astate = HalfDone
+                                              let newcurorder = Curorder oside astate 
+                                              writeTVar ostvar newcurorder
+                                              unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end open sell---------")
+                            (SELL ,"BUY" ) -> do 
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              addeventtotbqueuestm aevent tbq
+                                              let astate = Done
+                                              let newcurorder = Curorder oside astate 
+                                              writeTVar ostvar newcurorder
+                                              unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end close sell---------")
 
               when (curorderstate == "PARTIALLY_FILLED") $ do 
                   let curcoin = T.unpack $ outString $ fromJust $ (detdata ^? key "o" .key "N")
