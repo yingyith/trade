@@ -347,7 +347,7 @@ detailopHandler tbq ostvar conn = do
                     SI.hPutStrLn stderr $ "Gotsopenerror1: " ++ show e)
 
               when (et == "merge") $ do 
-                    runRedis conn (pexpandordertorediszset etquan etpr etimee curtime)
+                    runRedis conn (pexpandordertorediszset etquan etpr etimee curtime eside)
                  `catch` (\(e :: SomeException) -> do
                     SI.hPutStrLn stderr $ "Gotsmergeerror1: " ++ show e)
 

@@ -289,8 +289,8 @@ procproinitordertorediszset quan pr ordid  stampi insertstamp = do
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
 --
-pexpandordertorediszset :: Integer -> Double -> Int -> Double -> Redis ()
-pexpandordertorediszset quan pr otimestamp insertstamp = do 
+pexpandordertorediszset :: Integer -> Double -> Int -> Double -> Orderside -> Redis ()
+pexpandordertorediszset quan pr otimestamp insertstamp oside = do 
    -- this operation only append the order detail ,not alter the state
    let abykeystr = BL.fromString orderkey
    let otype = "Merge" :: String
@@ -315,15 +315,15 @@ pexpandordertorediszset quan pr otimestamp insertstamp = do
    let mergequan = read (recorditem !! 7) :: Integer
    let shmergequan =  show mergequan
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "--------------pexpandorder--------------")
-   let shstate = case lastside of 
-                      "BUY" -> show $ fromEnum Ppartdone
-                      "SELL" -> show $ fromEnum Cpartdone
-   let prestate = show $ fromEnum Proinit
-   let cprestate = show $ fromEnum Cproinit
-   let tpred = (DL.any (recordstate ==) [prestate, cprestate ,shstate])
    let shgrid = show lastgrid
    --only add but not alter ,if state change ,add a new record,but need to trace the orderid
-   when (tpred == True) $ do
+   when ((DL.any (recordstate ==) [show $ fromEnum Proinit , show $ fromEnum Ppartdone ])==True) $ do
+       let shstate = show $ fromEnum Ppartdone  
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,lastside,otype,lastorderid,shquant,shprice,shgrid,shmergequan,shstate]
+       void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+
+   when ((DL.any (recordstate ==) [show $ fromEnum Cproinit , show $ fromEnum Cpartdone ])==True) $ do
+       let shstate = show $ fromEnum Cpartdone  
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,lastside,otype,lastorderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 --
