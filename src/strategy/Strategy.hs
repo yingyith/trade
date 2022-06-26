@@ -169,7 +169,7 @@ minrule ahll pr interval  = do
    let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  ] where xlist = reslist
    let maxhigh   =   DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak,highsheet] 
    let minlow    =   DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak,lowsheet] 
-   logact logByteStringStdout $ B.pack $ show ("index show==========",highsheet,lowsheet,hlbak,maxhigh,minlow,reslist)
+   --logact logByteStringStdout $ B.pack $ show ("index show==========",highsheet,lowsheet,hlbak,maxhigh,minlow,reslist)
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
