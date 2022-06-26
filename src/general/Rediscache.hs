@@ -224,10 +224,11 @@ anlytoBuy conn msg tdepth ostvar =
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi <- getcurtimestamp
      let curtime = fromInteger curtimestampi ::Double
-     logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",sndquan,timecurtime,dcp)
+     --logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",thresholdup,thresholddo,sndquan,timecurtime,dcp)
      case sedtrend of 
          AS.UP -> do 
                              let sumres = (-thresholdup) +sndquan -- aim is up
+                             logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
                              case (sumres>0) of 
                                 True -> do
                                            let aresquan = min minquan $ abs sumres
@@ -252,6 +253,7 @@ anlytoBuy conn msg tdepth ostvar =
 
          AS.DO -> do 
                              let sumres = (thresholddo) - sndquan -- aim is down
+                             logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
                              case (sumres<0) of
                                 True -> do
                                            let aresquan = min minquan $ abs sumres
