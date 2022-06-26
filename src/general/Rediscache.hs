@@ -216,57 +216,63 @@ anlytoBuy conn msg tdepth ostvar =
      kline        <- parsetokline msg
      let dcp      =  read $ kclose kline :: Double
      bigintervall <- analysismindo (fst res ) dcp 
-     biginterval  <- crossminstra bigintervall dcp
+     (thresholdup,thresholddo)    <- crossminstra bigintervall dcp
      atdepth      <- readTVarIO tdepth 
      apr          <- AS.depthmidpr atdepth dcp
      let ares     =  AS.getBidAskNum apr atdepth
-     (sndquan,sndratio)  <- secondrule ares
+     ((sndquan,sndratio),sedtrend)  <- secondrule ares
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-     logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",sndquan,(fst biginterval),timecurtime,dcp)
-     case (fst biginterval < 1) of  
-         True  -> do 
-                    let sumres = sndquan+(fst biginterval)
-                    let aresquan = max minquan sumres
-                    curtimestampi <- getcurtimestamp
-                    let curtime = fromInteger curtimestampi ::Double
-                    let stopclosegrid = 0.0005
-                    atomically $ do 
-                        curorder <- readTVar ostvar
-                        let ostate = orderstate curorder
-                        unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres,sndquan,(fst biginterval))
-                        case (ostate  == Done) of 
-                           True  -> do 
-                                      let astate = Prepare
-                                      let curoside = orderside curorder
-                                      let newcurorder = Curorder curoside astate 
-                                      writeTVar ostvar newcurorder
-                           False -> do 
-                                      return ()
-                    logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,sndquan,(fst biginterval),stopclosegrid,sndratio)
-                    runRedis conn $ do
-                       preorcpreordertorediszset aresquan dcp  curtimestampi stopclosegrid curtime
-         False -> do 
-                    let sumres = (fst biginterval)
-                    curtimestampi <- getcurtimestamp
-                    let curtime = fromInteger curtimestampi ::Double
-                    let stopclosegrid = snd biginterval
-                    when (fst biginterval > 50) $ do 
-                        logact logByteStringStdout $ BC.pack $ show ("normal open !",sumres,stopclosegrid,bigintervall)
-                        atomically $ do 
-                            curorder <- readTVar ostvar
-                            let ostate = orderstate curorder
-                            unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres)
-                            case (ostate == Done) of 
-                               True  -> do 
-                                          let astate = Prepare
-                                          let curoside = orderside curorder
-                                          let newcurorder = Curorder curoside astate 
-                                          writeTVar ostvar newcurorder
-                               False -> do 
-                                          return ()
-                        runRedis conn $ do
-                           preorcpreordertorediszset sumres dcp  curtimestampi stopclosegrid curtime
+     curtimestampi <- getcurtimestamp
+     let curtime = fromInteger curtimestampi ::Double
+     logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",sndquan,timecurtime,dcp)
+     case sedtrend of 
+         AS.UP -> do 
+                             let sumres = (-thresholdup) +sndquan -- aim is up
+                             case (sumres>0) of 
+                                True -> do
+                                           let aresquan = min minquan $ abs sumres
+                                           let stopclosegrid = 0.0005
+                                           atomically $ do 
+                                                curorder <- readTVar ostvar
+                                                let ostate = orderstate curorder
+                                                unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres)
+                                                case (ostate  == Done) of 
+                                                   True  -> do 
+                                                              let astate = Prepare
+                                                              let curoside = BUY
+                                                              let newcurorder = Curorder curoside astate 
+                                                              writeTVar ostvar newcurorder
+                                                   False -> do 
+                                                              return ()
+                                           logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
+                                           runRedis conn $ do
+                                              preorcpreordertorediszset aresquan BUY dcp  curtimestampi stopclosegrid curtime
+                                False -> return ()
+                                   
 
+         AS.DO -> do 
+                             let sumres = (thresholddo) - sndquan -- aim is down
+                             case (sumres<0) of
+                                True -> do
+                                           let aresquan = min minquan $ abs sumres
+                                           let stopclosegrid = 0.0005
+                                           atomically $ do 
+                                                curorder <- readTVar ostvar
+                                                let ostate = orderstate curorder
+                                                unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres)
+                                                case (ostate  == Done) of 
+                                                   True  -> do 
+                                                              let astate = Prepare
+                                                              let curoside = SELL
+                                                              let newcurorder = Curorder curoside astate 
+                                                              writeTVar ostvar newcurorder
+                                                   False -> do 
+                                                              return ()
+                                           logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
+                                           runRedis conn $ do
+                                              preorcpreordertorediszset aresquan SELL dcp  curtimestampi stopclosegrid curtime
+                                False -> return ()
+         _     -> return ()
 
    `catch` (\(e :: SomeException) -> do
                 SI.hPutStrLn stderr $ "Goterror1: " ++ show e)

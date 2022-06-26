@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
   module Events (
-       Opevent (etype,price,quant,etime,ordid,Opevent),
+       Opevent (etype,price,quant,etime,ordid,oside,Opevent),
        Cronevent (ectype,eccont,Cronevent),
        addoeventtotbqueuestm,
        addeventtotbqueue,
@@ -23,13 +23,15 @@ import Colog (LogAction,logByteStringStdout)
 import Data.List as DL
 import GHC.Generics
 import Logger
+import Order
 
 data Opevent = Opevent {
                   etype :: String,
                   quant :: Integer,
                   price :: Double,
                   etime :: Int,
-                  ordid :: String
+                  ordid :: String,
+                  oside :: Orderside
 }  deriving (Show,Generic) 
 
 addeventtotbqueue :: Opevent -> TBQueue Opevent -> IO ()
@@ -55,15 +57,15 @@ addeventtotbqueuestm evt tbq = do
    res <- isFullTBQueue tbq
    befevt <- tryPeekTBQueue tbq
    case befevt of 
-      --Nothing -> writeTBQueue tbq evt
-      Nothing -> return ()
+      Nothing -> writeTBQueue tbq evt
+      --Nothing -> return ()
       Just l  -> do 
                    let befevttype = etype l
                    let befevtmatchpredi  =  (etype l == etype evt) && (DL.any (== befevttype ) ["bopen","sopen","scancel"])
                    let respredi = res && befevtmatchpredi
                    case respredi of 
-                     -- False   -> writeTBQueue tbq evt
-                      False   -> return () 
+                      False   -> writeTBQueue tbq evt
+                     -- False   -> return () 
                       True    -> return () 
 
 

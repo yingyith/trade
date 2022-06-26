@@ -55,7 +55,7 @@ minrisksheet = fromList [
                  ("3d" , [5       ,  90,  -120, -180  ])
                ]
 
-crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO (Int,Double)
+crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO (Int,Int)
 crossminstra abc pr = do 
     let uppredi  = \x -> ((> 14) $ fst $ fst x) && ( (== 'u') $ (!!0) $ fst $ snd  x )
     let lhsheet = DT.map uppredi abc
@@ -83,22 +83,17 @@ crossminstra abc pr = do
                       x|x==6        -> (quanlist !! 4)
                       _             -> 0
     let gridspan = snd $ fst $ (!! (aindex)) abc   --transfer this grid to the redis order record can be used as 
-    let fstminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (2)) abc )
-    let sndminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
-    let thdminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
-    let forthminsupporttrendpred = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (5)) abc )
-    let zerominsupporttrendpred  = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
-    let (fstminsupportpredi,sndminsupportpredi, thdminsupportpredi)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,forthminsupporttrendpred) of 
-             (False,False,False,True )     -> ((>   360 ) $ fst $ fst $ (!! (2)) abc ,  (> -100) $ fst $ fst $ (!! (3)) abc,  (> 100 ) $ fst $ fst $ (!! (4)) abc ) 
-             (False,False,False,False)     -> ((>   380 ) $ fst $ fst $ (!! (2)) abc ,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
-             (True ,True ,False,False)     -> ((>   160 ) $ fst $ fst $ (!! (2)) abc ,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
-             (True ,False,False,_    )     -> ((>   240 ) $ fst $ fst $ (!! (2)) abc ,  (> 380 ) $ fst $ fst $ (!! (3)) abc,  (> 380 ) $ fst $ fst $ (!! (4)) abc ) 
-             (_    ,_    ,_    ,_    )     -> ((>=  -100 ) $ fst $ fst $ (!! (2)) abc,  (> -260) $ fst $ fst $ (!! (3)) abc,  (> -250) $ fst $ fst $ (!! (4)) abc ) 
+    let fstminsupporttrendpred     = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (2)) abc )
+    let sndminsupporttrendpred     = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (3)) abc )
+    let thdminsupporttrendpred     = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (4)) abc )
+    let forthminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (5)) abc )
+    let fiveminsupporttrendpred    = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (1)) abc )
+    let threeminsupporttrendpred   = ( (== 'u') $ (!!0) $ fst $ snd  $ (!! (0)) abc )
+
     let grid = 0.2* ((fst gridspan) - (snd gridspan))
     let lowp = snd gridspan
     let lowpredi = pr < (lowp + grid)
     let fallkline = (!!fallklineindex) abc 
-    let openpredi = itempredi && fstminsupportpredi && sndminsupportpredi && thdminsupportpredi && zerominsupporttrendpred
     let stopprofitgrid = case fallklineindex of 
                               x|x==1        -> (stopprofitlist !! 0)
                               x|x==2        -> (stopprofitlist !! 1)
@@ -109,23 +104,29 @@ crossminstra abc pr = do
                               _             -> 0.0004
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
+    let (mthresholdup,mthresholddo) = case (threeminsupporttrendpred ,fiveminsupporttrendpred,fstminsupporttrendpred) of 
+                                  (True  ,True ,True  )  -> ((shortminrulethreshold !! 2),(shortminrulethreshold !!0 ))--both up ,hard for short
+                                  (True  ,True ,False )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!1 ))--both up ,hard for short
+                                  (False ,True ,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!0 ))--have one down ,hard for long
+                                  (False ,True ,False )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!2 ))--have one down ,hard for long
+                                  (True  ,False,True  )  -> ((shortminrulethreshold !! 2),(shortminrulethreshold !!1 ))--have one down ,hard for long
+                                  (True  ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!1 ))--have one down ,hard for long
+                                  (False ,False,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!1 ))--have two down ,hard for long
+                                  (False ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!2 ))--have two down ,hard for long
     --let newgrid = stopprofitgrid 
-    let (resquan,newgrid)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
-                          (False,False,False) -> ((minrulesheet!!0), 5*basegrid)
-                          (False,False,True ) -> ((minrulesheet!!2),   basegrid)
-                          (False,True ,True ) -> (resquanori       ,   basegrid)
-                          (False,True ,False) -> ((minrulesheet!!1),   basegrid)
-                          (True ,False,False) -> ((minrulesheet!!0), 2*basegrid) 
-                          (True ,False,True ) -> ((minrulesheet!!2), 2*basegrid) 
-                          (True ,True ,False) -> ((minrulesheet!!1), 5*basegrid) 
-                          (True ,True ,True ) -> (resquanori       ,   basegrid)
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",resquanori,abc,itempredi,lowpredi,fstminsupportpredi,sndminsupporttrendpred,thdminsupportpredi,aindex,itempredi)
-    case (openpredi) of 
-          True    -> return (resquan,newgrid)
-          False   -> return (resquan,newgrid) 
-          --False   -> return ((min 0 resbquan) ,newgrid) 
-        --(False,False)   -> return (((sum [fst $ fst x| x<-remainlist]) +(sum [fst $ fst  x|x<-(DT.drop maxindex $  DT.take (maxindex+itemlen) abc )])*2 ),grid)
-   -- return (130,0.0005)
+    let (hthresholdup,hthresholddo)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
+                          (False,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!3))     -- left for hard degree of UP,right for hard degree of DOWN
+                          (True ,False,False) ->  ((minrulethreshold!!1),(minrulethreshold!!2))   
+                          (False,True ,False) ->  ((minrulethreshold!!2),(minrulethreshold!!2))  
+                          (True ,True ,False) ->  ((minrulethreshold!!3),(minrulethreshold!!2))   
+                          (False,False,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!3))
+                          (True ,False,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!2))  
+                          (False,True ,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!1)) 
+                          (True ,True ,True ) ->  ((minrulethreshold!!3),(minrulethreshold!!0)) 
+    let totalthresholdup = mthresholdup + hthresholdup
+    let totalthresholddo = mthresholddo + hthresholddo
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,threeminsupporttrendpred,fiveminsupporttrendpred,aindex,itempredi)
+    return (totalthresholdup,totalthresholddo)
                                           
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
@@ -255,11 +256,13 @@ getdiffgridnum  (a,b) = case (a>b) of
 
                      --return (quan,res)
 
-secondrule ::  [(Double,Double)]  -> IO (Int,Double)
+secondrule ::  [(Double,Double)]  -> IO ((Int,Double),Trend)
 secondrule ablist = do 
                      let ratiol = DT.map getdiffgridnum ablist
                      let resf = (ratiol !! 0)
                      let ress = (ratiol !! 1)
+                     let curprsfstdiff = snd (ratiol !! 6)
+                     let curprmsnddiff = snd (ratiol !! 7)
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd resf        ),
                                                                                      "b"++(showdouble   $ snd ress        ),
                                                                                      "c"++(showdouble   $ snd (ratiol !!2)),
@@ -271,9 +274,15 @@ secondrule ablist = do
                                                                                      "ccc"++(showdouble $ snd (ratiol !!8)),
                                                                                      "ddd"++(showdouble $ snd (ratiol !!9)),
                                                                                      "eee"++(showdouble $ snd (ratiol !!10)))
+                     let trend = case (( curprsfstdiff> 0) ,(curprmsnddiff> 0)) of
+                                      (True ,True )   -> AS.UP
+                                      (True ,False)   -> AS.ND 
+                                      (False,True )   -> AS.ND
+                                      (False,False)   -> AS.DO
+
                      let totalquan = (fst resf)+(fst ress) 
                      let resquan = (fst resf)+ (fst ress)
-                     return (resquan,max (snd resf) (snd ress))
+                     return ((resquan,max (snd resf) (snd ress)),trend)
 
 
 

@@ -90,8 +90,8 @@ data Curorder = Curorder {
       orderstate      :: Ostate
 }deriving (Generic,Show)
 
-preorcpreordertorediszset :: Int -> Double  -> Integer -> Double -> Double -> Redis ()
-preorcpreordertorediszset sumres pr  stamp grid insertstamp = do 
+preorcpreordertorediszset :: Int -> Orderside -> Double  -> Integer -> Double -> Double -> Redis ()
+preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do 
 -- quantity ,side ,price ,ostate
    let price  = pr :: Double
    let coin = "ADA" :: String
@@ -116,50 +116,15 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
    let shmergequan =  show mergequan
    let quanty = toInteger sumres
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++"----preorcpre---------" )
-  -- when (DL.any (== recordstate) [(show $ fromEnum Ccancel) ] )  $ do 
-  --     --append new order after cancel
-  --     let otype = "Reset" :: String
-  --     let quantity = quanty 
-  --     let orderid =  lastorderid 
-  --     let side = "BUY" :: String
-  --     let shprice =  showdouble lastpr
-  --     let minquan = (round (10/pr))+2 :: Integer
-
-  --     let addquant =  case compare quantity minquan of
-  --                         LT -> show minquan
-  --                         _  -> show quantity
-  --     let shgrid = showdouble grid
-  --     let lmergequan = show (lastquan+mergequan)
-
-  --     when (pr<= (lastpr-grid)) $ do  
-  --         let shstate =  show $ fromEnum Done
-  --         let shquant = show (lastquan ) --new quan should equel to old quan ,then can double
-  --         let shprice = showdouble pr
-  --         let mergebefquan = show (lastquan)  --totlolly quan  = shquant + mergebefquan
-  --         --need more strict condition ,and double the quant`
-  --         let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,mergebefquan,shstate]
-  --         void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
-
-  --     when (pr>= (lastpr+grid)) $ do  
-  --         let otype = "Oprep" :: String
-  --         let quantity = lastquan 
-  --         let orderid =  show stamp 
-  --         let side = "SELL" :: String
-  --         let shprice =  showdouble (lastpr)
-  --         let shquant =  show (quantity)
-  --         let shstate =  show $ fromEnum Cprepare
-  --         let lmergequan = show mergequan
-  --         let shgrid = showdouble lastgrid
-  --         when (quantity > 0) $ do
-  --             let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
-  --             void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (recordstate == (show $ fromEnum Done) )  $ do -- sametime the append pr should have condition of close price
+       let side = case oside of 
+                        BUY  -> "BUY" 
+                        SELL -> "SELL" 
        when (mergequan == 0 && quanty > 0) $ do
            let otype = "Prep" :: String
            let quantity = quanty 
            let orderid =  show stamp 
-           let side = "BUY" :: String
            let shprice =  show pr
            let shquant =  show quantity
            let shstate =  show $ fromEnum Prepare
@@ -172,7 +137,6 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            let otype = "Prep" :: String
            let quantity = abs quanty 
            let orderid =  show stamp 
-           let side = "SELL" :: String
            let shprice =  show pr
            let shquant =  show quantity
            let shstate =  show $ fromEnum Prepare
@@ -182,10 +146,12 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
        when (mergequan /= 0 && quanty > 0) $ do
+           let side = case lastside of 
+                     "BUY" -> "SELL"
+                     "SELL" -> "BUY"
            when (mergequan < 1000) $ do      -- high frq trade
                let otype = "Prep" :: String
                let orderid =  show stamp 
-               let side = "BUY" :: String
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
@@ -196,7 +162,6 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            when (mergequan >= 1000) $  do      -- high frq trade
                let otype = "Prep" :: String
                let orderid =  show stamp 
-               let side = "BUY" :: String
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
@@ -206,10 +171,12 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
                void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
        when (mergequan /= 0 && quanty < 0) $ do
+           let side = case lastside of 
+                     "BUY" -> "SELL"
+                     "SELL" -> "BUY"
            when (mergequan > -1000) $ do      -- high frq trade
                let otype = "Prep" :: String
                let orderid =  show stamp 
-               let side = "SELL" :: String
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
@@ -220,7 +187,6 @@ preorcpreordertorediszset sumres pr  stamp grid insertstamp = do
            when (mergequan <= -1000) $  do      -- high frq trade
                let otype = "Prep" :: String
                let orderid =  show stamp 
-               let side = "SELL" :: String
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
@@ -251,7 +217,6 @@ proordertorediszset pr stamp  = do
    --res <- zrange abykeystr 0 1
    --let replydomarray = DLT.splitOn "|" $ BLU.toString cachetime
    let abykeystr = BL.fromString orderkey
-   let side = "BUY" :: String
    let coin = "ADA" :: String
    let otype = "Open" :: String
    res <- zrange abykeystr 0 0
@@ -260,6 +225,7 @@ proordertorediszset pr stamp  = do
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
+   let side = recorditem !! 1
    --liftIO $ print ("bef process record is -------------------------")
    let recordstate = DL.last recorditem
    let lastquan = read (recorditem !! 4) :: Integer
@@ -404,7 +370,6 @@ endordertorediszset quan pr otimestamp insertstamp = do
 cproordertorediszset :: Double  -> Redis (Integer,(Bool,Double))
 cproordertorediszset stamp  = do 
    let abykeystr = BL.fromString orderkey
-   let side = "SELL" :: String
    let coin = "ADA" :: String
    let otype = "Taken" :: String
    res <- zrange abykeystr 0 0
@@ -413,6 +378,8 @@ cproordertorediszset stamp  = do
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
+   let lastside = recorditem !! 1
+   let side = lastside
    let lastgrid = read (recorditem !! 6) :: Double
    let lastquan = read (recorditem !! 4) :: Integer
    let lastpr = read (recorditem !! 5) :: Double
@@ -435,7 +402,6 @@ cproordertorediszset stamp  = do
 ccanordertorediszset :: Double -> Redis ()
 ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, then after weboscket recieve order cancel event,then can merge order/append new pos,then set to halfdone
    let abykeystr = BL.fromString orderkey
-   let side = "SELL" :: String
    let coin = "ADA" :: String
    let otype = "Cancel" :: String
    res <- zrange abykeystr 0 0
@@ -444,6 +410,8 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
+   let lastside = recorditem !! 1
+   let side = lastside
    let recordstate = DL.last recorditem
    let orderid =  lastorderid 
    let shstate =  show $ fromEnum Ccancel
@@ -464,7 +432,6 @@ ccanordertorediszset stamp = do  --set to Ccancel state.In websocket pipe flow, 
 cendordertorediszset :: Integer  -> Int -> Redis ()
 cendordertorediszset quan  otimestamp = do 
    let abykeystr = BL.fromString orderkey
-   let side = "SELL" :: String
    let coin = "ADA" :: String
    let otype = "Done" :: String
    let stamp    = fromIntegral otimestamp  :: Double
@@ -474,6 +441,8 @@ cendordertorediszset quan  otimestamp = do
    let lastrecord = BL.toString $ tdata !!0
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
+   let lastside = recorditem !! 1
+   let side = lastside
    let pr = recorditem !! 5
    let recordstate = DL.last recorditem
    let orderid =  lastorderid

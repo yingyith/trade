@@ -3,6 +3,7 @@
 module Analysistructure
     ( 
       Hlnode (..),
+      Trend  (..),
       Depthset (..),
       biddepthsheet,
       askdepthsheet,
@@ -123,10 +124,10 @@ getdepthweight bcount acount = do
         x|x<(diffspreadsheet!!5) && x>(diffspreadsheet!!4)  -> (depthrisksheet !! 4)
         x|x<(diffspreadsheet!!6) && x>(diffspreadsheet!!5)  -> (depthrisksheet !! 5)
         x|x<(diffspreadsheet!!7) && x>(diffspreadsheet!!6)  -> (depthrisksheet !! 6)
-        x|x<(diffspreadsheet!!8) && x>(diffspreadsheet!!7)  -> (depthrisksheet !! 7)
         _                                                   -> (depthrisksheet !! 0)
 
 
+data Trend = UP | DO | ND deriving (Enum,Eq,Show) --"up","down","not determine"
                  
 
 data Hlnode = Hlnode {

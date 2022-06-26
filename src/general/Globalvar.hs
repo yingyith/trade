@@ -24,28 +24,37 @@ module Globalvar (
     biddepth,
     askdepth,
     diffspreadsheet,
-    minrulesheet,
+    minrulethreshold,
+    shortminrulethreshold,
     depthrisksheet,
     holdposkey
 ) where
 
-defintervallist   :: [String]
-defintervallist   = ["3m","5m","15m","1h","4h","12h","3d"] 
+defintervallist         :: [String]
+defintervallist         = ["3m","5m","15m","1h","4h","12h","3d"] 
 
-quanlist          :: [Int]
-quanlist          = [300,500,1000,2000,4000,8300] -- 15m,1h,4h,12h
+quanlist                :: [Int]
+quanlist                = [300,500,1000,2000,4000,8300] -- 15m,1h,4h,12h
 
-stopprofitlist    :: [Double]
-stopprofitlist    = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
+stopprofitlist          :: [Double]
+stopprofitlist          = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
-diffspreadsheet   :: [Double]
-diffspreadsheet   = [0.2 ,0.54  ,0.73  ,0.86  ,0.92  ,0.96  ,0.98  ,1] 
+diffspreadsheet         :: [Double]
+diffspreadsheet         = [0.2   ,0.33  ,0.58  ,0.72  ,0.8  ,0.88  ,0.95  ,1] 
 
-depthrisksheet    :: [Int] 
-depthrisksheet    = [110  ,210  ,410 , 510 , 610, 710 , 810 ]   -- 
+depthrisksheet          :: [Int] 
+depthrisksheet          = [500   ,710   ,910   ,1010  ,1260  ,1410  ,2100 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
-minrulesheet      :: [Int] --base  to serious degree
-minrulesheet      = [ -1100 ,-700  ,-600 , -700  ]   -- 
+minrulethreshold        :: [Int] --base  to serious degree
+minrulethreshold        = [2000  ,1600  ,1100  ,700  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
+                                                                         --     d,d,u  ;u,u,d  -> 1800
+                                                                         --     d,u,d  ;u,d,u  -> 1500
+                                                                         --     d,u,u  ;u,d,d  -> 700 
+
+shortminrulethreshold   :: [Int] --base  to serious degree
+shortminrulethreshold   = [2000  ,1000  ,450  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
+                     -- [a      ,b    ,c     ,d]
+                     
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
