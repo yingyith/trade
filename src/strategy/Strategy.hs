@@ -257,8 +257,8 @@ secondrule diffpr ablist = do
                      let ratiol        = DT.map getdiffgridnum ablist
                      let curprsfstdiff = fst (ratiol !! 6)
                      let curprmsnddiff = fst (ratiol !! 7)
-                     let maxpr         = fst $ fst  diffpr
-                     let minpr         = snd $ fst  diffpr
+                     let minpr         = fst $ fst  diffpr
+                     let maxpr         = snd $ fst  diffpr
                      let basepr        = snd  diffpr
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd (ratiol !!0 )),
                                                                                      "b"++(showdouble   $ snd (ratiol !!1 )),
