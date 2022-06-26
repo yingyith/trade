@@ -260,17 +260,20 @@ secondrule diffpr ablist = do
                      let maxpr         = fst $ fst  diffpr
                      let minpr         = snd $ fst  diffpr
                      let basepr        = snd  diffpr
-                     logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd (ratiol !!0)),
-                                                                                     "b"++(showdouble   $ snd (ratiol !!1)),
-                                                                                     "c"++(showdouble   $ snd (ratiol !!2)),
-                                                                                     "aa"++(showdouble  $ snd (ratiol !!3)),
-                                                                                     "bb"++(showdouble  $ snd (ratiol !!4)),
-                                                                                     "cc"++(showdouble  $ snd (ratiol !!5)), 
-                                                                                     "aaa"++(showdouble $ snd (ratiol !!6)),
-                                                                                     "bbb"++(showdouble $ snd (ratiol !!7)),
-                                                                                     "ccc"++(showdouble $ snd (ratiol !!8)),
-                                                                                     "ddd"++(showdouble $ snd (ratiol !!9)),
-                                                                                     "eee"++(showdouble $ snd (ratiol !!10)))
+                     logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd (ratiol !!0 )),
+                                                                                     "b"++(showdouble   $ snd (ratiol !!1 )),
+                                                                                     "c"++(showdouble   $ snd (ratiol !!2 )),
+                                                                                     "aa"++(showdouble  $ snd (ratiol !!3 )),
+                                                                                     "bb"++(showdouble  $ snd (ratiol !!4 )),
+                                                                                     "cc"++(showdouble  $ snd (ratiol !!5 )), 
+                                                                                     "aaa"++(showdouble $ snd (ratiol !!6 )),
+                                                                                     "bbb"++(showdouble $ snd (ratiol !!7 )),
+                                                                                     "ccc"++(showdouble $ snd (ratiol !!8 )),
+                                                                                     "ddd"++(showdouble $ snd (ratiol !!9 )),
+                                                                                     "eee"++(showdouble $ snd (ratiol !!10)),
+                                                                                     showdouble minpr,
+                                                                                     showdouble maxpr,
+                                                                                     showdouble basepr)
                      let trend = case ((curprsfstdiff > 0) ,(curprmsnddiff > 0)) of
                                       (True ,True )   -> AS.UP
                                       (True ,False)   -> AS.ND 
