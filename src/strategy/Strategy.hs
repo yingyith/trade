@@ -169,14 +169,14 @@ minrule ahll pr interval  = do
    let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  ] where xlist = reslist
    let maxhigh   =   DT.foldr (\(l,h) y -> if (l == (max l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [lowsheet,hlbak,highsheet] 
    let minlow    =   DT.foldr (\(l,h) y -> if (l == (min l (fst y))) then (l,h) else y )  (aim!!0) aim where aim = concat [highsheet,hlbak,lowsheet] 
-   logact logByteStringStdout $ B.pack $ show ("index show==========",highsheet,lowsheet,hlbak,maxhigh,minlow)
+   logact logByteStringStdout $ B.pack $ show ("index show==========",highsheet,lowsheet,hlbak,maxhigh,minlow,reslist)
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
    let gridspan         =  ((fst maxhigh) ,(fst minlow))
    let griddiff         =  (fst maxhigh)-(fst minlow)
-   let fastprevuppredi  =  (1   >=   (snd maxhigh))  --need 3m support 
-   let fastprevdopredi  =  (1   >=   (snd minlow ))  --need 3m support
+   let fastprevuppredi  =  (2   >=   (snd maxhigh))  --need 3m support 
+   let fastprevdopredi  =  (2   >=   (snd minlow ))  --need 3m support
    let openpos          = case pr of 
                              x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.01
                              x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.1
