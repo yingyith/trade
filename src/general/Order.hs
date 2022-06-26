@@ -256,7 +256,6 @@ procproinitordertorediszset quan pr ordid  stampi insertstamp = do
    let abykeystr = BL.fromString orderkey
    --let side = "BUY" :: String
    let coin = "ADA" :: String
-   let otype = "Init" :: String
    res <- zrange abykeystr 0 0
    let tdata = case res of 
                     Right c -> c
@@ -269,19 +268,23 @@ procproinitordertorediszset quan pr ordid  stampi insertstamp = do
    let lastquan  = read (recorditem !! 4) :: Integer
    let orderid   =  ordid 
    let shprice   =  showdouble pr
-   let shquant   =  case side of 
-                       "BUY"  -> show quan
-                       "SELL" -> show lastquan 
-   let shstate   =  case side of 
-                        "BUY" -> show $ fromEnum Proinit
-                        "SELL" -> show $ fromEnum Cproinit
+   let shquant   =  show quan
    let lastgrid  = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
    let lmergequan = show mergequan
 
    let stamp = fromIntegral stampi :: Double
    let shgrid = showdouble lastgrid
-   when (DL.any (== recordstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess),(show $ fromEnum Process)] )  $ do 
+
+   when (DL.any (== recordstate) [(show $ fromEnum Ccancel),(show $ fromEnum Cprocess)] )  $ do 
+       let otype = "CInit" :: String
+       let shstate   =  show $ fromEnum Cproinit
+       let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
+       void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
+
+   when (DL.any (== recordstate) [(show $ fromEnum Pcancel),(show $ fromEnum Process)] )  $ do 
+       let otype = "Init" :: String
+       let shstate   =  show $ fromEnum Proinit
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
