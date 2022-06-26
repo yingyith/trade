@@ -252,7 +252,7 @@ anlytoBuy conn msg tdepth ostvar =
                                    
 
          AS.DO -> do 
-                             let sumres = (thresholddo) - sndquan -- aim is down
+                             let sumres = (thresholddo) + sndquan -- aim is down
                              logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
                              case (sumres<0) of
                                 True -> do

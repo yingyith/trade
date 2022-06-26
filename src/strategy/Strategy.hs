@@ -123,9 +123,10 @@ crossminstra abc pr = do
                           (True ,False,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!2))  
                           (False,True ,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!1)) 
                           (True ,True ,True ) ->  ((minrulethreshold!!3),(minrulethreshold!!0)) 
+
     let totalthresholdup = mthresholdup + hthresholdup
     let totalthresholddo = mthresholddo + hthresholddo
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,threeminsupporttrendpred,fiveminsupporttrendpred,aindex,itempredi)
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,threeminsupporttrendpred,fiveminsupporttrendpred,fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,itempredi)
     return (totalthresholdup,totalthresholddo)
                                           
 
