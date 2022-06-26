@@ -337,33 +337,32 @@ endordertorediszset quan pr otimestamp insertstamp = do
    let lastorderid = recorditem !! 3
    let lastside = recorditem !! 1
    let side = lastside
-   let otype =  case side of 
-                    "BUY" -> "Hdone" 
-                    "SELL" -> "Done"
    holdpospr <- getkvfromredis holdprkey
    holdposquan <- getkvfromredis holdposkey
    let recordstate = DL.last recorditem
    let lastgrid = read (recorditem !! 6) :: Double
    let mergequan = read (recorditem !! 7) :: Integer
-   let shmergequan = case side of 
-                        "BUY"   -> show mergequan
-                        "SELL"  -> show 0
    let orderid =  lastorderid
    --let shquant =  show quan
    let shquant =  holdposquan
-   let shstate =  case side of 
-                    "BUY" -> show $ fromEnum HalfDone
-                    "SELL" -> show $ fromEnum Done
    let shgrid  = showdouble lastgrid
 
    when (DL.any (== recordstate) [(show $ fromEnum Proinit),(show $ fromEnum Ppartdone)] ) $ do
        let shprice = holdpospr 
+       let otype = "Hdone" 
+       let shstate =  show $ fromEnum HalfDone
+       let shmergequan = case side of 
+                           "BUY"   -> show mergequan
+                           "SELL"  -> show (-mergequan)
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----hlfdone--------")
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
 
    when (DL.any (== recordstate) [(show $ fromEnum Cproinit),(show $ fromEnum Cpartdone)] ) $ do
        let shprice = show pr
+       let otype = "Done" 
+       let shstate =  show $ fromEnum Done
+       let shmergequan = show mergequan
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----done--------")
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]

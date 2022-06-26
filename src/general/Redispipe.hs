@@ -384,6 +384,7 @@ detailopHandler tbq ostvar conn = do
                    SI.hPutStrLn stderr $ "fillerror: " ++ show e
                  )
 
+
               when (et == "init") $ do 
                   --  logact logByteStringStdout $ B.pack $ show ("aft init!")
                     runRedis conn (procproinitordertorediszset etquan etpr eordid etimee curtime)
