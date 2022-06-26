@@ -157,8 +157,11 @@ genehighlowsheet index hl key = do
 
 minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,(Double,Double)),(String,Int))
 minrule ahll pr interval  = do 
-   let ahl = DT.take 11 ahll
-
+   let alength = case interval of 
+                    "3m" -> 7
+                    "5m" -> 7
+                    _    -> 11
+   let ahl = DT.take alength ahll
    let reslist   =  [(xlist!!x,x)|x<-[0..(length xlist-2)]] where xlist = ahl
    --logact logByteStringStdout $ B.pack  ("enter min do ---------------------")
    let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
@@ -170,23 +173,20 @@ minrule ahll pr interval  = do
    let nowstick   =  ahl!!0
    let befstick   =  ahl!!1
    let bigpredi         =  (snd maxhigh)      >    (snd minlow) --true is low near
-   let gridspan         = ( (fst maxhigh) ,(fst minlow))
-   let griddiff         = (fst maxhigh)-(fst minlow)
-   let fastuppredi      =  (0   >=   (snd maxhigh)) 
-   let fastdownpredi    =  (0   >=   (snd minlow ))
-   let fastprevuppredi  =  (1   ==   (snd maxhigh))  --need 3m support 
-   let fastprevdopredi  =  (1   ==   (snd minlow ))  --need 3m support
+   let gridspan         =  ((fst maxhigh) ,(fst minlow))
+   let griddiff         =  (fst maxhigh)-(fst minlow)
+   let fastprevuppredi  =  (1   >=   (snd maxhigh))  --need 3m support 
+   let fastprevdopredi  =  (1   >=   (snd minlow ))  --need 3m support
    let openpos          = case pr of 
                              x| x>  ((fst maxhigh)-1/8*griddiff)                                      -> 0.01
                              x| x>  ((fst maxhigh)-1/4*griddiff) && x<= ((fst maxhigh)-1/8*griddiff)  -> 0.1
                              x| x>  ((fst maxhigh)-3/4*griddiff) && x<= ((fst maxhigh)-1/4*griddiff)  -> 0.2                                 
                              x| x>  ((fst maxhigh)-7/8*griddiff) && x<= ((fst maxhigh)-3/4*griddiff)  -> 1                                
                              x| x<= ((fst maxhigh)-7/8*griddiff)                                      -> 0.5                             
-   let threeminrulepredi = ((stype nowstick == "low")&&(stype befstick == "low") && (pr < (fst minlow)+ 1/3*griddiff)&& ((lprice befstick)-pr) > 0.08) && (interval == "3m")
-   rsiindexf <- getrsi ahl 8
+   rsiindexf <- getrsi ahl 6
    let indexlentwo = case (fst rsiindexf) of 
-                           x| x<2 -> 9
-                           _      -> 8
+                           x| x<2 -> 7
+                           _      -> 7
    rsiindexx <- getrsi ahl indexlentwo
    let rsiindex = fst rsiindexx
    let openrsipos       = case rsiindex of 
@@ -203,17 +203,12 @@ minrule ahll pr interval  = do
                              x| x>2  && x<=5                                                          ->  480
                              x| x<=2                                                                  ->  600
 
-   --logact logByteStringStdout $ B.pack  (show (maxhigh,minlow,rsiindexx,openpos))
-   --logact logByteStringStdout $ B.pack  (show (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi))
-   case (threeminrulepredi,fastuppredi,fastdownpredi,fastprevuppredi,fastprevdopredi,bigpredi) of 
-        (True  ,_     ,_     ,_     ,_     ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- up 
-        (False ,True  ,False ,_     ,_     ,_     ) ->  return ((( (!!0) $ fromJust $  minrisksheet!?interval),gridspan),("uf",rsiindex)) -- up fast
-        (False ,False ,True  ,_     ,_     ,_     ) ->  return ((( (!!3) $ fromJust $  minrisksheet!?interval),gridspan),("df",rsiindex)) -- down fast
-        (False ,False ,False ,True  ,False ,_     ) ->  return ((( (!!2) $ fromJust $  minrisksheet!?interval),gridspan),("do",rsiindex)) -- down fast
-        (False ,False ,False ,False ,True  ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,True  ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- down fast
-        (False ,False ,False ,False ,False ,False ) ->  return (((round $  (* openpos) $ (+ openrsipos) $ fromIntegral $ (!!2) $ fromJust $  minrisksheet!?interval),gridspan),("do",rsiindex)) -- down fast
-        (False ,_     ,_     ,_     ,_     ,_     ) ->  return ((0,gridspan),("no",0)) -- down fast
+   case (fastprevuppredi,fastprevdopredi,bigpredi) of 
+        (True  ,False ,_     ) ->  return ((( (!!2) $ fromJust $  minrisksheet!?interval),gridspan),("do",rsiindex)) -- down fast
+        (False ,True  ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("up",rsiindex)) -- down fast
+        (False ,False ,True  ) ->  return ((0,gridspan),("up",rsiindex)) -- down fast
+        (False ,False ,False ) ->  return ((0,gridspan),("do",rsiindex)) -- down fast
+        (_     ,_     ,_     ) ->  return ((0,gridspan),("no",0)) -- down fast
    
 
 
