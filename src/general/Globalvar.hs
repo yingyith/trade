@@ -43,7 +43,7 @@ diffspreadsheet         :: [Double]
 diffspreadsheet         = [0.2   ,0.33  ,0.58  ,0.72  ,0.8  ,0.88  ,0.95  ,1] 
 
 depthrisksheet          :: [Int] 
-depthrisksheet          = [500   ,710   ,910   ,1010  ,1260  ,1410  ,2100 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
+depthrisksheet          = [200   ,710   ,910   ,1010  ,1260  ,1410  ,2100 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
 minrulethreshold        :: [Int] --base  to serious degree
 minrulethreshold        = [2000  ,1600  ,1100  ,700  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
@@ -52,7 +52,7 @@ minrulethreshold        = [2000  ,1600  ,1100  ,700  ]   --   4h, 1h,15m -->    
                                                                          --     d,u,u  ;u,d,d  -> 700 
 
 shortminrulethreshold   :: [Int] --base  to serious degree
-shortminrulethreshold   = [2000  ,1000  ,450  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
+shortminrulethreshold   = [2000  ,1000  ,550  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
                      -- [a      ,b    ,c     ,d]
                      
 
