@@ -226,6 +226,9 @@ proordertorediszset pr stamp  = do
    let recorditem = DLT.splitOn "|" lastrecord
    let lastorderid = recorditem !! 3
    let side = recorditem !! 1
+   let diffpr = case side of 
+                     "BUY" -> 0.004
+                     "SELL" -> -0.004
    --liftIO $ print ("bef process record is -------------------------")
    let recordstate = DL.last recorditem
    let lastquan = read (recorditem !! 4) :: Integer
@@ -244,7 +247,7 @@ proordertorediszset pr stamp  = do
        True  ->  do
                     let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,lastorderid,shquant,shprice,shgrid,lmergequan,shstate]
                     void $ zadd abykeystr [(-stamp,abyvaluestr)]
-                    return (lastquan,(True,pr+0.004))
+                    return (lastquan,(True,pr+diffpr))
        False ->  return (lastquan,(False,pr))
 
 --
