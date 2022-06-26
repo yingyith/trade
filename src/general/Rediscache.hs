@@ -220,7 +220,7 @@ anlytoBuy conn msg tdepth ostvar =
      atdepth      <- readTVarIO tdepth 
      apr          <- AS.depthmidpr atdepth dcp
      let ares     =  AS.getBidAskNum apr atdepth
-     ((sndquan,sndratio),sedtrend)  <- secondrule ares
+     (sndquan,sedtrend)  <- secondrule ares
      timecurtime <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi <- getcurtimestamp
      let curtime = fromInteger curtimestampi ::Double
@@ -244,7 +244,7 @@ anlytoBuy conn msg tdepth ostvar =
                                                               writeTVar ostvar newcurorder
                                                    False -> do 
                                                               return ()
-                                           logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
+                                           logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid)
                                            runRedis conn $ do
                                               preorcpreordertorediszset aresquan BUY dcp  curtimestampi stopclosegrid curtime
                                 False -> return ()
@@ -268,7 +268,7 @@ anlytoBuy conn msg tdepth ostvar =
                                                               writeTVar ostvar newcurorder
                                                    False -> do 
                                                               return ()
-                                           logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid,sndratio)
+                                           logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid)
                                            runRedis conn $ do
                                               preorcpreordertorediszset aresquan SELL dcp  curtimestampi stopclosegrid curtime
                                 False -> return ()

@@ -256,15 +256,13 @@ getdiffgridnum  (a,b) = case (a>b) of
 
                      --return (quan,res)
 
-secondrule ::  [(Double,Double)]  -> IO ((Int,Double),Trend)
+secondrule ::  [(Double,Double)]  -> IO (Int,Trend)
 secondrule ablist = do 
                      let ratiol = DT.map getdiffgridnum ablist
-                     let resf = (ratiol !! 0)
-                     let ress = (ratiol !! 1)
-                     let curprsfstdiff = snd (ratiol !! 6)
-                     let curprmsnddiff = snd (ratiol !! 7)
-                     logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd resf        ),
-                                                                                     "b"++(showdouble   $ snd ress        ),
+                     let curprsfstdiff = fst (ratiol !! 6)
+                     let curprmsnddiff = fst (ratiol !! 7)
+                     logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd (ratiol !!0)),
+                                                                                     "b"++(showdouble   $ snd (ratiol !!1)),
                                                                                      "c"++(showdouble   $ snd (ratiol !!2)),
                                                                                      "aa"++(showdouble  $ snd (ratiol !!3)),
                                                                                      "bb"++(showdouble  $ snd (ratiol !!4)),
@@ -274,15 +272,14 @@ secondrule ablist = do
                                                                                      "ccc"++(showdouble $ snd (ratiol !!8)),
                                                                                      "ddd"++(showdouble $ snd (ratiol !!9)),
                                                                                      "eee"++(showdouble $ snd (ratiol !!10)))
-                     let trend = case (( curprsfstdiff> 0) ,(curprmsnddiff> 0)) of
+                     let trend = case ((curprsfstdiff > 0) ,(curprmsnddiff > 0)) of
                                       (True ,True )   -> AS.UP
                                       (True ,False)   -> AS.ND 
                                       (False,True )   -> AS.ND
                                       (False,False)   -> AS.DO
 
-                     let totalquan = (fst resf)+(fst ress) 
-                     let resquan = (fst resf)+ (fst ress)
-                     return ((resquan,max (snd resf) (snd ress)),trend)
+                     let totalquan = curprsfstdiff + curprmsnddiff
+                     return (totalquan,trend)
 
 
 
