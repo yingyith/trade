@@ -228,7 +228,7 @@ anlytoBuy conn msg tdepth ostvar =
      case sedtrend of 
          AS.UP -> do 
                      let sumres = (-thresholdup) +sndquan -- aim is up
-                     logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
+                     logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
                      case (sumres>0) of 
                         True -> do
                                    let aresquan =   max minquan  $ min minquan $  abs sumres
@@ -253,7 +253,7 @@ anlytoBuy conn msg tdepth ostvar =
 
          AS.DO -> do 
                      let sumres = (thresholddo) + sndquan -- aim is down
-                     logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
+                     logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
                      case (sumres<0) of
                         True -> do
                                    let aresquan =   max minquan  $ min minquan $  abs sumres
