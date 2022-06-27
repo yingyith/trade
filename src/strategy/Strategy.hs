@@ -237,8 +237,8 @@ getdiffgridnum  (a,b) = case (a>b) of
                                       x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  ->( ( depthrisksheet !! 4),res)
                                       x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  ->( ( depthrisksheet !! 5),res)
                                       x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  ->( ( depthrisksheet !! 6),res)
-                                      x|x>= (diffspreadsheet!!7)                            ->( ( depthrisksheet !! 6),res)
-                                      _                                                     ->( 60,res)
+                                      x|x<(diffspreadsheet!!8) && x>= (diffspreadsheet!!7)  ->( ( depthrisksheet !! 7),res)
+                                      _                                                     ->( ( depthrisksheet !! 0),res)
                                   False -> case (abs res) of 
                                       x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->( -( depthrisksheet !! 0),res)
                                       x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->( -( depthrisksheet !! 1),res) 
@@ -247,9 +247,9 @@ getdiffgridnum  (a,b) = case (a>b) of
                                       x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  ->( -( depthrisksheet !! 4),res)
                                       x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  ->( -( depthrisksheet !! 5),res)
                                       x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  ->( -( depthrisksheet !! 6),res)
-                                      x|x>= (diffspreadsheet!!7)                            ->( -( depthrisksheet !! 6),res)
-                                      _                                                     ->( -60,res)
-                           where res  = (a-b)/(max a b)
+                                      x|x<(diffspreadsheet!!8) && x>= (diffspreadsheet!!7)  ->( -( depthrisksheet !! 7),res)
+                                      _                                                     ->( -( depthrisksheet !! 0),res)
+                           where res  = abs ((a-b)/(max a b))
 
                      --return (quan,res)
 
