@@ -229,18 +229,8 @@ gethlsheetsec index kll =  do
 
 getdiffgridnum :: (Double,Double)-> (Int,Double) 
 getdiffgridnum  (a,b) = case (a>b) of 
-                                  True  -> case res of 
-                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->( ( depthrisksheet !! 0),res) 
-                                      x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->( ( depthrisksheet !! 1),res) 
-                                      x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  ->( ( depthrisksheet !! 2),res)
-                                      x|x<(diffspreadsheet!!4) && x>= (diffspreadsheet!!3)  ->( ( depthrisksheet !! 3),res)
-                                      x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  ->( ( depthrisksheet !! 4),res)
-                                      x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  ->( ( depthrisksheet !! 5),res)
-                                      x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  ->( ( depthrisksheet !! 6),res)
-                                      x|x<(diffspreadsheet!!8) && x>= (diffspreadsheet!!7)  ->( ( depthrisksheet !! 7),res)
-                                      _                                                     ->( ( depthrisksheet !! 0),res)
-                                  False -> case (abs res) of 
-                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->( -( depthrisksheet !! 0),res)
+                                  True  -> case res of  --bid > ask
+                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->( -( depthrisksheet !! 0),res) 
                                       x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->( -( depthrisksheet !! 1),res) 
                                       x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  ->( -( depthrisksheet !! 2),res)
                                       x|x<(diffspreadsheet!!4) && x>= (diffspreadsheet!!3)  ->( -( depthrisksheet !! 3),res)
@@ -249,7 +239,17 @@ getdiffgridnum  (a,b) = case (a>b) of
                                       x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  ->( -( depthrisksheet !! 6),res)
                                       x|x<(diffspreadsheet!!8) && x>= (diffspreadsheet!!7)  ->( -( depthrisksheet !! 7),res)
                                       _                                                     ->( -( depthrisksheet !! 0),res)
-                           where res  = abs ((a-b)/(max a b))
+                                  False -> case (abs res) of 
+                                      x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->( ( depthrisksheet !! 0),res)
+                                      x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->( ( depthrisksheet !! 1),res) 
+                                      x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  ->( ( depthrisksheet !! 2),res)
+                                      x|x<(diffspreadsheet!!4) && x>= (diffspreadsheet!!3)  ->( ( depthrisksheet !! 3),res)
+                                      x|x<(diffspreadsheet!!5) && x>= (diffspreadsheet!!4)  ->( ( depthrisksheet !! 4),res)
+                                      x|x<(diffspreadsheet!!6) && x>= (diffspreadsheet!!5)  ->( ( depthrisksheet !! 5),res)
+                                      x|x<(diffspreadsheet!!7) && x>= (diffspreadsheet!!6)  ->( ( depthrisksheet !! 6),res)
+                                      x|x<(diffspreadsheet!!8) && x>= (diffspreadsheet!!7)  ->( ( depthrisksheet !! 7),res)
+                                      _                                                     ->( ( depthrisksheet !! 0),res)
+                           where res  = ((a-b)/(max a b))
 
                      --return (quan,res)
 
@@ -275,7 +275,7 @@ secondrule diffpr ablist = do
                                                                                      showdouble minpr,
                                                                                      showdouble maxpr,
                                                                                      showdouble basepr)
-                     let trend = case ((curprsfstdiff > 0) ,(curprmsnddiff > 0)) of
+                     let trend = case ((curprsfstdiff < 0) ,(curprmsnddiff < 0)) of
                                       (True ,True )   -> AS.UP
                                       (True ,False)   -> AS.ND 
                                       (False,True )   -> AS.ND

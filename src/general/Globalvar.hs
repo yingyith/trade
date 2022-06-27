@@ -43,7 +43,7 @@ diffspreadsheet         :: [Double]
 diffspreadsheet         = [0.18   ,0.2   ,0.45  ,0.61  ,0.75  ,0.81  ,0.88  ,0.95  ,1] 
 
 depthrisksheet          :: [Int] 
-depthrisksheet          = [-1000  ,400   ,710   ,910   ,1210  ,1960  ,2000  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
+depthrisksheet          = [-1000  ,400   ,710   ,1510   ,1710  ,1960  ,2000  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
 minrulethreshold        :: [Int] --base  to serious degree
 minrulethreshold        = [2000  ,1600  ,1100  ,700  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
