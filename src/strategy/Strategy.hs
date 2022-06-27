@@ -256,6 +256,8 @@ getdiffgridnum  (a,b) = case (a>b) of
 secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO (Int,Trend)
 secondrule diffpr ablist = do 
                      let ratiol        = DT.map getdiffgridnum ablist
+                     let curprsfstdire = snd (ratiol !! 6)
+                     let curprmsnddire = snd (ratiol !! 7)
                      let curprsfstdiff = fst (ratiol !! 6)
                      let curprmsnddiff = fst (ratiol !! 7)
                      let minpr         = fst $ fst  diffpr
@@ -275,11 +277,11 @@ secondrule diffpr ablist = do
                                                                                      showdouble minpr,
                                                                                      showdouble maxpr,
                                                                                      showdouble basepr)
-                     let trend = case ((curprsfstdiff < 0) ,(curprmsnddiff < 0)) of
-                                      (True ,True )   -> AS.UP
+                     let trend = case ((curprsfstdire < 0) ,(curprmsnddire < 0)) of
+                                      (True ,True )   -> AS.DO
                                       (True ,False)   -> AS.ND 
                                       (False,True )   -> AS.ND
-                                      (False,False)   -> AS.DO
+                                      (False,False)   -> AS.UP
 
                      let totalquan = case (basepr < minpr || basepr > maxpr) of 
                                         True  -> 0
