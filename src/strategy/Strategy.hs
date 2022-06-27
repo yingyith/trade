@@ -304,20 +304,6 @@ secondrule diffpr ablist = do
                      let minpr         = fst $ fst  diffpr
                      let maxpr         = snd $ fst  diffpr
                      let basepr        = snd  diffpr
-                     logact logByteStringStdout $ B.pack $ show ("baratiois--------","a"++(showdouble   $ snd (ratiol !!0 )),
-                                                                                     "b"++(showdouble   $ snd (ratiol !!1 )),
-                                                                                     "c"++(showdouble   $ snd (ratiol !!2 )),
-                                                                                     "aa"++(showdouble  $ snd (ratiol !!3 )),
-                                                                                     "bb"++(showdouble  $ snd (ratiol !!4 )),
-                                                                                     "cc"++(showdouble  $ snd (ratiol !!5 )), 
-                                                                                     "aaa"++(showdouble $ snd (ratiol !!6 )),
-                                                                                     "bbb"++(showdouble $ snd (ratiol !!7 )),
-                                                                                     "ccc"++(showdouble $ snd (ratiol !!8 )),
-                                                                                     "ddd"++(showdouble $ snd (ratiol !!9 )),
-                                                                                     "eee"++(showdouble $ snd (ratiol !!10)),
-                                                                                     showdouble minpr,
-                                                                                     showdouble maxpr,
-                                                                                     showdouble basepr)
                      let trend = case ((curprsfstdire < 0) ,(curprmsnddire < 0)) of
                                       (True ,True )   -> AS.DO
                                       (True ,False)   -> AS.ND 
@@ -328,9 +314,28 @@ secondrule diffpr ablist = do
                                         True  -> 0
                                         False -> (curprsfstdiff + curprmsnddiff)
                      let middquan = midquan + (waveonlongsight ccc ddd eee trend) 
-                     let finalquan = case middquan of 
-                                          x|x>0 -> middquan
-                                          x|x<=0 -> 0
+                     let finalquan = case (middquan > 0 ,trend) of 
+                                          (True  , AS.DO) -> 0
+                                          (False , AS.UP) -> 0
+                                          (False , AS.DO) -> middquan
+                                          (True  , AS.UP) -> middquan
+
+                     logact logByteStringStdout $ B.pack $ show ("baratiois--------" ,
+                                                                 "a"++(showdouble   $ snd (ratiol !!0 )),
+                                                                 "b"++(showdouble   $ snd (ratiol !!1 )),
+                                                                 "c"++(showdouble   $ snd (ratiol !!2 )),
+                                                                 "aa"++(showdouble  $ snd (ratiol !!3 )),
+                                                                 "bb"++(showdouble  $ snd (ratiol !!4 )),
+                                                                 "cc"++(showdouble  $ snd (ratiol !!5 )), 
+                                                                 "aaa"++(showdouble $ snd (ratiol !!6 )),
+                                                                 "bbb"++(showdouble $ snd (ratiol !!7 )),
+                                                                 "ccc"++(showdouble $ snd (ratiol !!8 )),
+                                                                 "ddd"++(showdouble $ snd (ratiol !!9 )),
+                                                                 "eee"++(showdouble $ snd (ratiol !!10)),
+                                                                 showdouble minpr,
+                                                                 showdouble maxpr,
+                                                                 showdouble basepr
+                                                                 )
                      return (finalquan,trend)
 
 
