@@ -208,7 +208,8 @@ minrule ahll pr interval  = do
         (False ,True  ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("df",rsiindex)) -- down fast
         (False ,False ,True  ) ->  return ((0,gridspan),("up",rsiindex)) -- down fast
         (False ,False ,False ) ->  return ((0,gridspan),("do",rsiindex)) -- down fast
-        (_     ,_     ,_     ) ->  return ((0,gridspan),("no",0)) -- down fast
+        (True  ,True  ,True  ) ->  return ((0,gridspan),("up",rsiindex)) -- down fast
+        (True  ,True  ,False ) ->  return ((0,gridspan),("do",rsiindex)) -- down fast
    
 
 
