@@ -105,14 +105,14 @@ crossminstra abc pr = do
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     let (mthresholdup,mthresholddo) = case (threeminsupporttrendpred ,fiveminsupporttrendpred,fstminsupporttrendpred) of 
-                                  (True  ,True ,True  )  -> ((shortminrulethreshold !! 2),(shortminrulethreshold !!0 ))--both up ,hard for short
+                                  (True  ,True ,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!0 ))--both up ,hard for short
                                   (True  ,True ,False )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!1 ))--both up ,hard for short
                                   (False ,True ,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!0 ))--have one down ,hard for long
                                   (False ,True ,False )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!2 ))--have one down ,hard for long
                                   (True  ,False,True  )  -> ((shortminrulethreshold !! 2),(shortminrulethreshold !!1 ))--have one down ,hard for long
                                   (True  ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!1 ))--have one down ,hard for long
                                   (False ,False,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!1 ))--have two down ,hard for long
-                                  (False ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!2 ))--have two down ,hard for long
+                                  (False ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!1 ))--have two down ,hard for long
     --let newgrid = stopprofitgrid 
     let (hthresholdup,hthresholddo)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
                           (False,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!3))     -- left for hard degree of UP,right for hard degree of DOWN
