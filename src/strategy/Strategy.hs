@@ -115,14 +115,14 @@ crossminstra abc pr = do
                                   (False ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!1 ))--have two down ,hard for long
     --let newgrid = stopprofitgrid 
     let (hthresholdup,hthresholddo)  = case (fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred) of 
-                          (False,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!3))     -- left for hard degree of UP,right for hard degree of DOWN
+                          (False,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!1))     -- left for hard degree of UP,right for hard degree of DOWN
                           (True ,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!2))   
                           (False,True ,False) ->  ((minrulethreshold!!2),(minrulethreshold!!2))  
                           (True ,True ,False) ->  ((minrulethreshold!!3),(minrulethreshold!!1))   
                           (False,False,True ) ->  ((minrulethreshold!!1),(minrulethreshold!!3))
                           (True ,False,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!2))  
                           (False,True ,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!0)) 
-                          (True ,True ,True ) ->  ((minrulethreshold!!3),(minrulethreshold!!0)) 
+                          (True ,True ,True ) ->  ((minrulethreshold!!1),(minrulethreshold!!0)) 
 
     let totalthresholdup = mthresholdup + hthresholdup
     let totalthresholddo = mthresholddo + hthresholddo
