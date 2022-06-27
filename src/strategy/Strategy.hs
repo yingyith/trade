@@ -313,7 +313,9 @@ secondrule diffpr ablist = do
                      let midquan = case (basepr < minpr || basepr > maxpr) of 
                                         True  -> 0
                                         False -> (curprsfstdiff + curprmsnddiff)
+
                      let middquan = midquan + (waveonlongsight ccc ddd eee trend) 
+
                      let finalquan = case (middquan > 0 ,trend) of 
                                           (True  , AS.DO) -> 0
                                           (False , AS.UP) -> 0
@@ -336,6 +338,7 @@ secondrule diffpr ablist = do
                                                                  showdouble maxpr,
                                                                  showdouble basepr
                                                                  )
+                     logact logByteStringStdout $ B.pack $ show (midquan,middquan,finalquan)
                      return (finalquan,trend)
 
 
