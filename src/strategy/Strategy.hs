@@ -290,6 +290,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> fst $  (adjustboostgrid!!5)
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> fst $  (adjustboostgrid!!6)
                                        _                                                         -> fst $  (adjustboostgrid!!0) 
+                 (_   ,_     )  ->  0
 
 secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO (Int,Trend)
 secondrule diffpr ablist = do 
