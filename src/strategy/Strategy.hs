@@ -322,6 +322,8 @@ secondrule diffpr ablist = do
                                           (False , AS.UP) -> 0
                                           (False , AS.DO) -> middquan
                                           (True  , AS.UP) -> middquan
+                                          (_     , _    ) -> 0
+
 
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------" ,
                                                                  "a"++(showdouble   $ snd (ratiol !!0 )),
