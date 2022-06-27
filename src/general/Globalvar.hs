@@ -25,6 +25,8 @@ module Globalvar (
     askdepth,
     diffspreadsheet,
     minrulethreshold,
+    adjustratiosheet,
+    adjustboostgrid,
     shortminrulethreshold,
     depthrisksheet,
     holdposkey
@@ -53,8 +55,12 @@ minrulethreshold        = [2000  ,1600  ,1100  ,700  ]   --   4h, 1h,15m -->    
 
 shortminrulethreshold   :: [Int] --base  to serious degree
 shortminrulethreshold   = [2000  ,1200  ,550  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
-                     -- [a      ,b    ,c     ,d]
                      
+adjustratiosheet :: [Double]
+adjustratiosheet = [0.001   , 0.1        , 0.2        ,  0.3      , 0.5          , 0.7        , 0.9                , 1     ]
+
+adjustboostgrid :: [(Int,Int)]
+adjustboostgrid =  [(0,300) ,(100,500)   ,(300,900)   , (400,1400), (2000,2500)  ,(3000,4000) , (5000,10000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"

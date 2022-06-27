@@ -251,7 +251,45 @@ getdiffgridnum  (a,b) = case (a>b) of
                                       _                                                     ->(-( depthrisksheet !! 0),res)
                            where res  = ((a-b)/(max a b))
 
-                     --return (quan,res)
+waveonlongsight :: Double -> Double -> Double -> AS.Trend -> Int
+waveonlongsight  ccc   ddd eee  trend = do
+           case (ccc>0,trend) of 
+                 (True, AS.UP)  ->  case ccc of 
+                                       x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> fst $  (adjustboostgrid!!0)
+                                       x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> fst $  (adjustboostgrid!!1)
+                                       x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> fst $  (adjustboostgrid!!2)
+                                       x|x< (adjustratiosheet!!4) &&  x>=(adjustratiosheet!!3)   -> fst $  (adjustboostgrid!!3)
+                                       x|x< (adjustratiosheet!!5) &&  x>=(adjustratiosheet!!4)   -> fst $  (adjustboostgrid!!4)
+                                       x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> fst $  (adjustboostgrid!!5)
+                                       x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> fst $  (adjustboostgrid!!6)
+                                       _                                                         -> fst $  (adjustboostgrid!!0) 
+                 (True, AS.DO)  ->  case ccc of 
+                                       x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> -(snd $  (adjustboostgrid!!0)) 
+                                       x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> -(snd $  (adjustboostgrid!!1))
+                                       x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> -(snd $  (adjustboostgrid!!2))
+                                       x|x< (adjustratiosheet!!4) &&  x>=(adjustratiosheet!!3)   -> -(snd $  (adjustboostgrid!!3))
+                                       x|x< (adjustratiosheet!!5) &&  x>=(adjustratiosheet!!4)   -> -(snd $  (adjustboostgrid!!4))
+                                       x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> -(snd $  (adjustboostgrid!!5))
+                                       x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> -(snd $  (adjustboostgrid!!6))
+                                       _                                                         -> -(snd $  (adjustboostgrid!!0)) 
+                 (False,AS.UP)  ->  case (abs ccc) of 
+                                       x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> -(snd $  (adjustboostgrid!!0))
+                                       x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> -(snd $  (adjustboostgrid!!1))
+                                       x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> -(snd $  (adjustboostgrid!!2))
+                                       x|x< (adjustratiosheet!!4) &&  x>=(adjustratiosheet!!3)   -> -(snd $  (adjustboostgrid!!3))
+                                       x|x< (adjustratiosheet!!5) &&  x>=(adjustratiosheet!!4)   -> -(snd $  (adjustboostgrid!!4))
+                                       x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> -(snd $  (adjustboostgrid!!5))
+                                       x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> -(snd $  (adjustboostgrid!!6))
+                                       _                                                         -> -(snd $  (adjustboostgrid!!0)) 
+                 (False,AS.DO)  ->  case (abs ccc) of 
+                                       x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> fst $  (adjustboostgrid!!0)
+                                       x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> fst $  (adjustboostgrid!!1)
+                                       x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> fst $  (adjustboostgrid!!2)
+                                       x|x< (adjustratiosheet!!4) &&  x>=(adjustratiosheet!!3)   -> fst $  (adjustboostgrid!!3)
+                                       x|x< (adjustratiosheet!!5) &&  x>=(adjustratiosheet!!4)   -> fst $  (adjustboostgrid!!4)
+                                       x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> fst $  (adjustboostgrid!!5)
+                                       x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> fst $  (adjustboostgrid!!6)
+                                       _                                                         -> fst $  (adjustboostgrid!!0) 
 
 secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO (Int,Trend)
 secondrule diffpr ablist = do 
@@ -260,6 +298,9 @@ secondrule diffpr ablist = do
                      let curprmsnddire = snd (ratiol !! 7)
                      let curprsfstdiff = fst (ratiol !! 6)
                      let curprmsnddiff = fst (ratiol !! 7)
+                     let ccc           = snd (ratiol !! 8)
+                     let ddd           = snd (ratiol !! 9)
+                     let eee           = snd (ratiol !! 10)
                      let minpr         = fst $ fst  diffpr
                      let maxpr         = snd $ fst  diffpr
                      let basepr        = snd  diffpr
@@ -283,10 +324,14 @@ secondrule diffpr ablist = do
                                       (False,True )   -> AS.ND
                                       (False,False)   -> AS.UP
 
-                     let totalquan = case (basepr < minpr || basepr > maxpr) of 
+                     let midquan = case (basepr < minpr || basepr > maxpr) of 
                                         True  -> 0
                                         False -> (curprsfstdiff + curprmsnddiff)
-                     return (totalquan,trend)
+                     let middquan = midquan + (waveonlongsight ccc ddd eee trend) 
+                     let finalquan = case middquan of 
+                                          x|x>0 -> middquan
+                                          x|x<=0 -> 0
+                     return (finalquan,trend)
 
 
 
