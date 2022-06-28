@@ -42,10 +42,10 @@ stopprofitlist          :: [Double]
 stopprofitlist          = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 diffspreadsheet         :: [Double]
-diffspreadsheet         = [0.18   ,0.3   ,0.5  ,0.61  ,0.75  ,0.81  ,0.88  ,0.95  ,1] 
+diffspreadsheet         = [0.18   ,0.3   ,0.46  ,0.65  ,0.75  ,0.81  ,0.88  ,0.95  ,1] 
 
 depthrisksheet          :: [Int] 
-depthrisksheet          = [-1000  ,450   ,710   ,1510   ,1710  ,1860  ,2000  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
+depthrisksheet          = [-1000  ,450   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
 minrulethreshold        :: [Int] --base  to serious degree
 minrulethreshold        = [2000  ,1600  ,1100  ,700  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
