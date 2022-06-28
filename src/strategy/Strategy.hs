@@ -229,7 +229,7 @@ gethlsheetsec index kll =  do
 
 getdiffgridnum :: (Double,Double)-> (Int,Double) 
 getdiffgridnum  (a,b) = case (a>b) of 
-                                  True  -> case (abs res) of  --bid > ask  down
+                                  True  -> case (abs res) of  --bid > ask  up
                                       x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->(( depthrisksheet !! 0),res) 
                                       x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->(( depthrisksheet !! 1),res) 
                                       x|x<(diffspreadsheet!!3) && x>= (diffspreadsheet!!2)  ->(( depthrisksheet !! 2),res)
@@ -293,7 +293,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                  (_   ,_     )  ->  0
 
 secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO (Int,Trend)
-secondrule diffpr ablist = do 
+secondrule diffpr ablist = do      -- bid is buyer , ask is seller 
                      let ratiol        = DT.map getdiffgridnum ablist
                      let curprsfstdire = snd (ratiol !! 6)
                      let curprmsnddire = snd (ratiol !! 7)
