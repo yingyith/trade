@@ -42,7 +42,7 @@ stopprofitlist          :: [Double]
 stopprofitlist          = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 diffspreadsheet         :: [Double]
-diffspreadsheet         = [0.18   ,0.3   ,0.46  ,0.65  ,0.75  ,0.81  ,0.88  ,0.95  ,1] 
+diffspreadsheet         = [0.18   ,0.25   ,0.48  ,0.65  ,0.75  ,0.81  ,0.88  ,0.95  ,1] 
 
 depthrisksheet          :: [Int] 
 depthrisksheet          = [-1000  ,450   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
@@ -60,7 +60,7 @@ adjustratiosheet :: [Double]
 adjustratiosheet = [0.001   , 0.15        , 0.25        ,  0.35      , 0.5          , 0.76        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
-adjustboostgrid =  [(0,300) ,(100,500)   ,(200,800)   , (400,1000), (1800,2500)  ,(2500,4000) , (4000,5000)               ]
+adjustboostgrid =  [(0,300) ,(100,500)   ,(200,800)   , (300,1000), (1800,2500)  ,(2500,4000) , (4000,5000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
