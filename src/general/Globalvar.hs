@@ -48,7 +48,7 @@ depthrisksheet          :: [Int]
 depthrisksheet          = [-1000  ,450   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
 minrulethreshold        :: [Int] --base  to serious degree
-minrulethreshold        = [2000  ,1600  ,1100  ,700  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
+minrulethreshold        = [2000  ,1600  ,1100  ,900  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
                                                                          --     d,d,u  ;u,u,d  -> 1800
                                                                          --     d,u,d  ;u,d,u  -> 1500
                                                                          --     d,u,u  ;u,d,d  -> 700 
@@ -60,7 +60,7 @@ adjustratiosheet :: [Double]
 adjustratiosheet = [0.001   , 0.15        , 0.25        ,  0.35      , 0.5          , 0.76        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
-adjustboostgrid =  [(0,300) ,(100,500)   ,(200,800)   , (500,1000), (1800,2500)  ,(2500,4000) , (4000,5000)               ]
+adjustboostgrid =  [(0,300) ,(100,500)   ,(200,800)   , (400,1000), (1800,2500)  ,(2500,4000) , (4000,5000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
