@@ -60,7 +60,7 @@ adjustratiosheet :: [Double]
 adjustratiosheet = [0.001   , 0.1        , 0.2        ,  0.3      , 0.5          , 0.7        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
-adjustboostgrid =  [(0,300) ,(100,500)   ,(300,900)   , (400,1400), (2000,2500)  ,(3000,4000) , (5000,10000)               ]
+adjustboostgrid =  [(0,300) ,(100,500)   ,(200,800)   , (400,1000), (1000,1500)  ,(1500,2000) , (2000,3000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
