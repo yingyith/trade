@@ -482,12 +482,16 @@ opclHandler tbq ostvar  channel  msg = do
                   let aevent = Opevent "cprep" 0 pr 0 ordid oside
                   addeventtotbqueuestm aevent tbq
 
-         when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)] && ((orderpr-curpr)> (accugriddiff))  ) == True ) $ do 
+         when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)]) == True ) $ do 
               atomically $ do
                   curorder <- readTVar ostvar
                   let oside  = orderside curorder
-                  let aevent = Opevent "endcancel" 0 0 0 ordid oside
-                  addeventtotbqueuestm aevent tbq
+                  when (oside == BUY  && ((orderpr-curpr)> accugriddiff)) $ do
+                    let aevent = Opevent "endcancel" 0 0 0 ordid oside
+                    addeventtotbqueuestm aevent tbq
+                  when (oside == SELL && ((curpr-orderpr)> accugriddiff)) $ do
+                    let aevent = Opevent "endcancel" 0 0 0 ordid oside
+                    addeventtotbqueuestm aevent tbq
               
               
     when (dettype /= "adausdt@kline_1m") $ do 
