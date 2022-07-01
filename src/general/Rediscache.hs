@@ -229,7 +229,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
          AS.UP -> do 
                      let sumres = (-thresholdup) +sndquan -- aim is up
                      logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
-                     case (sumres>0) of 
+                     case (sumres>-11111) of 
                         True -> do
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
                                    let stopclosegrid   = 0.0005
@@ -249,11 +249,13 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                                                                       BUY   -> x+1 --need return () 
                                                                                       SELL  -> 0
                                                       when (ochpostime==(-1)) $ do
+                                                            unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate aft -1---------")
                                                             let newcurorder = Curorder curoside astate ochpostime
                                                             writeTVar ostvar newcurorder
                                                             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
                                                             addeventtotbqueuestm aevent tbq
                                                       when (ochpostime/=(-1) && oside == BUY) $ do
+                                                            unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate aft !-1---------")
                                                             let newcurorder = Curorder curoside astate ochpostime
                                                             writeTVar ostvar newcurorder
                                                             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
@@ -266,7 +268,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
          AS.DO -> do 
                      let sumres = (thresholddo) + sndquan -- aim is down
                      logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
-                     case (sumres<0) of
+                     case (sumres<11111) of
                         True -> do
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
                                    let stopclosegrid = 0.0005
