@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
   module Events (
-       Opevent (etype,price,quant,etime,ordid,oside,Opevent),
+       Opevent (etype,price,quant,etime,ordid,oside,eprofit,Opevent),
        Cronevent (ectype,eccont,Cronevent),
        addoeventtotbqueuestm,
        addeventtotbqueue,
@@ -26,12 +26,13 @@ import Logger
 import Order
 
 data Opevent = Opevent {
-                  etype :: String,
-                  quant :: Integer,
-                  price :: Double,
-                  etime :: Int,
-                  ordid :: String,
-                  oside :: Orderside
+                  etype   :: String,
+                  quant   :: Integer,
+                  price   :: Double,
+                  etime   :: Int,
+                  ordid   :: String,
+                  eprofit :: Double,
+                  oside   :: Orderside
 }  deriving (Show,Generic) 
 
 addeventtotbqueue :: Opevent -> TBQueue Opevent -> IO ()

@@ -87,10 +87,11 @@ data Orderside = BUY | SELL deriving (Enum,Eq,Show)
 
 data Curorder = Curorder {
       orderside       :: Orderside,
-      orderstate      :: Ostate
+      orderstate      :: Ostate,
+      chpostime       :: Int -- change position times
 }deriving (Generic,Show)
 
-preorcpreordertorediszset :: Int -> Orderside -> Double  -> Integer -> Double -> Double -> Redis ()
+preorcpreordertorediszset :: Integer -> Orderside -> Double  -> Int -> Double -> Double -> Redis ()
 preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do 
 -- quantity ,side ,price ,ostate
    let price  = pr :: Double

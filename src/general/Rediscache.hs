@@ -65,6 +65,7 @@ import Data.Time.Clock.POSIX
 import Redisutils
 import System.IO as SI
 import Control.Concurrent.STM.TVar
+import Events
 --import Control.Concurrent
 --import System.IO as SI
 
@@ -209,8 +210,8 @@ getdiffintervalflow = do
      return (fisar,sndar)
      
 
-anlytoBuy :: R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
-anlytoBuy conn msg tdepth ostvar = 
+anlytoBuy :: TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
+anlytoBuy tbq conn msg tdepth ostvar = 
    do
      res                          <- runRedis conn (getdiffintervalflow) 
      kline                        <- parsetokline msg
@@ -223,31 +224,42 @@ anlytoBuy conn msg tdepth ostvar =
      (sndquan,sedtrend)           <- secondrule apr ares
      timecurtime                  <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi                <- getcurtimestamp
-     let curtime                  =  fromInteger curtimestampi ::Double
-     --logact logByteStringStdout $ BC.pack $ show ("sndrule is ---- !",thresholdup,thresholddo,sndquan,timecurtime,dcp)
+     let curtime                  =  fromIntegral curtimestampi ::Double
      case sedtrend of 
          AS.UP -> do 
                      let sumres = (-thresholdup) +sndquan -- aim is up
                      logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
                      case (sumres>0) of 
                         True -> do
-                                   let aresquan =   max minquan  $ min minquan $  abs sumres
-                                   let stopclosegrid = 0.0005
+                                   let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
+                                   let stopclosegrid   = 0.0005
                                    atomically $ do 
-                                        curorder <- readTVar ostvar
-                                        let ostate = orderstate curorder
+                                        curorder       <- readTVar ostvar
+                                        let ostate     = orderstate curorder
+                                        let oside      = orderside curorder 
+                                        let ochpostime = chpostime curorder
                                         unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres)
-                                        case (ostate  == Done) of 
+                                        case (ostate  == Done ) of 
                                            True  -> do 
-                                                      let astate = Prepare
-                                                      let curoside = BUY
-                                                      let newcurorder = Curorder curoside astate 
-                                                      writeTVar ostvar newcurorder
+                                                      let astate      = Prepare
+                                                      let curoside    = BUY
+                                                      let ochpostime  = case ochpostime of 
+                                                                            -1 -> 0
+                                                                            x  -> case oside of 
+                                                                                      BUY   -> x+1 --need return () 
+                                                                                      SELL  -> 0
+                                                      when (ochpostime==(-1)) $ do
+                                                            let newcurorder = Curorder curoside astate ochpostime
+                                                            writeTVar ostvar newcurorder
+                                                            let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
+                                                            addeventtotbqueuestm aevent tbq
+                                                      when (ochpostime/=(-1) && oside == BUY) $ do
+                                                            let newcurorder = Curorder curoside astate ochpostime
+                                                            writeTVar ostvar newcurorder
+                                                            let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
+                                                            addeventtotbqueuestm aevent tbq
                                            False -> do 
                                                       return ()
-                                   logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid)
-                                   runRedis conn $ do
-                                      preorcpreordertorediszset aresquan BUY dcp  curtimestampi stopclosegrid curtime
                         False -> return ()
                                    
 
@@ -256,23 +268,35 @@ anlytoBuy conn msg tdepth ostvar =
                      logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
                      case (sumres<0) of
                         True -> do
-                                   let aresquan =   max minquan  $ min minquan $  abs sumres
+                                   let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
                                    let stopclosegrid = 0.0005
                                    atomically $ do 
                                         curorder <- readTVar ostvar
                                         let ostate = orderstate curorder
+                                        let oside      = orderside curorder 
+                                        let ochpostime = chpostime curorder
                                         unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres)
                                         case (ostate  == Done) of 
                                            True  -> do 
                                                       let astate = Prepare
                                                       let curoside = SELL
-                                                      let newcurorder = Curorder curoside astate 
-                                                      writeTVar ostvar newcurorder
+                                                      let ochpostime = case ochpostime of 
+                                                                            -1 -> 0
+                                                                            x  -> case oside of 
+                                                                                      SELL   -> x+1 --need return () 
+                                                                                      BUY    -> 0
+                                                      when (ochpostime==(-1)) $ do
+                                                            let newcurorder = Curorder curoside astate ochpostime
+                                                            writeTVar ostvar newcurorder
+                                                            let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                            addeventtotbqueuestm aevent tbq
+                                                      when (ochpostime/=(-1) && oside == SELL) $ do
+                                                            let newcurorder = Curorder curoside astate ochpostime
+                                                            writeTVar ostvar newcurorder
+                                                            let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                            addeventtotbqueuestm aevent tbq
                                            False -> do 
                                                       return ()
-                                   logact logByteStringStdout $ BC.pack $ show ("fqtrade open !",sumres,stopclosegrid)
-                                   runRedis conn $ do
-                                      preorcpreordertorediszset aresquan SELL dcp  curtimestampi stopclosegrid curtime
                         False -> return ()
          _     -> return ()
 

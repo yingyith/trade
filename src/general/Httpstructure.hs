@@ -72,7 +72,7 @@ getorderitem = runReq defaultHttpConfig $ do
     areq <- req GET ouri NoReqBody lbsResponse params
     return ()
     
-getcurtimestamp :: IO Integer
+getcurtimestamp :: IO Int
 getcurtimestamp = do
    curtimestamp <- round . (* 1000) <$> getPOSIXTime
    return curtimestamp
@@ -99,7 +99,7 @@ getspotbalance = do
       let passwdtxt = BC.pack Passwd.passwd
       let params = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
-            ("timestamp" =: (curtimestamp :: Integer ))<>
+            ("timestamp" =: (curtimestamp :: Int ))<>
             ("signature" =: (T.pack ares :: Text ))
       --liftIO $ print uri
       --liftIO $ print (useHttpsURI uri)
@@ -138,7 +138,7 @@ queryorder = do
       let httpparams = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("symbol" =: (symboll :: Text)) <>
-            ("timestamp" =: (curtimestamp :: Integer )) <>
+            ("timestamp" =: (curtimestamp :: Int )) <>
             ("signature" =: (T.pack ares :: Text ))
       let ouri = "https://fapi.binance.com/fapi/v1/openOrders"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
@@ -166,7 +166,7 @@ querypos = do
       let httpparams = 
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("symbol" =: (symboll :: Text)) <>
-            ("timestamp" =: (curtimestamp :: Integer )) <>
+            ("timestamp" =: (curtimestamp :: Int )) <>
             ("signature" =: (T.pack ares :: Text ))
       let ouri = "https://fapi.binance.com/fapi/v2/positionRisk"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
@@ -194,7 +194,7 @@ queryforder = do
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("symbol" =: (symboll :: Text)) <>
             ("limit" =: (5 :: Integer )) <>
-            ("timestamp" =: (curtimestamp :: Integer )) <>
+            ("timestamp" =: (curtimestamp :: Int )) <>
             ("signature" =: (T.pack ares :: Text ))
       let ouri = "https://fapi.binance.com/fapi/v1/allOrders"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
@@ -224,7 +224,7 @@ querydepth = do
             (header "X-MBX-APIKEY" passwdtxt ) <>
             ("symbol" =: (symboll :: Text)) <>
             ("limit" =: (1000 :: Integer )) <>
-            ("timestamp" =: (curtimestamp :: Integer )) <>
+            ("timestamp" =: (curtimestamp :: Int )) <>
             ("signature" =: (T.pack ares :: Text ))
       let ouri = "https://fapi.binance.com/fapi/v1/depth"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)

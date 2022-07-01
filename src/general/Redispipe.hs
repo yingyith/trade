@@ -241,10 +241,11 @@ publishThread tbq rc wc tvar ptid = do
 detailpubHandler :: TBQueue Cronevent  -> R.Connection -> IO () 
 detailpubHandler tbq conn = do 
     iterateM_  ( \(lastetype,forbidtime) -> do 
-        res <- atomically $ readTBQueue tbq
-        tbqlen <- atomically $ lengthTBQueue tbq
-        currtime <- getcurtimestamp 
-        let curtime = fromInteger currtime ::Double
+        res      <- atomically $ readTBQueue tbq
+        tbqlen   <- atomically $ lengthTBQueue tbq
+        currtimee <- getcurtimestamp 
+        let currtime = toInteger currtimee
+        let curtime = fromIntegral currtime ::Double
         let et      = ectype res
         let etcont  = eccont res
 
@@ -276,7 +277,7 @@ onInitialComplete = SI.hPutStrLn stderr "Initial subscr complete"
 debugtime :: IO ()
 debugtime = do 
     currtime <- getcurtimestamp 
-    let curtime = fromInteger currtime ::Double
+    let curtime = fromIntegral currtime ::Double
     return ()
 
 handlerThread :: R.Connection -> PubSubController -> IO (TVar a) -> IO ()
@@ -288,22 +289,20 @@ handlerThread conn ctrl tvar = do
            )
 
 
-
-
 detailopHandler :: TBQueue Opevent ->  (TVar Curorder) -> R.Connection -> IO () 
 detailopHandler tbq ostvar conn = do 
     iterateM_  ( \(lastetype,forbidtime) -> 
          do
-             -- logact logByteStringStdout $ B.pack $ show ("killbef thread!")
               res <- atomically $ readTBQueue tbq
               tbqlen <- atomically $ lengthTBQueue tbq
               currtime <- getcurtimestamp 
-              let curtime = fromInteger currtime ::Double
+              let curtime = fromIntegral currtime ::Double
               let et = etype res
               let etquan = quant res
               let etpr = price res
               let etimee = etime res
               let eordid = ordid res
+              let eprofitgrid = eprofit res
               let eside = oside  res
               let diffbasetime  = case (et == "forbid") of
                                       True -> (fromIntegral etimee :: Double)
@@ -350,6 +349,10 @@ detailopHandler tbq ostvar conn = do
                     runRedis conn (pexpandordertorediszset etquan etpr etimee curtime eside)
                  `catch` (\(e :: SomeException) -> do
                     SI.hPutStrLn stderr $ "Gotsmergeerror1: " ++ show e)
+
+              when (et == "prep")   $  do 
+                    runRedis conn $ do
+                        preorcpreordertorediszset etquan eside etpr  currtime eprofitgrid curtime
 
               when (et == "cprep") $ do 
                     runRedis conn (preorcpreordertorediszset 0 eside etpr  0  0 curtime)
@@ -445,10 +448,11 @@ opclHandler tbq ostvar  channel  msg = do
                         True  -> do 
                                     let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
                                     let oside = orderside curorder
-                                    let aevent = Opevent "initopen"  0 pr 0 ordid oside
+                                    let ochpostime = chpostime curorder 
+                                    let aevent = Opevent "initopen"  0 pr 0 ordid 0 oside
                                     addeventtotbqueuestm aevent tbq
                                     let astate = Process
-                                    let newcurorder = Curorder oside astate 
+                                    let newcurorder = Curorder oside astate ochpostime
                                     writeTVar ostvar newcurorder
                         False -> do 
                                     return ()
@@ -458,11 +462,12 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                                 curorder <- readTVar ostvar
                                 let oside = orderside curorder
+                                let ochpostime = chpostime curorder 
                                 unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef resetcommand ---------",orderstate curorder)
-                                let aevent = Opevent "reset"  0 pr 0 ordid oside
+                                let aevent = Opevent "reset"  0 pr 0 ordid 0 oside
                                 addeventtotbqueuestm aevent tbq
                                 let astate =  Done
-                                let newcurorder = Curorder oside astate 
+                                let newcurorder = Curorder oside astate ochpostime
                                 writeTVar ostvar newcurorder
 
 
@@ -471,7 +476,7 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                   curorder <- readTVar ostvar
                   let oside  = orderside curorder
-                  let aevent = Opevent "endopen" 0 pr 0 ordid oside
+                  let aevent = Opevent "endopen" 0 pr 0 ordid 0 oside
                   addeventtotbqueuestm aevent tbq
 
          when ((orderstater == (show $ fromEnum HalfDone) )==True) $ do 
@@ -479,7 +484,7 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                   curorder <- readTVar ostvar
                   let oside  = orderside curorder
-                  let aevent = Opevent "cprep" 0 pr 0 ordid oside
+                  let aevent = Opevent "cprep" 0 pr 0 ordid 0 oside
                   addeventtotbqueuestm aevent tbq
 
          when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)]) == True ) $ do 
@@ -487,10 +492,10 @@ opclHandler tbq ostvar  channel  msg = do
                   curorder <- readTVar ostvar
                   let oside  = orderside curorder
                   when (oside == BUY  && ((orderpr-curpr)> accugriddiff)) $ do
-                    let aevent = Opevent "endcancel" 0 0 0 ordid oside
+                    let aevent = Opevent "endcancel" 0 0 0 ordid 0 oside
                     addeventtotbqueuestm aevent tbq
                   when (oside == SELL && ((curpr-orderpr)> accugriddiff)) $ do
-                    let aevent = Opevent "endcancel" 0 0 0 ordid oside
+                    let aevent = Opevent "endcancel" 0 0 0 ordid 0 oside
                     addeventtotbqueuestm aevent tbq
               
               
@@ -524,31 +529,35 @@ opclHandler tbq ostvar  channel  msg = do
                         let oside = orderside curorder
                         case (oside,curside) of 
                             (BUY  ,"BUY" ) -> do 
-                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid 0 oside
                                               addeventtotbqueuestm aevent tbq
+                                              let ochpostime = chpostime curorder 
                                               let astate = HalfDone
-                                              let newcurorder = Curorder oside astate 
+                                              let newcurorder = Curorder oside astate ochpostime
                                               writeTVar ostvar newcurorder
                                               unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end open buy---------")
                             (BUY  ,"SELL") -> do 
-                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid 0 oside
                                               addeventtotbqueuestm aevent tbq
                                               let astate = Done
-                                              let newcurorder = Curorder oside astate 
+                                              let ochpostime = -1 
+                                              let newcurorder = Curorder oside astate ochpostime
                                               writeTVar ostvar newcurorder
                                               unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end close buy---------")
                             (SELL ,"SELL") -> do 
-                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid 0 oside
                                               addeventtotbqueuestm aevent tbq
+                                              let ochpostime = chpostime curorder 
                                               let astate = HalfDone
-                                              let newcurorder = Curorder oside astate 
+                                              let newcurorder = Curorder oside astate ochpostime
                                               writeTVar ostvar newcurorder
                                               unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end open sell---------")
                             (SELL ,"BUY" ) -> do 
-                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid oside
+                                              let aevent = Opevent "fill" curquanty curorderpr  otimestamp corderid 0 oside
                                               addeventtotbqueuestm aevent tbq
                                               let astate = Done
-                                              let newcurorder = Curorder oside astate 
+                                              let ochpostime = -1 
+                                              let newcurorder = Curorder oside astate ochpostime
                                               writeTVar ostvar newcurorder
                                               unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("end close sell---------")
 
@@ -558,28 +567,27 @@ opclHandler tbq ostvar  channel  msg = do
                   atomically $ do
                         curorder <- readTVar ostvar
                         let oside  = orderside curorder
-                        let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid oside
+                        let aevent = Opevent "merge" curquanty curorderpr otimestamp corderid 0 oside
                         addeventtotbqueuestm aevent tbq
 
               when ((DL.any (curorderstate ==) ["NEW"     ])==True) $ do 
                   atomically $ do
                       curorder <- readTVar ostvar
                       let oside = orderside curorder
-                      let aevent = Opevent "init" curquanty coriginpr otimestamp corderid oside
+                      let aevent = Opevent "init" curquanty coriginpr otimestamp corderid 0 oside
                       addeventtotbqueuestm aevent tbq
 
               when ((DL.any (curorderstate ==) ["CANCELED"])==True) $ do 
                   atomically $ do 
                       curorder <- readTVar ostvar
                       let oside = orderside curorder
+                      let ochpostime = chpostime curorder 
                       unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("confirm cancel ---------",orderstate curorder)
-                      let aevent = Opevent "reset" curorquanty curorderpr otimestamp corderid oside
+                      let aevent = Opevent "reset" curorquanty curorderpr otimestamp corderid 0 oside
                       addeventtotbqueuestm aevent tbq
                       let astate = Done
-                      let newcurorder = Curorder oside astate 
+                      let newcurorder = Curorder oside astate ochpostime
                       writeTVar ostvar newcurorder
-                      orderstate <- readTVar ostvar
-                      unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("confirm cancel ---------",orderstate)
 
          when (eventname == "ACCOUNT_UPDATE") $ do 
               let usdtbalo    = detdata ^.. key "a" .key "B" .values.filtered (has (key "a"._String.only "USDT"    )).key "cw"    -- !!0  
@@ -591,22 +599,22 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                   curorder <- readTVar ostvar
                   let oside = orderside curorder
-                  let aevent      = Opevent "acupd" orderpos  orderpr usdtbal "" oside
+                  let aevent      = Opevent "acupd" orderpos  orderpr usdtbal "" 0 oside
                   addeventtotbqueuestm aevent tbq
 
-detailanalysHandler :: TBQueue Cronevent  -> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
-detailanalysHandler tbq conn tdepth orderst = do 
+detailanalysHandler :: TBQueue Cronevent -> TBQueue Opevent-> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
+detailanalysHandler tbcq tbq  conn tdepth orderst = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
-        res      <- atomically $ readTBQueue tbq
+        res      <- atomically $ readTBQueue tbcq
         --logact logByteStringStdout $ B.pack $ show ("tbq is !",res)
-        tbqlen   <- atomically $ lengthTBQueue tbq
+        tbcqlen   <- atomically $ lengthTBQueue tbcq
 --        logact logByteStringStdout $ B.pack $ show ("analys len is !",tbqlen)
         currtime <- getcurtimestamp 
 
         let timecounta   = (currtime `quot` 10000) 
         let timecountpred = (timecounta - timecountb) >= 1 
         let intervalcbpred = intervalcb == 0
-        let curtime = fromInteger currtime ::Double
+        let curtime = fromIntegral currtime ::Double
         let et      = ectype res
         let etcont  = eccont res
         let etpred = et == "resethdeoth"
@@ -623,7 +631,8 @@ detailanalysHandler tbq conn tdepth orderst = do
 
 
         when (et == "forward")   $  do 
-              anlytoBuy conn etcont tdepth orderst--get all mseries from redis 
+              anlytoBuy tbq conn etcont tdepth orderst--get all mseries from redis 
+
 
         when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
@@ -695,7 +704,7 @@ detailanalysHandler tbq conn tdepth orderst = do
                                     -- send event to queue ,get mvar ,convert mvar to tvar ,update
                                    -- unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
                                     let aevent = Cronevent "resethdeoth"  B.empty
-                                    addoeventtotbqueuestm aevent tbq
+                                    addoeventtotbqueuestm aevent tbcq
                                   --  depthdata <- unsafeIOToSTM $ initupddepth conn
                                   --  writeTVar tdepth depthdata  
            --                         logact logByteStringStdout $ B.pack $ show ("depth new-- !"  ,curdepthpu,befdepthu)
