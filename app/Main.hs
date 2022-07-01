@@ -249,7 +249,7 @@ ws connection = do
     let ordervari          =  Ordervar True 0 0 0
     let orderVar           =  newTVarIO ordervari-- newTVarIO Int
     sendthid               <- myThreadId 
-    qws                    <- newTBQueueIO 200 :: IO (TBQueue Cronevent)
+    qws                    <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
     qord                   <- newTBQueueIO 30  :: IO (TBQueue Opevent)
     qanalys                <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
 
