@@ -263,7 +263,7 @@ ws connection = do
            void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys depthtvar  )]
            threadDelay 900000
            forkIO $ detailpubHandler qws connnnn
-           threadDelay 100000
+           threadDelay 1000000
            forkIO $ detailopHandler qord orderst  connn
            forkIO $ detailanalysHandler qanalys qord connnn depthtvar orderst
         --sendbye connection conn 0 ctrll 
