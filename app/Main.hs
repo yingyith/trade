@@ -249,8 +249,8 @@ ws connection = do
     let ordervari          =  Ordervar True 0 0 0
     let orderVar           =  newTVarIO ordervari-- newTVarIO Int
     sendthid               <- myThreadId 
-    qws                    <- newTBQueueIO 30 :: IO (TBQueue Cronevent)
-    qord                   <- newTBQueueIO 30  :: IO (TBQueue Opevent)
+    qws                    <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
+    qord                   <- newTBQueueIO 30  :: IO (TBQueue Opevent  )
     qanalys                <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
 
     withAsync (publishThread qws conn connection orderVar sendthid) $ \_pubT -> do
@@ -263,9 +263,9 @@ ws connection = do
            void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys depthtvar  )]
            threadDelay 900000
            forkIO $ detailpubHandler qws connnnn
-           threadDelay 1000000
+           threadDelay 100000
            forkIO $ detailopHandler qord orderst  connn
-           forkIO $ detailanalysHandler qanalys qord connnn depthtvar orderst
+           forkIO $ detailanalysHandler qanalys connnn depthtvar orderst
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000

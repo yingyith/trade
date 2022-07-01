@@ -210,7 +210,7 @@ getdiffintervalflow = do
      return (fisar,sndar)
      
 
-anlytoBuy :: TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
+anlytoBuy :: TBQueue Cronevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
 anlytoBuy tbq conn msg tdepth ostvar = 
    do
      res                          <- runRedis conn (getdiffintervalflow) 
@@ -253,13 +253,15 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                                             let newcurorder = Curorder curoside astate ochpostime
                                                             writeTVar ostvar newcurorder
                                                             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
-                                                            addeventtotbqueuestm aevent tbq
+                                                            let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                            addoeventtotbqueuestm cronevent tbq
                                                       when (ochpostime/=(-1) && oside == BUY) $ do
                                                             unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate aft !-1---------")
                                                             let newcurorder = Curorder curoside astate ochpostime
                                                             writeTVar ostvar newcurorder
                                                             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
-                                                            addeventtotbqueuestm aevent tbq
+                                                            let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                            addoeventtotbqueuestm cronevent tbq
                                            False -> do 
                                                       return ()
                         False -> return ()
@@ -291,12 +293,14 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                                             let newcurorder = Curorder curoside astate ochpostime
                                                             writeTVar ostvar newcurorder
                                                             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                            addeventtotbqueuestm aevent tbq
+                                                            let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                            addoeventtotbqueuestm cronevent tbq
                                                       when (ochpostime/=(-1) && oside == SELL) $ do
                                                             let newcurorder = Curorder curoside astate ochpostime
                                                             writeTVar ostvar newcurorder
                                                             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                            addeventtotbqueuestm aevent tbq
+                                                            let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                            addoeventtotbqueuestm cronevent tbq
                                            False -> do 
                                                       return ()
                         False -> return ()

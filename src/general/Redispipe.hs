@@ -210,7 +210,7 @@ publishThread tbq rc wc tvar ptid = do
          returnres  <-  case (timecountpred,intervalcbpred) of 
               (True ,True )   -> do
                                      sendpongdo wc
-                                     let aevent = Cronevent "cachep"  message
+                                     let aevent = Cronevent "cachep"  (Just message) Nothing
                                      addoeventtotbqueue aevent tbq
                                      return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
               (True ,False)   -> do  
@@ -223,16 +223,16 @@ publishThread tbq rc wc tvar ptid = do
 
 
          when (matchoevt == "kline") $ do
-              let aevent = Cronevent "kline"  message
+              let aevent = Cronevent "kline"  (Just message) Nothing
               addoeventtotbqueue aevent tbq
 
 
          when (matchoevt == "or" || matchoevt == "ac" || matchoevt == "no") $ do
-              let aevent = Cronevent "other"  message
+              let aevent = Cronevent "other"  (Just message) Nothing
               addoeventtotbqueue aevent tbq
 
          when (matchoevt == "depth") $ do
-              let aevent = Cronevent "depth"  message
+              let aevent = Cronevent "depth"  (Just message) Nothing
               addoeventtotbqueue aevent tbq
 
          return returnres 
@@ -247,7 +247,7 @@ detailpubHandler tbq conn = do
         let currtime = toInteger currtimee
         let curtime = fromIntegral currtime ::Double
         let et      = ectype res
-        let etcont  = eccont res
+        let etcont  = fromJust (eccont res)
 
         when (et == "kline")   $  do 
            runRedis conn (msgklinedoredis currtime etcont )
@@ -350,9 +350,9 @@ detailopHandler tbq ostvar conn = do
                  `catch` (\(e :: SomeException) -> do
                     SI.hPutStrLn stderr $ "Gotsmergeerror1: " ++ show e)
 
-              when (et == "prep")   $  do 
-                    runRedis conn $ do
-                        preorcpreordertorediszset etquan eside etpr  currtime eprofitgrid curtime
+             -- when (et == "prep")   $  do 
+             --       runRedis conn $ do
+             --           preorcpreordertorediszset etquan eside etpr  currtime eprofitgrid curtime
 
               when (et == "cprep") $ do 
                     runRedis conn (preorcpreordertorediszset 0 eside etpr  0  0 curtime)
@@ -602,13 +602,11 @@ opclHandler tbq ostvar  channel  msg = do
                   let aevent      = Opevent "acupd" orderpos  orderpr usdtbal "" 0 oside
                   addeventtotbqueuestm aevent tbq
 
-detailanalysHandler :: TBQueue Cronevent -> TBQueue Opevent-> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
-detailanalysHandler tbcq tbq  conn tdepth orderst = do 
+detailanalysHandler :: TBQueue Cronevent -> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
+detailanalysHandler tbcq  conn tdepth orderst = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
         res      <- atomically $ readTBQueue tbcq
-        --logact logByteStringStdout $ B.pack $ show ("tbq is !",res)
-        tbcqlen   <- atomically $ lengthTBQueue tbcq
---        logact logByteStringStdout $ B.pack $ show ("analys len is !",tbqlen)
+        tbcqlen  <- atomically $ lengthTBQueue tbcq
         currtime <- getcurtimestamp 
 
         let timecounta   = (currtime `quot` 10000) 
@@ -616,7 +614,8 @@ detailanalysHandler tbcq tbq  conn tdepth orderst = do
         let intervalcbpred = intervalcb == 0
         let curtime = fromIntegral currtime ::Double
         let et      = ectype res
-        let etcont  = eccont res
+        let etcont  = fromJust (eccont res)
+        let etevent = fromJust (eoevent res) 
         let etpred = et == "resethdeoth"
         returnres  <-  case (timecountpred,intervalcbpred,etpred) of 
            (True ,True ,True)   -> do
@@ -631,11 +630,21 @@ detailanalysHandler tbcq tbq  conn tdepth orderst = do
 
 
         when (et == "forward")   $  do 
-              anlytoBuy tbq conn etcont tdepth orderst--get all mseries from redis 
+              anlytoBuy tbcq conn etcont tdepth orderst--get all mseries from redis 
 
 
         when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
+
+        when (et == "prep")   $  do 
+                    let etquan = quant etevent
+                    let etpr = price etevent
+                    let etimee = etime etevent
+                    let eordid = ordid etevent
+                    let eprofitgrid = eprofit etevent
+                    let eside = oside  etevent
+                    runRedis conn $ do
+                        preorcpreordertorediszset etquan eside etpr  currtime eprofitgrid curtime
 
         when (et == "resethdeoth") $
             do 
@@ -703,7 +712,7 @@ detailanalysHandler tbcq tbq  conn tdepth orderst = do
                               (_    ,_       ,_      ,_    ) -> do      --need resync 
                                     -- send event to queue ,get mvar ,convert mvar to tvar ,update
                                    -- unsafeIOToSTM $ logact logByteStringStdout $ B.pack $ show ("atomic update depthdata!")
-                                    let aevent = Cronevent "resethdeoth"  B.empty
+                                    let aevent = Cronevent "resethdeoth" Nothing Nothing
                                     addoeventtotbqueuestm aevent tbcq
                                   --  depthdata <- unsafeIOToSTM $ initupddepth conn
                                   --  writeTVar tdepth depthdata  
@@ -739,17 +748,17 @@ sndtocacheHandler tbq tdepth channel  msg = do
       let detdata = wsdata $ fromJust restmsg
       let dettype = wstream $ fromJust restmsg
       when (dettype == "adausdt@kline_1m") $ do 
-           let aevent = Cronevent "klinetor" msg 
+           let aevent = Cronevent "klinetor" (Just msg) Nothing 
            addoeventtotbqueue aevent tbq
 
       when (dettype == "adausdt@depth@500ms") $ do 
-           let aevent = Cronevent "depthtor" msg 
+           let aevent = Cronevent "depthtor" (Just msg) Nothing
            addoeventtotbqueue aevent tbq
 
       
 analysisHandler :: TBQueue Cronevent -> (TVar Anlys.Depthset)  ->  RedisChannel -> ByteString -> IO ()
 analysisHandler tbq tdepth  channel msg = do 
-      let aevent = Cronevent "forward" msg 
+      let aevent = Cronevent "forward" (Just msg) Nothing
       addoeventtotbqueue aevent tbq
 
 mintocacheHandler :: RedisChannel -> ByteString -> IO ()

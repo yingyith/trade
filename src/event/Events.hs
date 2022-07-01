@@ -7,7 +7,7 @@
 {-# LANGUAGE DataKinds #-}
   module Events (
        Opevent (etype,price,quant,etime,ordid,oside,eprofit,Opevent),
-       Cronevent (ectype,eccont,Cronevent),
+       Cronevent (ectype,eccont,eoevent,Cronevent),
        addoeventtotbqueuestm,
        addeventtotbqueue,
        addeventtotbqueuestm,
@@ -71,8 +71,9 @@ addeventtotbqueuestm evt tbq = do
 
 
 data Cronevent = Cronevent {
-                  ectype :: String,
-                  eccont :: BL.ByteString      
+   ectype :: String,
+   eccont :: Maybe BL.ByteString,      
+   eoevent:: Maybe Opevent 
 }  deriving (Show,Generic) 
 
 addoeventtotbqueue :: Cronevent -> TBQueue Cronevent -> IO ()
