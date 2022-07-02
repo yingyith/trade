@@ -457,18 +457,18 @@ opclHandler tbq ostvar  channel  msg = do
                         False -> do 
                                     return ()
 
-         when ((orderstater == (show $ fromEnum Ccancel)) == True && ((orderpr-curpr) > (accugriddiff)))  $ do
+         when ((orderstater == (show $ fromEnum Ccancel)) == True )  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
                                 curorder <- readTVar ostvar
                                 let oside = orderside curorder
                                 let ochpostime = chpostime curorder 
-                                unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef resetcommand ---------",orderstate curorder)
-                                let aevent = Opevent "reset"  0 pr 0 ordid 0 oside
-                                addeventtotbqueuestm aevent tbq
-                                let astate =  Done
-                                let newcurorder = Curorder oside astate ochpostime
-                                writeTVar ostvar newcurorder
+                                when ((oside == BUY  && ((orderpr-curpr)> accugriddiff)) || (oside == SELL && ((curpr-orderpr)> accugriddiff)))  $ do
+                                     let aevent = Opevent "reset"  0 pr 0 ordid 0 oside
+                                     addeventtotbqueuestm aevent tbq
+                                     let astate =  Done
+                                     let newcurorder = Curorder oside astate ochpostime
+                                     writeTVar ostvar newcurorder
 
 
          when ((orderstater == (show $ fromEnum Cprepare) ) == True) $ do 
