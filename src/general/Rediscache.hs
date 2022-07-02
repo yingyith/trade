@@ -292,8 +292,8 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                                                             x  -> case oside of 
                                                                                       SELL   -> x+1 --need return () 
                                                                                       BUY    -> 0
-                                                     -- let newcurorder = Curorder curoside astate ochpostime
-                                                     -- writeTVar ostvar newcurorder
+                                                      let newcurorder = Curorder curoside astate ochpostime
+                                                      writeTVar ostvar newcurorder
                                                       case (ochpostime==(-1)) of 
                                                            True -> do 
                                                                  --   let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
