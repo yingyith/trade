@@ -210,8 +210,8 @@ getdiffintervalflow = do
      return (fisar,sndar)
      
 
-anlytoBuy :: TBQueue Cronevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
-anlytoBuy tbq conn msg tdepth ostvar = 
+anlytoBuy :: TBQueue Cronevent -> TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
+anlytoBuy tbcq tbq conn msg tdepth ostvar = 
    do
      res                          <- runRedis conn (getdiffintervalflow) 
      kline                        <- parsetokline msg

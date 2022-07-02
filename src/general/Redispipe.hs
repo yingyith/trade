@@ -602,8 +602,8 @@ opclHandler tbq ostvar  channel  msg = do
                   let aevent      = Opevent "acupd" orderpos  orderpr usdtbal "" 0 oside
                   addeventtotbqueuestm aevent tbq
 
-detailanalysHandler :: TBQueue Cronevent -> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
-detailanalysHandler tbcq  conn tdepth orderst = do 
+detailanalysHandler :: TBQueue Cronevent -> TBQueue Opevent -> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
+detailanalysHandler tbcq tbq  conn tdepth orderst = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
         res      <- atomically $ readTBQueue tbcq
         tbcqlen  <- atomically $ lengthTBQueue tbcq
@@ -630,7 +630,7 @@ detailanalysHandler tbcq  conn tdepth orderst = do
 
 
         when (et == "forward")   $  do 
-              anlytoBuy tbcq conn etcont tdepth orderst--get all mseries from redis 
+              anlytoBuy tbcq tbq conn etcont tdepth orderst--get all mseries from redis 
 
 
         when (et == "klinetor")  $  do 
