@@ -294,22 +294,22 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                                                                       BUY    -> 0
                                                       let newcurorder = Curorder curoside astate ochpostime
                                                       writeTVar ostvar newcurorder
-                                                      case (ochpostime==(-1)) of 
-                                                           True -> do 
-                                                                 --   let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                                 --   let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                                 --   addoeventtotbqueuestm cronevent tbq
-                                                                    let newcurorder = Curorder curoside astate ochpostime
-                                                                    writeTVar ostvar newcurorder
-                                                           False-> do 
-                                                                    case (oside == SELL) of 
-                                                                          True -> do 
-                                                                 --             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                                 --             let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                                 --             addoeventtotbqueuestm cronevent tbq
-                                                                                   let newcurorder = Curorder curoside astate ochpostime
-                                                                                   writeTVar ostvar newcurorder
-                                                                          _    -> return ()
+                                                    --  case (ochpostime==(-1)) of 
+                                                    --       True -> do 
+                                                    --             --   let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                    --             --   let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                    --             --   addoeventtotbqueuestm cronevent tbq
+                                                    --                let newcurorder = Curorder curoside astate ochpostime
+                                                    --                writeTVar ostvar newcurorder
+                                                    --       False-> do 
+                                                    --                case (oside == SELL) of 
+                                                    --                      True -> do 
+                                                    --             --             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                    --             --             let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                    --             --             addoeventtotbqueuestm cronevent tbq
+                                                    --                               let newcurorder = Curorder curoside astate ochpostime
+                                                    --                               writeTVar ostvar newcurorder
+                                                    --                      _    -> return ()
                                            False -> do 
                                                       return ()
                         False -> return ()
