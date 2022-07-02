@@ -244,26 +244,26 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                            True  -> do 
                                                       let astate      = Prepare
                                                       let curoside    = BUY
-                                                      let ochpostime  = case ochpostime of 
+                                                      let newchpostime  = case ochpostime of 
                                                                             -1 -> 0
                                                                             x  -> case oside of 
                                                                                       BUY   -> x+1 --need return () 
                                                                                       SELL  -> 0
-                                                      return ()
-                                                    --  when (ochpostime==(-1)) $ do
-                                                    --       -- unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate aft -1---------")
-                                                    --        let newcurorder = Curorder curoside astate ochpostime
-                                                    --        writeTVar ostvar newcurorder
-                                                    --        let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
-                                                    --        let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                    --        addoeventtotbqueuestm cronevent tbq
-                                                    --  when (ochpostime/=(-1) && oside == BUY) $ do
-                                                    --       -- unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate aft !-1---------")
-                                                    --        let newcurorder = Curorder curoside astate ochpostime
-                                                    --        writeTVar ostvar newcurorder
-                                                    --        let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
-                                                    --        let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                    --        addoeventtotbqueuestm cronevent tbq
+                                                      case (ochpostime==(-1)) of 
+                                                           True -> do 
+                                                                    let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
+                                                                    addeventtotbqueuestm aevent tbq
+                                                                    let newcurorder = Curorder curoside astate newchpostime
+                                                                    writeTVar ostvar newcurorder
+                                                           False-> do 
+                                                                    case (oside == BUY) of 
+                                                                          True -> do 
+                                                                              let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid BUY
+                                                                              addeventtotbqueuestm aevent tbq
+                                                                              let newcurorder = Curorder curoside astate newchpostime
+                                                                              writeTVar ostvar newcurorder
+                                                                          _    -> return ()
+
                                            False -> do 
                                                       return ()
                         False -> return ()
@@ -274,7 +274,6 @@ anlytoBuy tbq conn msg tdepth ostvar =
                      logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
                      case (sumres<4000) of
                         True -> do
-                                   logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------")
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
                                    let stopclosegrid   = 0.0005
                                    atomically $ do 
@@ -282,7 +281,6 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                         let ostate     = orderstate curorder
                                         let oside      = orderside curorder 
                                         let ochpostime = chpostime curorder
-                                        unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres)
                                         case (ostate   ==   Done) of 
                                            True  -> do 
                                                       let astate = Prepare
