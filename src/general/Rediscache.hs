@@ -210,8 +210,8 @@ getdiffintervalflow = do
      return (fisar,sndar)
      
 
-anlytoBuy :: TBQueue Cronevent -> TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
-anlytoBuy tbcq tbq conn msg tdepth ostvar = 
+anlytoBuy ::  TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
+anlytoBuy tbq conn msg tdepth ostvar = 
    do
      res                          <- runRedis conn (getdiffintervalflow) 
      kline                        <- parsetokline msg
@@ -292,23 +292,19 @@ anlytoBuy tbcq tbq conn msg tdepth ostvar =
                                                                             x  -> case oside of 
                                                                                       SELL   -> x+1 --need return () 
                                                                                       BUY    -> 0
-                                                    --  let newcurorder = Curorder curoside astate ochpostime
-                                                    --  writeTVar ostvar newcurorder
                                                       case (ochpostime==(-1)) of 
                                                            True -> do 
-                                                                 --   let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                                 --   let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                                 --   addoeventtotbqueuestm cronevent tbq
+                                                                    let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                                    addeventtotbqueuestm aevent tbq
                                                                     let newcurorder = Curorder curoside astate newchpostime
                                                                     writeTVar ostvar newcurorder
                                                            False-> do 
                                                                     case (oside == SELL) of 
                                                                           True -> do 
-                                                                 --             let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                                 --             let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                                 --             addoeventtotbqueuestm cronevent tbq
-                                                                                   let newcurorder = Curorder curoside astate newchpostime
-                                                                                   writeTVar ostvar newcurorder
+                                                                              let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                                              addeventtotbqueuestm aevent tbq
+                                                                              let newcurorder = Curorder curoside astate newchpostime
+                                                                              writeTVar ostvar newcurorder
                                                                           _    -> return ()
                                            False -> do 
                                                       return ()

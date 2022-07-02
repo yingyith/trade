@@ -350,9 +350,9 @@ detailopHandler tbq  conn = do
                  `catch` (\(e :: SomeException) -> do
                     SI.hPutStrLn stderr $ "Gotsmergeerror1: " ++ show e)
 
-             -- when (et == "prep")   $  do 
-             --       runRedis conn $ do
-             --           preorcpreordertorediszset etquan eside etpr  currtime eprofitgrid curtime
+              when (et == "prep")   $  do 
+                    runRedis conn $ do
+                        preorcpreordertorediszset etquan eside etpr  currtime eprofitgrid curtime
 
               when (et == "cprep") $ do 
                     runRedis conn (preorcpreordertorediszset 0 eside etpr  0  0 curtime)
@@ -630,7 +630,7 @@ detailanalysHandler tbcq tbq  conn tdepth orderst = do
 
 
         when (et == "forward")   $  do 
-              anlytoBuy tbcq tbq conn etcont tdepth orderst--get all mseries from redis 
+              anlytoBuy tbq conn etcont tdepth orderst--get all mseries from redis 
 
 
         when (et == "klinetor")  $  do 
