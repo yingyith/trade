@@ -289,8 +289,8 @@ handlerThread conn ctrl tvar = do
            )
 
 
-detailopHandler :: TBQueue Opevent ->  (TVar Curorder) -> R.Connection -> IO () 
-detailopHandler tbq ostvar conn = do 
+detailopHandler :: TBQueue Opevent  -> R.Connection -> IO () 
+detailopHandler tbq  conn = do 
     iterateM_  ( \(lastetype,forbidtime) -> 
          do
               res <- atomically $ readTBQueue tbq

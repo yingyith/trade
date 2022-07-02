@@ -276,14 +276,14 @@ anlytoBuy tbq conn msg tdepth ostvar =
                         True -> do
                                    logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------")
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
-                                   let stopclosegrid = 0.0005
+                                   let stopclosegrid   = 0.0005
                                    atomically $ do 
-                                        curorder <- readTVar ostvar
-                                        let ostate = orderstate curorder
+                                        curorder       <- readTVar ostvar
+                                        let ostate     = orderstate curorder
                                         let oside      = orderside curorder 
                                         let ochpostime = chpostime curorder
                                         unsafeIOToSTM $  logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------",ostate,sumres)
-                                        case (ostate  == Done) of 
+                                        case (ostate   ==   Done) of 
                                            True  -> do 
                                                       let astate = Prepare
                                                       let curoside = SELL

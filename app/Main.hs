@@ -264,7 +264,7 @@ ws connection = do
            threadDelay 900000
            forkIO $ detailpubHandler qws connnnn
            threadDelay 300000
-           forkIO $ detailopHandler qord orderst  connn
+           forkIO $ detailopHandler qord connn
            forkIO $ detailanalysHandler qanalys connnn depthtvar orderst
         --sendbye connection conn 0 ctrll 
     forever  $ do
