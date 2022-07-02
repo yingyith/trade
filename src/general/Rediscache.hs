@@ -234,7 +234,6 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                    logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------")
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
                                    let stopclosegrid   = 0.0005
-                                   logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------")
                                    atomically $ do 
                                         curorder       <- readTVar ostvar
                                         let ostate     = orderstate curorder
@@ -278,7 +277,6 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                    logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------")
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
                                    let stopclosegrid = 0.0005
-                                   logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------")
                                    atomically $ do 
                                         curorder <- readTVar ostvar
                                         let ostate = orderstate curorder
@@ -294,19 +292,18 @@ anlytoBuy tbq conn msg tdepth ostvar =
                                                                             x  -> case oside of 
                                                                                       SELL   -> x+1 --need return () 
                                                                                       BUY    -> 0
-                                                      return ()
-                                                  --    when (ochpostime==(-1)) $ do
-                                                  --          let newcurorder = Curorder curoside astate ochpostime
-                                                  --          writeTVar ostvar newcurorder
-                                                  --          let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                  --          let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                  --          addoeventtotbqueuestm cronevent tbq
-                                                  --    when (ochpostime/=(-1) && oside == SELL) $ do
-                                                  --          let newcurorder = Curorder curoside astate ochpostime
-                                                  --          writeTVar ostvar newcurorder
-                                                  --          let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
-                                                  --          let cronevent = Cronevent "prep" Nothing (Just aevent)
-                                                  --          addoeventtotbqueuestm cronevent tbq
+                                                      when (ochpostime==(-1)) $ do
+                                                            let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                            let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                            addoeventtotbqueuestm cronevent tbq
+                                                            let newcurorder = Curorder curoside astate ochpostime
+                                                            writeTVar ostvar newcurorder
+                                                      when (ochpostime/=(-1) && oside == SELL) $ do
+                                                            let aevent = Opevent "prep" aresquan dcp curtimestampi "0" stopclosegrid SELL
+                                                            let cronevent = Cronevent "prep" Nothing (Just aevent)
+                                                            addoeventtotbqueuestm cronevent tbq
+                                                            let newcurorder = Curorder curoside astate ochpostime
+                                                            writeTVar ostvar newcurorder
                                            False -> do 
                                                       return ()
                         False -> return ()
