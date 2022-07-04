@@ -338,8 +338,11 @@ detailopHandler tbq  conn = do
                                     let side = case eside of 
                                                    BUY  -> "SELL"
                                                    SELL -> "BUY"
+                                    let poside = case eside of 
+                                                   BUY  -> "LONG"
+                                                   SELL -> "SHORT"
                                     case res of 
-                                       True  -> takeorder side (lastquan) apr
+                                       True  -> takeorder side (lastquan) apr poside
                                        False -> return () 
                        True  -> return ()
                  `catch` (\(e :: SomeException) -> do
@@ -403,8 +406,11 @@ detailopHandler tbq  conn = do
                                   let side = case eside of 
                                                    BUY  -> "BUY"
                                                    SELL -> "SELL"
+                                  let poside = case eside of 
+                                                   BUY  -> "LONG"
+                                                   SELL -> "SHORT"
                                   case res of 
-                                     True  -> takeorder side lastquan apr
+                                     True  -> takeorder side lastquan apr poside
                                      False -> return () 
 
                        True  -> return ()

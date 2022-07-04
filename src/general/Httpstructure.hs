@@ -273,8 +273,8 @@ cancelorder orderid  = do
     --cancel all the order ,if  any more need can use api cancel detail order
    return () 
 
-takeorder :: String -> Integer -> Double -> IO ()
-takeorder a b c = do 
+takeorder :: String -> Integer -> Double -> String -> IO ()
+takeorder a b c d = do 
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
    let side = a -- "BUY" "SELL"
@@ -284,6 +284,9 @@ takeorder a b c = do
    let newClientOrderId = case side of 
                              "BUY"  -> buyorderid
                              "SELL" -> sellorderid
+
+   let positionside = d
+
    let quantity = if b > 10 then b else 10 :: Integer
    
    let price = c :: Double
@@ -299,9 +302,10 @@ takeorder a b c = do
              "price" =: (showdouble price) <>
              "newClientOrderId" =: (newClientOrderId) <>
              "timeInForce" =: (timeinforcee :: Text) <>
+             "positionSide" =: (positionside) <>
              "timestamp" =: (curtimestamp)
 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",showdouble price),("newClientOrderId",newClientOrderId),("timeInForce",timeinforce),("timestamp",show curtimestamp)] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",showdouble price),("newClientOrderId",newClientOrderId),("timeInForce",timeinforce),("positionSide",show positionside),("timestamp",show curtimestamp)] 
       let ares = showDigest(hmacSha256 signature abody)
       let passwdtxt = BC.pack Passwd.passwd
       let httpparams = 
