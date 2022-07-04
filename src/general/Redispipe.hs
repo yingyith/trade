@@ -449,11 +449,11 @@ opclHandler tbq ostvar  channel  msg = do
          when ((orderstater == (show $ fromEnum Prepare)  ) == True) $ do
               atomically $ do
                      curorder <- readTVar ostvar
+                     let oside = orderside curorder
                      unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
+                     let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
                      case ((orderstate curorder) == Prepare) of 
                         True  -> do 
-                                    let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-                                    let oside = orderside curorder
                                     let ochpostime = chpostime curorder 
                                     let aevent = Opevent "initopen"  0 pr 0 ordid 0 oside
                                     addeventtotbqueuestm aevent tbq
@@ -461,7 +461,11 @@ opclHandler tbq ostvar  channel  msg = do
                                     let newcurorder = Curorder oside astate ochpostime
                                     writeTVar ostvar newcurorder
                         False -> do 
-                                    return ()
+                                    case (abs (curpr -orderpr) > 0.001) of 
+                                        True  -> do
+                                                    let aevent = Opevent "reset"  0 pr 0 ordid 0 oside
+                                                    addeventtotbqueuestm aevent tbq
+                                        False -> return ()
 
          when ((orderstater == (show $ fromEnum Ccancel)) == True )  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
