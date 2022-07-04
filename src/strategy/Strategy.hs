@@ -326,9 +326,9 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
 
 
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------" ,
-                                                                 ( (ratiol !!0 )),
-                                                                 ( (ratiol !!1 )),
-                                                                 ( (ratiol !!2 )),
+                                                                 ( (ablist !!0 )),
+                                                                 ( (ablist !!1 )),
+                                                                 ( (ablist !!2 )),
                                                                  "aa"++(showdouble  $ snd (ratiol !!3 )),
                                                                  "bb"++(showdouble  $ snd (ratiol !!4 )),
                                                                  "cc"++(showdouble  $ snd (ratiol !!5 )), 
