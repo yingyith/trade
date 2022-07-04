@@ -148,12 +148,12 @@ sendbye wconn conn ac ctrl  = do
 
 
 
-initpos ::  IO (Double,(Integer,Double))
+initpos ::  IO (Double,(Integer,(Double,String)))
 initpos  = do 
     qrypos     <- querypos
-    (quan,pr)  <- funcgetposinf qrypos
+    (quan,(pr,poside))  <- funcgetposinf qrypos
     let accugrid = getnewgrid quan  
-    return (accugrid,(quan,pr))
+    return (accugrid,(quan,(pr,poside)))
 
 initbal :: R.Connection -> Double -> Integer -> Double -> [Value] -> [Value] -> Double -> IO Curorder
 initbal conn accugrid quan pr bqryord sqryord curtime= do 
@@ -235,7 +235,7 @@ ws connection = do
     connn                  <- connect defaultConnectInfo
     connnn                 <- connect defaultConnectInfo
     connnnn                <- connect defaultConnectInfo
-    (accugrid,(quan,pr))   <- initpos
+    (accugrid,(quan,(pr,poside)))   <- initpos
     qryord                 <- queryorder
     logact logByteStringStdout $ B.pack $ show ("qryord is -----",qryord)
     currtime               <- getcurtimestamp 

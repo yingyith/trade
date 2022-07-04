@@ -493,11 +493,13 @@ funcgetorderid avalue = do
     cancelorder aorderid
     return ()  
 
-funcgetposinf :: [Value] -> IO (Integer,Double)
+funcgetposinf :: [Value] -> IO (Integer,(Double,String))
 funcgetposinf avalues = do 
     let avalue = avalues !! 0 
     let holdposstr = avalue ^? key "positionAmt"
+    let possidestr = avalue ^? key "positionSide"
     let holdprstr  = avalue ^? key "entryPrice"
     let holdpos            =  read $ T.unpack $ outString $ fromJust holdposstr :: Integer
     let holdpr            = read $ T.unpack $ outString $ fromJust holdprstr  :: Double
-    return (holdpos,holdpr)
+    let poside            = read $ T.unpack $ outString $ fromJust possidestr  :: String
+    return (holdpos,(holdpr,poside))

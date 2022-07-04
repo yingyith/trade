@@ -364,7 +364,7 @@ detailopHandler tbq  conn = do
 
               when (et == "reset") $ do 
                     qrypos <- querypos
-                    (quan,pr) <- funcgetposinf qrypos
+                    (quan,(pr,poside)) <- funcgetposinf qrypos
                     logact logByteStringStdout $ B.pack $ show ("reset detail is !",quan,pr,qrypos)
                     let astate = show $ fromEnum Done
                     let accugrid = getnewgrid quan 

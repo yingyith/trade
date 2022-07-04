@@ -149,7 +149,7 @@ queryorder = do
       let result = responseBody response :: Value
       let borders = (result^..values.filtered (has (key "side"._String.only "BUY"))) 
       let sorders = (result^..values.filtered (has (key "side"._String.only "SELL"))) 
-      --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
+      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",borders,"+++++",sorders)
       return (borders,sorders)
 
 querypos :: IO ([Value])
