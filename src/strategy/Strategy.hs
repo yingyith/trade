@@ -206,10 +206,10 @@ minrule ahll pr interval  = do
    case (fastprevuppredi,fastprevdopredi,bigpredi) of 
         (True  ,False ,_     ) ->  return ((( (!!2) $ fromJust $  minrisksheet!?interval),gridspan),("uf",rsiindex)) -- down fast
         (False ,True  ,_     ) ->  return ((( (!!1) $ fromJust $  minrisksheet!?interval),gridspan),("df",rsiindex)) -- down fast
-        (False ,False ,True  ) ->  return ((0,gridspan),("do",rsiindex)) -- also need to see diff to low point , 
-        (False ,False ,False ) ->  return ((0,gridspan),("up",rsiindex)) -- down fast
-        (True  ,True  ,True  ) ->  return ((0,gridspan),("do",rsiindex)) -- down fast
-        (True  ,True  ,False ) ->  return ((0,gridspan),("up",rsiindex)) -- down fast
+        (False ,False ,True  ) ->  return ((0,gridspan),("up",rsiindex)) -- also need to see diff to low point , 
+        (False ,False ,False ) ->  return ((0,gridspan),("do",rsiindex)) -- down fast
+        (True  ,True  ,True  ) ->  return ((0,gridspan),("up",rsiindex)) -- down fast
+        (True  ,True  ,False ) ->  return ((0,gridspan),("do",rsiindex)) -- down fast
    
 
 
