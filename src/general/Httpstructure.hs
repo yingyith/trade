@@ -302,10 +302,9 @@ takeorder a b c d = do
              "price" =: (showdouble price) <>
              "newClientOrderId" =: (newClientOrderId) <>
              "timeInForce" =: (timeinforcee :: Text) <>
-             "positionSide" =: (positionside) <>
              "timestamp" =: (curtimestamp)
 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",showdouble price),("newClientOrderId",newClientOrderId),("timeInForce",timeinforce),("positionSide",positionside),("timestamp",show curtimestamp)] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("side",side),("type",stype),("quantity",show quantity),("price",showdouble price),("newClientOrderId",newClientOrderId),("timeInForce",timeinforce),("timestamp",show curtimestamp)] 
       let ares = showDigest(hmacSha256 signature abody)
       let passwdtxt = BC.pack Passwd.passwd
       let httpparams = 
