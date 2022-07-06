@@ -202,7 +202,7 @@ initbal conn accugrid quan pr bqryord sqryord curtime= do
                                                            x|x>0 -> (BUY,"BUY")     --hold the long side pos
                                                            x|x<0 -> (SELL,"SELL")    --hold the short side pos
                                              let curorder = Curorder side HalfDone ochpostime 
-                                             mapM_ funcgetorderid  bqryord
+                                             mapM_ funcgetorderid  sqryord
                                              runRedis conn (settodefredisstate bside "Hdone" astate "0"  pr  (abs quan)   accugrid  0  curtime)-- set to Done prepare 
                                              return curorder
                        (False ,_  ,[] ) ->  do-- set to promerge
@@ -212,7 +212,7 @@ initbal conn accugrid quan pr bqryord sqryord curtime= do
                                                            x|x>0 -> (BUY,"BUY")     --hold the long side pos
                                                            x|x<0 -> (SELL,"SELL")    --hold the short side pos
                                              let curorder = Curorder side HalfDone ochpostime 
-                                             mapM_ funcgetorderid  sqryord
+                                             mapM_ funcgetorderid  bqryord
                                              runRedis conn (settodefredisstate bside "Hdone" astate "0"  pr  (abs quan)   accugrid  0  curtime)-- set to Done prepare 
                                              return curorder
                        (False ,_  ,_  ) ->  do-- not allow to appear,cancel the border and sorder,set state to hlddoaccugride 
