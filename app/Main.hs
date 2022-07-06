@@ -189,42 +189,42 @@ initbal conn accugrid quan pr bqryord sqryord curtime= do
                        (False ,[] ,[] ) ->  do -- set to halfdone
                                              let astate = show $ fromEnum HalfDone
                                              let ochpostime = 0 
-                                             let side = case quan of 
-                                                           x|x>0 -> BUY      --hold the long side pos
-                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let (side,bside) = case quan of 
+                                                           x|x>0 -> (BUY,"BUY")     --hold the long side pos
+                                                           x|x<0 -> (SELL,"SELL")    --hold the short side pos
                                              let curorder = Curorder side HalfDone ochpostime 
-                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             runRedis conn (settodefredisstate bside "Hdone" astate "0"  pr  (abs quan)   accugrid  0  curtime)-- set to Done prepare 
                                              return curorder
                        (False ,[] ,_  ) ->  do-- set to cproinit --detail judge merge or init
                                              let astate = show $ fromEnum HalfDone
                                              let ochpostime = 0 
-                                             let side = case quan of 
-                                                           x|x>0 -> BUY      --hold the long side pos
-                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let (side,bside) = case quan of 
+                                                           x|x>0 -> (BUY,"BUY")     --hold the long side pos
+                                                           x|x<0 -> (SELL,"SELL")    --hold the short side pos
                                              let curorder = Curorder side HalfDone ochpostime 
                                              mapM_ funcgetorderid  bqryord
-                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             runRedis conn (settodefredisstate bside "Hdone" astate "0"  pr  (abs quan)   accugrid  0  curtime)-- set to Done prepare 
                                              return curorder
                        (False ,_  ,[] ) ->  do-- set to promerge
                                              let astate = show $ fromEnum HalfDone
                                              let ochpostime = 0 
-                                             let side = case quan of 
-                                                           x|x>0 -> BUY      --hold the long side pos
-                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let (side,bside) = case quan of 
+                                                           x|x>0 -> (BUY,"BUY")     --hold the long side pos
+                                                           x|x<0 -> (SELL,"SELL")    --hold the short side pos
                                              let curorder = Curorder side HalfDone ochpostime 
                                              mapM_ funcgetorderid  sqryord
-                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             runRedis conn (settodefredisstate bside "Hdone" astate "0"  pr  (abs quan)   accugrid  0  curtime)-- set to Done prepare 
                                              return curorder
                        (False ,_  ,_  ) ->  do-- not allow to appear,cancel the border and sorder,set state to hlddoaccugride 
                                              let astate = show $ fromEnum HalfDone
                                              let ochpostime = 0 
-                                             let side = case quan of 
-                                                           x|x>0 -> BUY      --hold the long side pos
-                                                           x|x<0 -> SELL    --hold the short side pos
+                                             let (side,bside) = case quan of 
+                                                           x|x>0 -> (BUY,"BUY")     --hold the long side pos
+                                                           x|x<0 -> (SELL,"SELL")    --hold the short side pos
                                              let curorder = Curorder side HalfDone ochpostime 
                                              mapM_ funcgetorderid  bqryord
                                              mapM_ funcgetorderid  sqryord
-                                             runRedis conn (settodefredisstate "BUY" "Hdone" astate "0"  pr  quan   accugrid  0  curtime)-- set to Done prepare 
+                                             runRedis conn (settodefredisstate bside "Hdone" astate "0"  pr  (abs quan)   accugrid  0  curtime)-- set to Done prepare 
                                              return curorder
     return resstate
     
