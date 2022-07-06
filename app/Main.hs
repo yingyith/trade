@@ -235,6 +235,8 @@ ws connection = do
     connn                  <- connect defaultConnectInfo
     connnn                 <- connect defaultConnectInfo
     connnnn                <- connect defaultConnectInfo
+    threadDelay 1900000
+
     logact logByteStringStdout $ B.pack $ show ("first isssss -----")
 
     (accugrid,(quan,(pr,poside)))   <- initpos
