@@ -102,6 +102,17 @@ crossminstra abc pr = do
                               x|x==5        -> (stopprofitlist !! 2)
                               x|x==6        -> (stopprofitlist !! 2)
                               _             -> 0.0004
+    --needle sharpe condition
+    -- if 3m,5m,15m,1h,low/high point is the same,then means now is low fast,pr near low point risk high
+    -- 3m need a distance 
+    let lowpointpred = (snd $ snd $  fst $ (!!0) abc )  == (snd $ snd $  fst $ (!!3) abc)
+    let highpointpred = (fst $ snd $  fst $ (!!0) abc ) == (fst $ snd $  fst $ (!!3) abc)
+    let lowpointfactor = case lowpointpred of 
+                            True  -> 2000  --threshhold to short direction
+                            False -> 0 
+    let highpointfactor = case highpointpred of 
+                            True  -> 2000 -- threshold to long direction 
+                            False -> 0 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     let (mthresholdup,mthresholddo) = case (threeminsupporttrendpred ,fiveminsupporttrendpred,fstminsupporttrendpred) of 
@@ -127,7 +138,7 @@ crossminstra abc pr = do
     let totalthresholdup = mthresholdup + hthresholdup
     let totalthresholddo = mthresholddo + hthresholddo
     liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,threeminsupporttrendpred,fiveminsupporttrendpred,fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,itempredi)
-    return (totalthresholdup,totalthresholddo)
+    return (totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor)
                                           
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
@@ -323,6 +334,8 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                           (False , AS.DO) -> middquan
                                           (True  , AS.UP) -> middquan
                                           (_     , _    ) -> 0
+                     -- use the three grid (0,0.0002),(0.0002,0.0004),(0.0004,0.0006) to quant the hard degree of trend,also express as boost (add or minus )
+                     let 
 
 
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------" ,

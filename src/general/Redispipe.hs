@@ -316,17 +316,20 @@ detailopHandler tbq  conn = do
               when (et == "endcancel") $  do 
                    -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
                     qryord <- queryorder
-                    let sqryord = snd qryord
+                    let sqryord = case qryord of 
+                                      (a, []) -> a
+                                      ([],b ) -> b
+                                      (_ ,_ ) -> []
                     case sqryord of 
-                        [] ->  return ()
-                        _  ->  do 
-                                   CE.catch ( do 
+                        []      ->  return ()
+                        _       ->  do 
+                                       CE.catch ( do 
                                                   mapM_ funcgetorderid  sqryord
                                                   runRedis conn (ccanordertorediszset  curtime)
 
                                             ) ( \e -> do 
-                                       logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
-                                       )
+                                                logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
+                                              )
                  `catch` (\(e :: SomeException) -> do
                     SI.hPutStrLn stderr $ "Gotscancelerror1: " ++ show e)
 
