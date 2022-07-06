@@ -237,11 +237,11 @@ ws connection = do
     connnnn                <- connect defaultConnectInfo
     (accugrid,(quan,(pr,poside)))   <- initpos
     qryord                 <- queryorder
-   -- liftIO $ logact logByteStringStdout $ BC.pack  $ show ()
     currtime               <- getcurtimestamp 
     let curtime            =  fromIntegral currtime ::Double
     let bqryord            =  fst qryord
     let sqryord            =  snd qryord
+    liftIO $ logact logByteStringStdout $ B.pack  $ show (bqryord,sqryord)
     initostate             <- initbal conn accugrid quan pr bqryord sqryord curtime
     depthdata              <- initupddepth conn
     depthtvar              <- newTVarIO depthdata
