@@ -235,18 +235,14 @@ ws connection = do
     connn                  <- connect defaultConnectInfo
     connnn                 <- connect defaultConnectInfo
     connnnn                <- connect defaultConnectInfo
-    threadDelay 1900000
-
-    logact logByteStringStdout $ B.pack $ show ("first isssss -----")
-
     (accugrid,(quan,(pr,poside)))   <- initpos
     qryord                 <- queryorder
-    logact logByteStringStdout $ B.pack $ show ("qryord isssss -----",qryord)
+   -- liftIO $ logact logByteStringStdout $ BC.pack  $ show ()
     currtime               <- getcurtimestamp 
     let curtime            =  fromIntegral currtime ::Double
-    let openqryord         =  fst qryord
-    let closeqryord        =  snd qryord
-    initostate             <- initbal conn accugrid quan pr openqryord closeqryord curtime
+    let bqryord            =  fst qryord
+    let sqryord            =  snd qryord
+    initostate             <- initbal conn accugrid quan pr bqryord sqryord curtime
     depthdata              <- initupddepth conn
     depthtvar              <- newTVarIO depthdata
     orderst                <- newTVarIO initostate
@@ -256,6 +252,7 @@ ws connection = do
     qws                    <- newTBQueueIO 200  :: IO (TBQueue Cronevent)
     qord                   <- newTBQueueIO 30  :: IO (TBQueue Opevent  )
     qanalys                <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
+    threadDelay 1900000
 
     withAsync (publishThread qws conn connection orderVar sendthid) $ \_pubT -> do
         withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do

@@ -492,6 +492,7 @@ funcgetorderid avalue = do
     let acorderidobj = avalue ^? key "ClientOrderId"
     let aorderid            = T.unpack $ outString $ fromJust aorderidobj 
     let acorderid            = T.unpack $ outString $ fromJust acorderidobj 
+    liftIO $ logact logByteStringStdout $ BC.pack $ ("-------cancelorder---------" )
     cancelorder aorderid acorderid
     return ()  
 
