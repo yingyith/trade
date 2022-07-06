@@ -245,6 +245,7 @@ cancelorder orderid origClientOrderId   = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
    curtimestamp <- getcurtimestamp
+   liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",orderid,origClientOrderId)
    runReq defaultHttpConfig $ do 
       let signature = BLU.fromString sk
       let passwdtxt = BC.pack Passwd.passwd
@@ -263,12 +264,10 @@ cancelorder orderid origClientOrderId   = do
             ("signature" =: (T.pack ares :: Text ))
       let ouri = "https://fapi.binance.com/fapi/v1/order"  
       let auri=ouri<>(T.pack "?signature=")<>(T.pack ares)
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",orderid)
       uri <- URI.mkURI auri 
       let (url, options) = fromJust (useHttpsURI uri)
       let areq = req DELETE url (ReqBodyUrlEnc params) ignoreResponse  httpparams
       _ <- areq
-      liftIO $ logact logByteStringStdout $ BC.pack  $ show ("cancelo ----",orderid)
       return ()
     --cancel all the order ,if  any more need can use api cancel detail order
    return () 
