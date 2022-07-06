@@ -240,24 +240,23 @@ querydepth = do
       --liftIO $ logact logByteStringStdout $ BC.pack  $ show ("queryorder ----",result)
       return ressheet
 
-cancelorder :: String -> IO ()
-cancelorder orderid  = do
+cancelorder :: String -> String-> IO ()
+cancelorder orderid origClientOrderId   = do
    let symbol = "ADAUSDT"
    let symboll = "ADAUSDT"
    curtimestamp <- getcurtimestamp
    runReq defaultHttpConfig $ do 
       let signature = BLU.fromString sk
       let passwdtxt = BC.pack Passwd.passwd
-      let origClientOrderId = sellorderid
       --let origClientOrderId = orderid
       let params = 
             ("symbol" =: (symboll :: Text)) <>
-    --        ("origClientOrderId" =: origClientOrderId  ) <> 
+            ("origClientOrderId" =: origClientOrderId  ) <> 
             ("orderId" =: orderid  ) <> 
             ("timestamp" =: (show curtimestamp ))
 
-      --let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("origClientOrderId",origClientOrderId),("orderId",orderid),("timestamp",show curtimestamp)  ] 
-      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("orderId",orderid),("timestamp",show curtimestamp)  ] 
+      let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("origClientOrderId",origClientOrderId),("orderId",orderid),("timestamp",show curtimestamp)  ] 
+      --let abody = BLU.fromString $ NTB.urlEncodeVars [("symbol",symbol),("orderId",orderid),("timestamp",show curtimestamp)  ] 
       let ares = showDigest(hmacSha256 signature abody)
       let httpparams = 
             (header "X-MBX-APIKEY" passwdtxt ) <>

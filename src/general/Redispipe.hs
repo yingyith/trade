@@ -316,20 +316,17 @@ detailopHandler tbq  conn = do
               when (et == "endcancel") $  do 
                    -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
                     qryord <- queryorder
-                    let sqryord = case qryord of 
-                                      (a, []) -> a
-                                      ([],b ) -> b
-                                      (_ ,_ ) -> []
+                    let sqryord = snd qryord
                     case sqryord of 
-                        []      ->  return ()
-                        _       ->  do 
-                                       CE.catch ( do 
+                        [] ->  return ()
+                        _  ->  do 
+                                   CE.catch ( do 
                                                   mapM_ funcgetorderid  sqryord
                                                   runRedis conn (ccanordertorediszset  curtime)
 
                                             ) ( \e -> do 
-                                                logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
-                                              )
+                                       logact logByteStringStdout $ B.pack $ show ("except!",(e::SomeException))
+                                       )
                  `catch` (\(e :: SomeException) -> do
                     SI.hPutStrLn stderr $ "Gotscancelerror1: " ++ show e)
 
@@ -466,7 +463,7 @@ opclHandler tbq ostvar  channel  msg = do
                         False -> do 
                                     case (abs (curpr -orderpr) > 0.001) of 
                                         True  -> do
-                                                    let aevent = Opevent "reset"  0 pr 0 ordid 0 oside
+                                                    let aevent = Opevent "reset"  0 0 0 ordid 0 oside
                                                     addeventtotbqueuestm aevent tbq
                                         False -> return ()
 

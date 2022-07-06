@@ -488,9 +488,11 @@ acupdtorediszset quan pr  usdtbal = do
 
 funcgetorderid :: Value -> IO ()
 funcgetorderid avalue = do 
-    let aorderidobj = avalue ^? key "orderId"
+    let aorderidobj  = avalue ^? key "orderId"
+    let acorderidobj = avalue ^? key "ClientOrderId"
     let aorderid            = T.unpack $ outString $ fromJust aorderidobj 
-    cancelorder aorderid
+    let acorderid            = T.unpack $ outString $ fromJust acorderidobj 
+    cancelorder aorderid acorderid
     return ()  
 
 funcgetposinf :: [Value] -> IO (Integer,(Double,String))
