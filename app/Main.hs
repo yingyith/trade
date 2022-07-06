@@ -235,9 +235,11 @@ ws connection = do
     connn                  <- connect defaultConnectInfo
     connnn                 <- connect defaultConnectInfo
     connnnn                <- connect defaultConnectInfo
+    logact logByteStringStdout $ B.pack $ show ("first isssss -----")
+
     (accugrid,(quan,(pr,poside)))   <- initpos
     qryord                 <- queryorder
-    logact logByteStringStdout $ B.pack $ show ("qryord is -----",qryord)
+    logact logByteStringStdout $ B.pack $ show ("qryord isssss -----",qryord)
     currtime               <- getcurtimestamp 
     let curtime            =  fromIntegral currtime ::Double
     let openqryord         =  fst qryord
