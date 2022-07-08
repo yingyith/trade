@@ -62,7 +62,7 @@ getnewgriddiff grid =
                       x|x==0.001             -> 60  * grid  -- map to 2000
                       x|x==0.004             -> 60  * grid  -- map to 4000
                       x|x==0.08              -> 10  * grid  -- map to 8000
-                      x|x<=0.0005            -> 16  * grid
+                      x|x<=0.0005            -> 10  * grid
                       x|x<=0.0012            -> 10  * grid
                       x|x<=0.002             -> 40  * grid
                       x|x<=0.006             -> 40  * grid
