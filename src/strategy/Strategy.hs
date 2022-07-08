@@ -105,13 +105,13 @@ crossminstra abc pr = do
     --needle sharpe condition
     -- if 3m,5m,15m,1h,low/high point is the same,then means now is low fast,pr near low point risk high
     -- 3m need a distance 
-    let lowpointpred = (snd $ snd $  fst $ (!!0) abc )  == (snd $ snd $  fst $ (!!3) abc)
-    let highpointpred = (fst $ snd $  fst $ (!!0) abc ) == (fst $ snd $  fst $ (!!3) abc)
+    let lowpointpred = ((snd $ snd $  fst $ (!!0) abc )  <= (snd $ snd $  fst $ (!!3) abc))|| ((pr-0.001)< (snd $ snd $  fst $ (!!3) abc))
+    let highpointpred = ((fst $ snd $  fst $ (!!0) abc ) >= (fst $ snd $  fst $ (!!3) abc))|| ((pr+0.001)> (fst $ snd $  fst $ (!!3) abc))
     let lowpointfactor = case lowpointpred of 
-                            True  -> 2000  --threshhold to short direction
+                            True  -> 3000  --threshhold to short direction
                             False -> 0 
     let highpointfactor = case highpointpred of 
-                            True  -> 2000 -- threshold to long direction 
+                            True  -> 3000 -- threshold to long direction 
                             False -> 0 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
