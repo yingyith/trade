@@ -148,8 +148,8 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
 
        when (mergequan /= 0 && quanty > 0) $ do
            let side = case lastside of 
-                     "BUY" -> "SELL"
-                     "SELL" -> "BUY"
+                     "BUY" -> "BUY"
+                     "SELL" -> "SELL"
            when (mergequan < 1000) $ do      -- high frq trade
                let otype = "Prep" :: String
                let orderid =  show stamp 
@@ -173,8 +173,8 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
 
        when (mergequan /= 0 && quanty < 0) $ do
            let side = case lastside of 
-                     "BUY" -> "SELL"
-                     "SELL" -> "BUY"
+                     "BUY" -> "BUY"
+                     "SELL" -> "SELL"
            when (mergequan > -1000) $ do      -- high frq trade
                let otype = "Prep" :: String
                let orderid =  show stamp 
