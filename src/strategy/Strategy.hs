@@ -105,14 +105,20 @@ crossminstra abc pr = do
     --needle sharpe condition
     -- if 3m,5m,15m,1h,low/high point is the same,then means now is low fast,pr near low point risk high
     -- 3m need a distance 
-    let lowpointpred = ((snd $ snd $  fst $ (!!0) abc )  <= (snd $ snd $  fst $ (!!2) abc))|| ((pr-0.001)< (snd $ snd $  fst $ (!!2) abc))
-    let highpointpred = ((fst $ snd $  fst $ (!!0) abc ) >= (fst $ snd $  fst $ (!!2) abc))|| ((pr+0.001)> (fst $ snd $  fst $ (!!2) abc))
-    let lowpointfactor = case lowpointpred of 
-                            True  -> 2000  --threshhold to short direction
-                            False -> 0 
-    let highpointfactor = case highpointpred of 
-                            True  -> 2000 -- threshold to long direction 
-                            False -> 0 
+    let lowpointpredsmall = ((snd $ snd $  fst $ (!!0) abc )  <= (snd $ snd $  fst $ (!!2) abc))|| ((pr-0.0006)< (snd $ snd $  fst $ (!!2) abc))
+    let lowpointpredbig = ((snd $ snd $  fst $ (!!0) abc )  <= (snd $ snd $  fst $ (!!3) abc))|| ((pr-0.001)< (snd $ snd $  fst $ (!!3) abc))
+    let highpointpredsmall = ((fst $ snd $  fst $ (!!0) abc ) >= (fst $ snd $  fst $ (!!2) abc))|| ((pr+0.0006)> (fst $ snd $  fst $ (!!2) abc))
+    let highpointpredbig = ((fst $ snd $  fst $ (!!0) abc ) >= (fst $ snd $  fst $ (!!3) abc))|| ((pr+0.001)> (fst $ snd $  fst $ (!!3) abc))
+    let lowpointfactor = case (lowpointpredsmall,lowpointpredbig) of 
+                            (True,True  )  -> 3000  --threshhold to short direction
+                            (True,False )  -> 1500  --threshhold to short direction
+                            (False,True )  -> 3000  --threshhold to short direction
+                            (False,False)  -> 0 
+    let highpointfactor = case (highpointpredsmall,highpointpredbig) of 
+                            (True,True  )  -> 3000  --threshhold to short direction
+                            (True,False )  -> 1500  --threshhold to short direction
+                            (False,True )  -> 3000  --threshhold to short direction
+                            (False,False)  -> 0 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     let (mthresholdup,mthresholddo) = case (threeminsupporttrendpred ,fiveminsupporttrendpred,fstminsupporttrendpred) of 
