@@ -48,19 +48,19 @@ depthrisksheet          :: [Int]
 depthrisksheet          = [-2000  ,250   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
 minrulethreshold        :: [Int] --base  to serious degree
-minrulethreshold        = [2000  ,1600  ,1300  ,1200  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
+minrulethreshold        = [2000  ,1600  ,1200  ,1100  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
                                                                          --     d,d,u  ;u,u,d  -> 1800
                                                                          --     d,u,d  ;u,d,u  -> 1500
                                                                          --     d,u,u  ;u,d,d  -> 700 
 
 shortminrulethreshold   :: [Int] --base  to serious degree
-shortminrulethreshold   = [2000  ,1300  ,850  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
+shortminrulethreshold   = [2000  ,1200  ,850  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
                      
 adjustratiosheet :: [Double]
-adjustratiosheet        = [0.001   , 0.18        , 0.4        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
+adjustratiosheet        = [0.001   , 0.2        , 0.4        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
-adjustboostgrid         =  [(0,300) ,(0,800)   ,(200,1400)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
+adjustboostgrid         =  [(0,300) ,(200,800)   ,(200,1400)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
@@ -82,4 +82,4 @@ depthkey = "depthkey"
 secondstick = 60 :: Integer
 sellorderid = "yid1sCrw2kRUAF9CvJDGK16IP"
 buyorderid = "yid1bCrw2kRUAF9CvJDGK16IP"
-minquan = 300  :: Int
+minquan = 1000  :: Int
