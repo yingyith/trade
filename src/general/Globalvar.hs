@@ -48,7 +48,7 @@ depthrisksheet          :: [Int]
 depthrisksheet          = [-2000  ,250   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
 minrulethreshold        :: [Int] --base  to serious degree
-minrulethreshold        = [2000  ,1600  ,1200  ,1100  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
+minrulethreshold        = [2000  ,1600  ,1300  ,1200  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
                                                                          --     d,d,u  ;u,u,d  -> 1800
                                                                          --     d,u,d  ;u,d,u  -> 1500
                                                                          --     d,u,u  ;u,d,d  -> 700 

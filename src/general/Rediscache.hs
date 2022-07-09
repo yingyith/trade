@@ -233,7 +233,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                         True -> do
                                    logact logByteStringStdout $ BC.pack $ show ("orderstate bef analy---------")
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
-                                   let stopclosegrid   = 0.0005
+                                   let stopclosegrid   = 0.0004
                                    atomically $ do 
                                         curorder       <- readTVar ostvar
                                         let ostate     = orderstate curorder
@@ -275,7 +275,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                      case (sumres<0) of
                         True -> do
                                    let aresquan        = toInteger $ max minquan  $ min minquan $  abs sumres
-                                   let stopclosegrid   = 0.0005
+                                   let stopclosegrid   = 0.0004
                                    atomically $ do 
                                         curorder       <- readTVar ostvar
                                         let ostate     = orderstate curorder
