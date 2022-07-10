@@ -368,7 +368,8 @@ detailopHandler tbq  conn = do
                     let side = case eside of 
                                    BUY  -> "BUY"
                                    SELL -> "SELL"
-                    runRedis conn (settodefredisstate side "Done" astate "0"  pr  quan   accugrid  mergequan  curtime)-- set to Done prepare 
+                    let aquan = abs quan
+                    runRedis conn (settodefredisstate side "Done" astate "0"  pr aquan   accugrid  mergequan  curtime)-- set to Done prepare 
                  `catch` (\(e :: SomeException) -> do
                     SI.hPutStrLn stderr $ "Gotssreseterror1: " ++ show e)
 
