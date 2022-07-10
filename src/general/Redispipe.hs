@@ -467,6 +467,17 @@ opclHandler tbq ostvar  channel  msg = do
                                                     addeventtotbqueuestm aevent tbq
                                         False -> return ()
 
+         when ((orderstater == (show $ fromEnum Process)  ) == True) $ do
+              atomically $ do
+                     curorder <- readTVar ostvar
+                     let oside = orderside curorder
+                     let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
+                     case (abs (curpr -orderpr) > 0.001) of 
+                         True  -> do
+                                     let aevent = Opevent "reset"  0 0 0 ordid 0 oside
+                                     addeventtotbqueuestm aevent tbq
+                         False -> return ()
+
          when ((orderstater == (show $ fromEnum Ccancel)) == True )  $ do
               let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
               atomically $ do
