@@ -314,8 +314,8 @@ detailopHandler tbq  conn = do
               logact logByteStringStdout $ B.pack $ show ("len is !",tbqlen,et)
               
               when (et == "endcancel") $  do 
-                   -- logact logByteStringStdout $ B.pack $ show ("bef cancel order!")
                     qryord <- queryorder
+                    logact logByteStringStdout $ B.pack $ show ("bef cancel order!",eside,qryord)
                     let sqryord = case eside of 
                                     BUY  -> fst qryord
                                     SELL -> snd qryord
