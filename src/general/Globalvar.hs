@@ -18,6 +18,7 @@ module Globalvar (
     secondstick,
     holdprkey,
     minquan,
+    basequan,
     quanlist,
     stopprofitlist,
     depthkey,
@@ -42,7 +43,7 @@ stopprofitlist          :: [Double]
 stopprofitlist          = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 diffspreadsheet         :: [Double]
-diffspreadsheet         = [0.01   ,0.25   ,0.4411  ,0.65  ,0.753  ,0.82  ,0.88  ,0.95  ,1] 
+diffspreadsheet         = [0.01   ,0.23   ,0.4411  ,0.65  ,0.753  ,0.82  ,0.88  ,0.95  ,1] 
 
 depthrisksheet          :: [Int] 
 depthrisksheet          = [-2000  ,250   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
@@ -54,13 +55,13 @@ minrulethreshold        = [2000  ,1600  ,1200  ,1100  ]   --   4h, 1h,15m -->   
                                                                          --     d,u,u  ;u,d,d  -> 700 
 
 shortminrulethreshold   :: [Int] --base  to serious degree
-shortminrulethreshold   = [2000  ,1200  ,850  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
+shortminrulethreshold   = [2000  ,1300  ,850  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
                      
 adjustratiosheet :: [Double]
 adjustratiosheet        = [0.001   , 0.2        , 0.4        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
-adjustboostgrid         =  [(0,300) ,(200,800)   ,(200,1400)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
+adjustboostgrid         =  [(0,300) ,(200,800)   ,(200,1500)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
@@ -82,4 +83,5 @@ depthkey = "depthkey"
 secondstick = 60 :: Integer
 sellorderid = "yid1sCrw2kRUAF9CvJDGK16IP"
 buyorderid = "yid1bCrw2kRUAF9CvJDGK16IP"
-minquan = 1000  :: Int
+basequan = 1000  :: Int
+minquan = 100  :: Int

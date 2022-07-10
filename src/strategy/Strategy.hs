@@ -309,39 +309,43 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        _                                                         -> -(fst $  (adjustboostgrid!!0)) 
                  (_   ,_     )  ->  0
 
-secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO (Int,Trend)
+secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO ((Int,Trend),(Trend,Double))
 secondrule diffpr ablist = do      -- bid is buyer , ask is seller 
                      let ratiol        = DT.map getdiffgridnum ablist
                      let curprsfstdire = snd (ratiol !! 6)
                      let curprmsnddire = snd (ratiol !! 7)
                      let curprsfstdiff = fst (ratiol !! 6)
                      let curprmsnddiff = fst (ratiol !! 7)
-                     let ccc           = snd (ratiol !! 8)
+                     let cccdata       = ratiol !! 8
+                     let ccc           = snd cccdata
                      let ddd           = snd (ratiol !! 9)
                      let eee           = snd (ratiol !! 10)
                      let minpr         = fst $ fst  diffpr
                      let maxpr         = snd $ fst  diffpr
                      let basepr        = snd  diffpr
-                     let trend = case ((curprsfstdire < 0) ,(curprmsnddire < 0)) of
-                                      (True ,True )   -> AS.DO
-                                      (True ,False)   -> AS.ND 
-                                      (False,True )   -> AS.ND
-                                      (False,False)   -> AS.UP
+                     let trend         = case ((curprsfstdire < 0) ,(curprmsnddire < 0)) of
+                                               (True ,True )   -> AS.DO
+                                               (True ,False)   -> AS.ND 
+                                               (False,True )   -> AS.ND
+                                               (False,False)   -> AS.UP
 
-                     let midquan = case (basepr < minpr || basepr > maxpr) of 
-                                        True  -> 0
-                                        False -> (curprsfstdiff + curprmsnddiff)
+                     let midquan       = case (basepr < minpr || basepr > maxpr) of 
+                                                True  -> 0
+                                                False -> (curprsfstdiff + curprmsnddiff)
 
-                     let middquan = midquan + (waveonlongsight ccc ddd eee trend) 
+                     let middquan      = midquan + (waveonlongsight ccc ddd eee trend) 
 
-                     let finalquan = case (middquan > 0 ,trend) of 
+                     let finalquan     = case (middquan > 0 ,trend) of 
                                           (True  , AS.DO) -> 0
                                           (False , AS.UP) -> 0
                                           (False , AS.DO) -> middquan
                                           (True  , AS.UP) -> middquan
                                           (_     , _    ) -> 0
                      -- use the three grid (0,0.0002),(0.0002,0.0004),(0.0004,0.0006) to quant the hard degree of trend,also express as boost (add or minus )
-                     let 
+                     let ccctrend       = case ccc of 
+                                            x|x<(-0.4)   -> (AS.DO,0.001) 
+                                            x|x>0.4      -> (AS.UP,0.001) 
+                                            _            -> (AS.ND,0) 
 
 
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------" ,
@@ -361,7 +365,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                                  showdouble basepr
                                                                  )
                      logact logByteStringStdout $ B.pack $ show (midquan,middquan,finalquan)
-                     return (finalquan,trend)
+                     return ((finalquan,trend),ccctrend)
 
 
 
