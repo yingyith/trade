@@ -458,10 +458,14 @@ opclHandler tbq ostvar  channel  msg = do
                                     let newcurorder = Curorder oside astate ochpostime
                                     writeTVar ostvar newcurorder
                         False -> do 
+                                    let ochpostime = chpostime curorder 
                                     case (abs (curpr -orderpr) > 0.001) of 
                                         True  -> do
                                                     let aevent = Opevent "reset"  0 0 0 ordid 0 oside
                                                     addeventtotbqueuestm aevent tbq
+                                                    let astate =  Done
+                                                    let newcurorder = Curorder oside astate ochpostime
+                                                    writeTVar ostvar newcurorder
                                         False -> return ()
 
          when ((orderstater == (show $ fromEnum Process)  ) == True) $ do
@@ -471,8 +475,12 @@ opclHandler tbq ostvar  channel  msg = do
                      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
                      case (abs (curpr -orderpr) > 0.001) of 
                          True  -> do
+                                     let ochpostime = chpostime curorder
                                      let aevent = Opevent "reset"  0 0 0 ordid 0 oside
                                      addeventtotbqueuestm aevent tbq
+                                     let astate =  Done
+                                     let newcurorder = Curorder oside astate ochpostime
+                                     writeTVar ostvar newcurorder
                          False -> return ()
 
          when ((orderstater == (show $ fromEnum Ccancel)) == True )  $ do
@@ -506,6 +514,10 @@ opclHandler tbq ostvar  channel  msg = do
                     when ((orderpr-curpr)> accugriddiff) $ do
                         let aevent = Opevent "reset" 0 pr 0 ordid 0 oside
                         addeventtotbqueuestm aevent tbq
+                        let ochpostime = chpostime curorder
+                        let astate =  Done
+                        let newcurorder = Curorder oside astate ochpostime
+                        writeTVar ostvar newcurorder
                     when ((orderpr-curpr)<= accugriddiff) $ do
                         let aevent = Opevent "cprep" 0 pr 0 ordid 0 oside
                         addeventtotbqueuestm aevent tbq
@@ -513,6 +525,10 @@ opclHandler tbq ostvar  channel  msg = do
                     when ((curpr-orderpr)> accugriddiff) $ do
                         let aevent = Opevent "reset" 0 pr 0 ordid 0 oside
                         addeventtotbqueuestm aevent tbq
+                        let ochpostime = chpostime curorder
+                        let astate =  Done
+                        let newcurorder = Curorder oside astate ochpostime
+                        writeTVar ostvar newcurorder
                     when ((curpr-orderpr)<= accugriddiff) $ do
                         let aevent = Opevent "cprep" 0 pr 0 ordid 0 oside
                         addeventtotbqueuestm aevent tbq
