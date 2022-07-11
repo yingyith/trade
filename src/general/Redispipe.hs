@@ -472,6 +472,7 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                      curorder <- readTVar ostvar
                      let oside = orderside curorder
+                     unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
                      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
                      case (abs (curpr -orderpr) > 0.001) of 
                          True  -> do
@@ -488,6 +489,7 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                                 curorder <- readTVar ostvar
                                 let oside = orderside curorder
+                                unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
                                 let ochpostime = chpostime curorder 
                                 when ((oside == BUY  && ((orderpr-curpr)> accugriddiff)) || (oside == SELL && ((curpr-orderpr)> accugriddiff)))  $ do
                                      let aevent = Opevent "reset"  0 pr 0 ordid 0 oside
@@ -502,6 +504,7 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                   curorder <- readTVar ostvar
                   let oside  = orderside curorder
+                  unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
                   let aevent = Opevent "endopen" 0 pr 0 ordid 0 oside
                   addeventtotbqueuestm aevent tbq
 
@@ -510,6 +513,7 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                   curorder <- readTVar ostvar
                   let oside  = orderside curorder
+                  unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
                   when (oside == BUY) $ do
                     when ((orderpr-curpr)> accugriddiff) $ do
                         let aevent = Opevent "reset" 0 pr 0 ordid 0 oside
@@ -538,6 +542,7 @@ opclHandler tbq ostvar  channel  msg = do
          when ((DL.any (== orderstater) [(show $ fromEnum Cprocess),(show $ fromEnum Cpartdone),(show $ fromEnum Cproinit)]) == True ) $ do 
               atomically $ do
                   curorder <- readTVar ostvar
+                  unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
                   let oside  = orderside curorder
                   when (oside == BUY  && ((orderpr-curpr)> accugriddiff)) $ do
                     let aevent = Opevent "endcancel" 0 0 0 ordid 0 oside
