@@ -108,7 +108,7 @@ crossminstra abc pr = do
     let lowpointpredsmall     = ((pr-0.0012)< (snd $ snd $  fst $ (!!2) abc))
     let lowpointpredbig       = (((snd $ snd $  fst $ (!!0) abc)-0.001) < ((snd $ snd $  fst $ (!!2) abc)))   || ((pr-0.0012)< (snd $ snd $  fst $ (!!3) abc))
     let highpointpredsmall    = ((pr+0.0012)> (fst $ snd $  fst $ (!!2) abc))
-    let highpointpredbig      = (((snd $ snd $  fst $ (!!0) abc)+0.001) > ((snd $ snd $  fst $ (!!2) abc)))   || ((pr+0.001)< (snd $ snd $  fst $ (!!3) abc))
+    let highpointpredbig      = (((snd $ snd $  fst $ (!!0) abc)+0.001) > ((snd $ snd $  fst $ (!!2) abc)))   || ((pr+0.001)> (snd $ snd $  fst $ (!!3) abc))
     let lowpointfactor = case (lowpointpredsmall,lowpointpredbig) of 
                             (True,True  )  -> 3000  --threshhold to short direction
                             (True,False )  -> 800  --threshhold to short direction
