@@ -215,17 +215,17 @@ getdiffintervalflow = do
 anlytoBuy ::  TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
 anlytoBuy tbq conn msg tdepth ostvar = 
    do
-     res                          <- runRedis conn (getdiffintervalflow) 
-     kline                        <- parsetokline msg
-     let dcp                      =  read $ kclose kline :: Double
-     bigintervall                 <- analysismindo (fst res ) dcp 
-     (thresholdup,thresholddo)    <- crossminstra bigintervall dcp
-     atdepth                      <- readTVarIO tdepth 
-     apr                          <- AS.depthmidpr atdepth dcp
-     let ares                     =  AS.getBidAskNum apr atdepth
-     ((sndquan,sedtrend),ccctrend)<- secondrule apr ares
-     timecurtime                  <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-     curtimestampi                <- getcurtimestamp
+     res                                    <- runRedis conn (getdiffintervalflow) 
+     kline                                  <- parsetokline msg
+     let dcp                                =  read $ kclose kline :: Double
+     bigintervall                           <- analysismindo (fst res ) dcp 
+     ((thresholdup,thresholddo),reasons)    <- crossminstra bigintervall dcp
+     atdepth                                <- readTVarIO tdepth 
+     apr                                    <- AS.depthmidpr atdepth dcp
+     let ares                               =  AS.getBidAskNum apr atdepth
+     ((sndquan,sedtrend),ccctrend)          <- secondrule apr ares
+     timecurtime                            <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
+     curtimestampi                          <- getcurtimestamp
      when (sedtrend==AS.UP) $ do
          let sumres = (-thresholdup) +sndquan -- aim is up
          logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
@@ -234,13 +234,12 @@ anlytoBuy tbq conn msg tdepth ostvar =
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
-            False -> case (fst ccctrend) of 
-                         AS.UP -> do
+            False -> case ((fst ccctrend),((/= "nb")  $ fst reasons)) of 
+                         (AS.UP,True) -> do
                                       let aresquan        = toInteger minquan
-                                      let stopclosegrid   = 0.001
+                                      let stopclosegrid   = 0.0007
                                       prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
-                         AS.DO -> return ()  
-                         _     -> return ()  
+                         (_,_)        -> return ()  
                        
 
      when (sedtrend==AS.DO) $ do
@@ -251,13 +250,12 @@ anlytoBuy tbq conn msg tdepth ostvar =
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
-            False -> case (fst ccctrend) of 
-                         AS.UP -> return ()
-                         AS.DO -> do  
+            False -> case ((fst ccctrend),((/= "ns") $snd reasons)) of 
+                         (AS.DO,True) -> do  
                                       let aresquan        = toInteger minquan
-                                      let stopclosegrid   = 0.001
+                                      let stopclosegrid   = 0.0007
                                       prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
-                         _     -> return ()  
+                         (_,_)     -> return ()  
 
    `catch` (\(e :: SomeException) -> do
                 SI.hPutStrLn stderr $ "Goterror1: " ++ show e)

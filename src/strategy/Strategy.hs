@@ -55,7 +55,7 @@ minrisksheet = fromList [
                  ("3d" , [5       ,  90,  -120, -180  ])
                ]
 
-crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO (Int,Int)
+crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO ((Int,Int),(String,String))
 crossminstra abc pr = do 
     let uppredi  = \x -> ((> 14) $ fst $ fst x) && ( (== 'u') $ (!!0) $ fst $ snd  x )
     let lhsheet = DT.map uppredi abc
@@ -106,19 +106,19 @@ crossminstra abc pr = do
     -- if 3m,5m,15m,1h,low/high point is the same,then means now is low fast,pr near low point risk high
     -- 3m need a distance 
     let lowpointpredsmall     = ((pr-0.0012)< (snd $ snd $  fst $ (!!2) abc))
-    let lowpointpredbig       = (((snd $ snd $  fst $ (!!0) abc)-0.001) < ((snd $ snd $  fst $ (!!2) abc)))   || ((pr-0.0012)< (snd $ snd $  fst $ (!!3) abc))
+    let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.001) < ((snd $ snd $  fst $ (!!2) abc)))   || ((pr-0.0012)< (snd $ snd $  fst $ (!!3) abc))
     let highpointpredsmall    = ((pr+0.0012)> (fst $ snd $  fst $ (!!2) abc))
-    let highpointpredbig      = (((snd $ snd $  fst $ (!!0) abc)+0.001) > ((snd $ snd $  fst $ (!!2) abc)))   || ((pr+0.001)> (snd $ snd $  fst $ (!!3) abc))
-    let lowpointfactor = case (lowpointpredsmall,lowpointpredbig) of 
-                            (True,True  )  -> 3000  --threshhold to short direction
-                            (True,False )  -> 800  --threshhold to short direction
-                            (False,True )  -> 3000  --threshhold to short direction
-                            (False,False)  -> 0 
-    let highpointfactor = case (highpointpredsmall,highpointpredbig) of 
-                            (True,True  )  -> 3000  --threshhold to short direction
-                            (True,False )  -> 800  --threshhold to short direction
-                            (False,True )  -> 3000  --threshhold to short direction
-                            (False,False)  -> 0 
+    let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.001) > ((fst $ snd $  fst $ (!!2) abc)))   || ((pr+0.001)> (fst $ snd $  fst $ (!!3) abc))
+    let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
+                            (True,True  )  -> (3000,"ns")  --threshhold to short direction
+                            (True,False )  -> (800, "no") --threshhold to short direction
+                            (False,True )  -> (3000,"ns")  --threshhold to short direction
+                            (False,False)  -> (0,"no") 
+    let (highpointfactor,reasonhigh) = case (highpointpredsmall,highpointpredbig) of 
+                            (True,True  )  ->(3000,"nb")  --threshhold to short direction
+                            (True,False )  ->(800,"no")  --threshhold to short direction
+                            (False,True )  ->(3000,"nb")  --threshhold to short direction
+                            (False,False)  ->(0,"no") 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     let (mthresholdup,mthresholddo) = case (threeminsupporttrendpred ,fiveminsupporttrendpred,fstminsupporttrendpred) of 
@@ -144,7 +144,7 @@ crossminstra abc pr = do
     let totalthresholdup = mthresholdup + hthresholdup
     let totalthresholddo = mthresholddo + hthresholddo
     liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,threeminsupporttrendpred,fiveminsupporttrendpred,fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,itempredi)
-    return (totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor)
+    return ((totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor),(reasonhigh,reasonlow))
                                           
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
