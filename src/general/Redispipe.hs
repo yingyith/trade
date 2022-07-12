@@ -447,16 +447,16 @@ opclHandler tbq ostvar  channel  msg = do
               atomically $ do
                      curorder <- readTVar ostvar
                      let oside = orderside curorder
-                     unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
+         --            unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
                      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
                      case ((orderstate curorder) == Prepare) of 
                         True  -> do 
                                     let ochpostime = chpostime curorder 
-                                    let aevent = Opevent "initopen"  0 pr 0 ordid 0 oside
-                                    addeventtotbqueuestm aevent tbq
                                     let astate = Process
                                     let newcurorder = Curorder oside astate ochpostime
                                     writeTVar ostvar newcurorder
+                                    let aevent = Opevent "initopen"  0 pr 0 ordid 0 oside
+                                    addeventtotbqueuestm aevent tbq
                         False -> do 
                                     let ochpostime = chpostime curorder 
                                     case (abs (curpr -orderpr) > 0.001) of 
