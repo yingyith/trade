@@ -111,12 +111,12 @@ crossminstra abc pr = do
     let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.003) > ((fst $ snd $  fst $ (!!3) abc)))   || ((pr+0.0035)> (fst $ snd $  fst $ (!!3) abc))
     let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
                             (True,True  )  -> (3000,"no")  --threshhold to short direction
-                            (True,False )  -> (800, "yes") --threshhold to short direction
+                            (True,False )  -> (800, "no") --threshhold to short direction
                             (False,True )  -> (3000,"no")  --threshhold to short direction
                             (False,False)  -> (0,"yes") 
     let (highpointfactor,reasonhigh) = case (highpointpredsmall,highpointpredbig) of 
                             (True,True  )  ->(3000,"no")  --threshhold to short direction
-                            (True,False )  ->(800,"yes")  --threshhold to short direction
+                            (True,False )  ->(800,"no")  --threshhold to short direction
                             (False,True )  ->(3000,"no")  --threshhold to short direction
                             (False,False)  ->(0,"yes") 
                             
