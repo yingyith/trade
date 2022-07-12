@@ -234,7 +234,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
-            False -> case ((fst ccctrend),((/= "nb")  $ fst reasons)) of 
+            False -> case ((fst ccctrend),((/= "no")  $ fst reasons)) of 
                          (AS.UP,True) -> do
                                       let aresquan        = toInteger minquan
                                       let stopclosegrid   = 0.0007
@@ -250,7 +250,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
-            False -> case ((fst ccctrend),((/= "ns") $snd reasons)) of 
+            False -> case ((fst ccctrend),((/= "no") $snd reasons)) of 
                          (AS.DO,True) -> do  
                                       let aresquan        = toInteger minquan
                                       let stopclosegrid   = 0.0007
