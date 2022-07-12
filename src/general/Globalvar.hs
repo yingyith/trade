@@ -83,5 +83,5 @@ depthkey = "depthkey"
 secondstick = 60 :: Integer
 sellorderid = "yid1sCrw2kRUAF9CvJDGK16IP"
 buyorderid = "yid1bCrw2kRUAF9CvJDGK16IP"
-basequan = 1000  :: Int
-minquan = 100  :: Int
+basequan = 2000  :: Int
+minquan = 110  :: Int
