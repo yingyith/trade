@@ -154,7 +154,7 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
                let otype = "Prep" :: String
                let orderid =  show stamp 
                let shprice =  show pr
-               let shquant =  show lastquan 
+               let shquant =  show (2*lastquan) 
                let shstate =  show $ fromEnum Prepare
                let shgrid = showdouble $  getnewgrid mergequan  --add pos = 10
                let lmergequan = show mergequan
@@ -179,7 +179,7 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
                let otype = "Prep" :: String
                let orderid =  show stamp 
                let shprice =  show pr
-               let shquant =  show lastquan 
+               let shquant =  show (2*lastquan) 
                let shstate =  show $ fromEnum Prepare
                let shgrid = showdouble $  getnewgrid mergequan  --add pos = 10
                let lmergequan = show mergequan
