@@ -106,9 +106,9 @@ crossminstra abc pr = do
     -- if 3m,5m,15m,1h,low/high point is the same,then means now is low fast,pr near low point risk high
     -- 3m need a distance 
     let lowpointpredsmall     = ((pr-0.0015)< (snd $ snd $  fst $ (!!2) abc))
-    let lowpointpredbig       = ((pr-0.0035)< (snd $ snd $  fst $ (!!3) abc))
+    let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.003) < ((snd $ snd $  fst $ (!!3) abc)))   || ((pr-0.0035)< (snd $ snd $  fst $ (!!3) abc))
     let highpointpredsmall    = ((pr+0.0015)> (fst $ snd $  fst $ (!!2) abc))
-    let highpointpredbig      = ((pr+0.0035)> (fst $ snd $  fst $ (!!3) abc))
+    let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.003) > ((fst $ snd $  fst $ (!!3) abc)))   || ((pr+0.0035)> (fst $ snd $  fst $ (!!3) abc))
     let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
                             (True,True  )  -> (3000,"no")  --threshhold to short direction
                             (True,False )  -> (800, "yes") --threshhold to short direction
