@@ -226,6 +226,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
      ((sndquan,sedtrend),ccctrend)          <- secondrule apr ares
      timecurtime                            <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi                          <- getcurtimestamp
+     let reachwavelimitpred                 =  ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
      when (sedtrend==AS.UP) $ do
          let sumres = (-thresholdup) +sndquan -- aim is up
          logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
@@ -234,7 +235,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
-            False -> case ((fst ccctrend),((/= "no")  $ fst reasons)) of 
+            False -> case ((fst ccctrend),reachwavelimitpred) of 
                          (AS.UP,True) -> do
                                       let aresquan        = toInteger minquan
                                       let stopclosegrid   = 0.0007
@@ -250,7 +251,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
-            False -> case ((fst ccctrend),((/= "no") $snd reasons)) of 
+            False -> case ((fst ccctrend),reachwavelimitpred) of 
                          (AS.DO,True) -> do  
                                       let aresquan        = toInteger minquan
                                       let stopclosegrid   = 0.0007
