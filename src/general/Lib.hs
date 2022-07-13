@@ -60,11 +60,11 @@ getnewgriddiff grid =
                   case grid of 
                       x|x==0.0006            -> 40  * grid  
                       x|x==0.0007            -> 7   * grid  
-                      x|x==0.001             -> 2   * grid  
+                      x|x==0.001             -> 200   * grid  
                       x|x==0.004             -> 40  * grid  
                       x|x==0.08              -> 10  * grid  
                       x|x<=0.0004            -> 10  * grid
-                      x|x<=0.0005            -> 4  * grid
+                      x|x<=0.0005            -> 10  * grid
                       x|x<=0.0012            -> 10  * grid
                       x|x<=0.002             -> 20  * grid
                       x|x<=0.006             -> 40  * grid
