@@ -156,7 +156,7 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
                let shprice =  show pr
                let shquant =  show (2*lastquan) 
                let shstate =  show $ fromEnum Prepare
-               let shgrid = showdouble $  getnewgrid mergequan  --add pos = 10
+               let shgrid = showdouble $  getnewgrid $ (+ ((read shquant):: Integer)) lastquan
                let lmergequan = show mergequan
                let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
                void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
@@ -166,7 +166,7 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
-               let shgrid = showdouble $ getnewgrid mergequan
+               let shgrid = showdouble $  getnewgrid $ (+ ((read shquant):: Integer)) lastquan
                let lmergequan = show mergequan
                let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
                void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
@@ -181,7 +181,7 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
                let shprice =  show pr
                let shquant =  show (2*lastquan) 
                let shstate =  show $ fromEnum Prepare
-               let shgrid = showdouble $  getnewgrid mergequan  --add pos = 10
+               let shgrid = showdouble $  getnewgrid $ (+ ((read shquant):: Integer)) lastquan 
                let lmergequan = show mergequan
                let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
                void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
@@ -191,7 +191,8 @@ preorcpreordertorediszset sumres oside pr  stamp grid insertstamp = do
                let shprice =  show pr
                let shquant =  show lastquan 
                let shstate =  show $ fromEnum Prepare
-               let shgrid = showdouble $ getnewgrid mergequan
+               let shgrid = showdouble $  getnewgrid $ (+ ((read shquant):: Integer)) lastquan 
+            --add pos = 10
                let lmergequan = show mergequan
                let abyvaluestr = BL.fromString $  DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,lmergequan,shstate]
                void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
