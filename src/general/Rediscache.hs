@@ -243,12 +243,12 @@ anlytoBuy tbq conn msg tdepth ostvar =
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h")) $ do 
-                           let aresquan        = toInteger minquan
+                           let aresquan        = toInteger (5*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h")) $ do 
-                           let aresquan        = toInteger (2*minquan)
+                           let aresquan        = toInteger (20*minquan)
                            let stopclosegrid   = 0.002
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
                        
@@ -268,12 +268,12 @@ anlytoBuy tbq conn msg tdepth ostvar =
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h")) $ do 
-                           let aresquan        = toInteger minquan
+                           let aresquan        = toInteger (5*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "4h")) $ do 
-                           let aresquan        = toInteger (2*minquan)
+                           let aresquan        = toInteger (20*minquan)
                            let stopclosegrid   = 0.002
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
