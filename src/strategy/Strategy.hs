@@ -153,8 +153,8 @@ needlestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> IO  ((Bool,AS.
 needlestra  abcc  = do
     let abck                      =        [fst i|i<-abcc] 
     let abc                       =        [snd i|i<-abcc] 
-    let lkline_3m                 =        (!!0) $ (!!0) abc
-    let lbokline_3m               =        (!!1) $ (!!0) abc
+    let lkline_3m                 =        (!!1) $ (!!0) abc
+    let lbokline_3m               =        (!!2) $ (!!0) abc
     let hl_15m                    =        (snd $  fst $ (!!2) abck)
     let hl_1h                     =        (snd $  fst $ (!!3) abck)
     let (ah,al,ac,ao)             =        ((hprice lkline_3m  ),(lprice lkline_3m  ),(cprice lkline_3m  ),(cprice lbokline_3m)) 
