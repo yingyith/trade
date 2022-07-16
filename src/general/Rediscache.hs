@@ -246,7 +246,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
 
      when (sedtrend==AS.DO) $ do
          let sumres = (thresholddo) + sndquan -- aim is down
-         logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
+         logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
          case (sumres<0) of
             True -> do
                        let aresquan        = toInteger basequan 
