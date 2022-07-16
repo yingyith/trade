@@ -153,26 +153,26 @@ needlestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> IO  ((Bool,AS.
 needlestra  abcc  = do
     let abck                      =        [fst i|i<-abcc] 
     let abc                       =        [snd i|i<-abcc] 
-    let lkline_3m                 =        (!!1) $ (!!0) abc
-    let lbokline_3m               =        (!!2) $ (!!0) abc
-    let hl_15m                    =        (snd $  fst $ (!!2) abck)
+    let lkline_15m                =        (!!0) $ (!!2) abc
+    let lbokline_15m              =        (!!1) $ (!!2) abc
     let hl_1h                     =        (snd $  fst $ (!!3) abck)
-    let (ah,al,ac,ao)             =        ((hprice lkline_3m  ),(lprice lkline_3m  ),(cprice lkline_3m  ),(cprice lbokline_3m)) 
-    let (bh,bl,bc)                =        ((hprice lbokline_3m),(lprice lbokline_3m),(cprice lbokline_3m)) 
+    let hl_4h                     =        (snd $  fst $ (!!4) abck)
+    let (ah,al,ac,ao)             =        ((hprice lkline_15m  ),(lprice lkline_15m  ),(cprice lkline_15m  ),(cprice lbokline_15m)) 
+    let (bh,bl,bc)                =        ((hprice lbokline_15m),(lprice lbokline_15m),(cprice lbokline_15m)) 
     let (ad1,ad2)                 =        (abs (ah-(max ao ac)),abs (al-(min ao ac)))
-    let needlelenpred             =        (>=0.001)  $ max ad1 ad2        
+    let needlelenpred             =        (>=0.002)  $ max ad1 ad2        
 
-    let (hcropred,hrea,hside)     =        case (((<0.0008)  (abs  (bh-(fst hl_15m)))) ,((<0.0008)  (abs  (bh-(fst hl_1h))))) of 
+    let (hcropred,hrea,hside)     =        case (((<0.0014)  (abs  (bh-(fst hl_1h)))) ,((<0.0014)  (abs  (bh-(fst hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.DO) 
-                                               (False,True ) -> (True ,"1h" ,AS.DO) 
-                                               (True ,False) -> (True ,"15m",AS.DO)
-                                               (True ,True ) -> (True ,"1h" ,AS.DO)
+                                               (False,True ) -> (True ,"4h" ,AS.DO) 
+                                               (True ,False) -> (True ,"1h",AS.DO)
+                                               (True ,True ) -> (True ,"4h" ,AS.DO)
 
-    let (lcropred,lrea,lside)     =        case (((<0.0008)  (abs  (bl-(fst hl_15m)))) ,((<0.0008)  (abs  (bl-(fst hl_1h))))) of 
+    let (lcropred,lrea,lside)     =        case (((<0.0014)  (abs  (bl-(fst hl_1h)))) ,((<0.0014)  (abs  (bl-(fst hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.UP) 
-                                               (False,True ) -> (True ,"1h" ,AS.UP) 
-                                               (True ,False) -> (True ,"15m",AS.UP)
-                                               (True ,True ) -> (True ,"1h" ,AS.UP)
+                                               (False,True ) -> (True ,"4h" ,AS.UP) 
+                                               (True ,False) -> (True ,"1h",AS.UP)
+                                               (True ,True ) -> (True ,"4h" ,AS.UP)
 
     let (needlepredd,rea,side)    =        case (hcropred,lcropred) of 
                                                (False,False) -> (False,"0m" , AS.UP)
@@ -181,7 +181,7 @@ needlestra  abcc  = do
                                                (True ,True ) -> (True ,"0m" , AS.UP)
 
     let needlerpred               =        needlelenpred && needlepredd 
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("needle is---",lkline_3m,needlerpred,rea)
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("needle is---",lkline_15m,needlerpred,rea)
     return ((needlerpred,side),rea)
      
 

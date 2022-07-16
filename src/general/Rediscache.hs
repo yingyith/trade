@@ -242,14 +242,14 @@ anlytoBuy tbq conn msg tdepth ostvar =
                            let stopclosegrid   = 0.0007
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "15m")) $ do 
+                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h")) $ do 
                            let aresquan        = toInteger minquan
-                           let stopclosegrid   = 0.0007
+                           let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h")) $ do 
-                           let aresquan        = toInteger (3*minquan)
-                           let stopclosegrid   = 0.0012
+                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h")) $ do 
+                           let aresquan        = toInteger (2*minquan)
+                           let stopclosegrid   = 0.002
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
                        
 
@@ -267,14 +267,14 @@ anlytoBuy tbq conn msg tdepth ostvar =
                            let stopclosegrid   = 0.0007
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "15m")) $ do 
+                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h")) $ do 
                            let aresquan        = toInteger minquan
-                           let stopclosegrid   = 0.0007
+                           let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h")) $ do 
-                           let aresquan        = toInteger (3*minquan)
-                           let stopclosegrid   = 0.0012
+                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "4h")) $ do 
+                           let aresquan        = toInteger (2*minquan)
+                           let stopclosegrid   = 0.002
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
    `catch` (\(e :: SomeException) -> do
