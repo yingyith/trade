@@ -154,12 +154,12 @@ needlestra  abcc  = do
     let abck                      =        [fst i|i<-abcc] 
     let abc                       =        [snd i|i<-abcc] 
     let lkline_3m                 =        (!!0) $ (!!0) abc
-    let lbokline_3m               =        (!!0) $ (!!1) abc
+    let lbokline_3m               =        (!!1) $ (!!0) abc
     let hl_15m                    =        (snd $  fst $ (!!2) abck)
     let hl_1h                     =        (snd $  fst $ (!!3) abck)
-    let (ah,al,ac)                =        ((hprice lkline_3m  ),(lprice lkline_3m  ),(cprice lkline_3m  )) 
+    let (ah,al,ac,ao)             =        ((hprice lkline_3m  ),(lprice lkline_3m  ),(cprice lkline_3m  ),(cprice lbokline_3m)) 
     let (bh,bl,bc)                =        ((hprice lbokline_3m),(lprice lbokline_3m),(cprice lbokline_3m)) 
-    let (ad1,ad2)                 =        (abs (ah-ac),abs (al-ac))
+    let (ad1,ad2)                 =        (abs (ah-(max ao ac)),abs (al-(min ao ac)))
     let needlelenpred             =        (>=0.001)  $ max ad1 ad2        
 
     let (hcropred,hrea,hside)     =        case (((<0.0008)  (abs  (bh-(fst hl_15m)))) ,((<0.0008)  (abs  (bh-(fst hl_1h))))) of 
