@@ -7,7 +7,8 @@ module Strategy
      minrule,
      genehighlowsheet,
      minrisksheet,
-     crossminstra
+     crossminstra,
+     needlestra
     ) where
 import Data.Monoid ((<>))
 import Control.Monad
@@ -36,6 +37,7 @@ import Data.Aeson.Types
 import Analysistructure as AS
 import Httpstructure
 import Globalvar
+import Order
 import Lib
 import Colog (LogAction,logByteStringStdout)
 import Logger
@@ -55,8 +57,9 @@ minrisksheet = fromList [
                  ("3d" , [5       ,  90,  -120, -180  ])
                ]
 
-crossminstra :: [((Int,(Double,Double)),(String,Int))] -> Double -> IO ((Int,Int),(String,String))
-crossminstra abc pr = do 
+crossminstra :: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> Double -> IO ((Int,Int),(String,String))
+crossminstra abcc pr = do 
+    let abc = [fst i|i<-abcc] 
     let uppredi  = \x -> ((> 14) $ fst $ fst x) && ( (== 'u') $ (!!0) $ fst $ snd  x )
     let lhsheet = DT.map uppredi abc
     let trueresl = DL.group lhsheet --[true,false,true ,false]
@@ -146,6 +149,41 @@ crossminstra abc pr = do
     liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,threeminsupporttrendpred,fiveminsupporttrendpred,fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,itempredi)
     return ((totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor),(reasonhigh,reasonlow))
                                           
+needlestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> IO  ((Bool,AS.Trend),String) 
+needlestra  abcc  = do
+    let abck                      =        [fst i|i<-abcc] 
+    let abc                       =        [snd i|i<-abcc] 
+    let lkline_3m                 =        (!!0) $ (!!0) abc
+    let lbokline_3m               =        (!!0) $ (!!1) abc
+    let hl_15m                    =        (snd $  fst $ (!!2) abck)
+    let hl_1h                     =        (snd $  fst $ (!!3) abck)
+    let (ah,al,ac)                =        ((hprice lkline_3m  ),(lprice lkline_3m  ),(cprice lkline_3m  )) 
+    let (bh,bl,bc)                =        ((hprice lbokline_3m),(lprice lbokline_3m),(cprice lbokline_3m)) 
+    let (ad1,ad2)                 =        (abs (ah-ac),abs (al-ac))
+    let needlelenpred             =        (>=0.001)  $ max ad1 ad2        
+
+    let (hcropred,hrea,hside)     =        case (((<0.0008)  (abs  (bh-(fst hl_15m)))) ,((<0.0008)  (abs  (bh-(fst hl_1h))))) of 
+                                               (False,False) -> (False,"0m" ,AS.DO) 
+                                               (False,True ) -> (True ,"1h" ,AS.DO) 
+                                               (True ,False) -> (True ,"15m",AS.DO)
+                                               (True ,True ) -> (True ,"1h" ,AS.DO)
+
+    let (lcropred,lrea,lside)     =        case (((<0.0008)  (abs  (bl-(fst hl_15m)))) ,((<0.0008)  (abs  (bl-(fst hl_1h))))) of 
+                                               (False,False) -> (False,"0m" ,AS.UP) 
+                                               (False,True ) -> (True ,"1h" ,AS.UP) 
+                                               (True ,False) -> (True ,"15m",AS.UP)
+                                               (True ,True ) -> (True ,"1h" ,AS.UP)
+
+    let (needlepredd,rea,side)    =        case (hcropred,lcropred) of 
+                                               (False,False) -> (False,"0m" , AS.UP)
+                                               (True ,False) -> (True ,hrea , hside)
+                                               (False,True ) -> (True ,lrea , lside)
+                                               (True ,True ) -> (True ,"0m" , AS.UP)
+
+    let needlerpred               =        needlelenpred && needlepredd 
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("needle is---",lkline_3m,needlerpred,rea)
+    return ((needlerpred,side),rea)
+     
 
 genehighlowsheet :: Int -> [BL.ByteString] -> String -> IO AS.Hlnode
 genehighlowsheet index hl key = do 

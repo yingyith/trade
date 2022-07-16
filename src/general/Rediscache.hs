@@ -149,7 +149,7 @@ mseriesToredis a conn = do
 
 
 
-analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO ((Int,(Double,Double)),(String,Int))
+analysistrdo :: Either Reply [BL.ByteString] -> (String,Double) -> IO (((Int,(Double,Double)),(String,Int)),[Hlnode])
 analysistrdo aa bb = do 
      let tdata = fromRight []  aa 
      let interval = fst bb
@@ -160,7 +160,7 @@ analysistrdo aa bb = do
      rehllist <- mapM ((\s ->  genehighlowsheet s tdata interval) :: Int -> IO AS.Hlnode ) [0..(lentdata-2)] :: IO [AS.Hlnode] 
      quantylist <- minrule rehllist curpr interval 
 
-     return quantylist
+     return (quantylist,rehllist)
 
 parsetokline :: BL.ByteString -> IO Klinedata
 parsetokline msg = do 
@@ -174,7 +174,7 @@ parsetokline msg = do
      let kline = fromJust test
      return kline
 
-analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [((Int,(Double,Double)),(String,Int))]
+analysismindo :: [Either Reply [BL.ByteString]] -> Double -> IO [(((Int,(Double,Double)),(String,Int)),[Hlnode])]
 analysismindo aim curpr = do 
      let aimlist = [(x,y)| x<-defintervallist] where y=curpr 
      hlsheet <-  zipWithM analysistrdo aim aimlist
@@ -227,6 +227,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
      timecurtime                            <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi                          <- getcurtimestamp
      let reachwavelimitpred                 =  ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
+     ((needlepred,ntrend),nreason)          <- needlestra  bigintervall
      when (sedtrend==AS.UP) $ do
          let sumres = (-thresholdup) +sndquan -- aim is up
          logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
