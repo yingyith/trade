@@ -230,7 +230,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
      ((needlepred,ntrend),nreason)          <- needlestra  bigintervall
      when (sedtrend==AS.UP) $ do
          let sumres = (-thresholdup) +sndquan -- aim is up
-         logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp,bigintervall)
+         logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
          case (sumres>0) of 
             True -> do
                        let aresquan        = toInteger basequan 

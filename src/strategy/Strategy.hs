@@ -146,7 +146,7 @@ crossminstra abcc pr = do
 
     let totalthresholdup = mthresholdup + hthresholdup
     let totalthresholddo = mthresholddo + hthresholddo
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,threeminsupporttrendpred,fiveminsupporttrendpred,fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,itempredi)
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,abc,threeminsupporttrendpred,fiveminsupporttrendpred,fstminsupporttrendpred,sndminsupporttrendpred,thdminsupporttrendpred,itempredi)
     return ((totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor),(reasonhigh,reasonlow))
                                           
 needlestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> IO  ((Bool,AS.Trend),String) 
