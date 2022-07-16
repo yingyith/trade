@@ -232,16 +232,25 @@ anlytoBuy tbq conn msg tdepth ostvar =
          let sumres = (-thresholdup) +sndquan -- aim is up
          logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
          case (sumres>0) of 
-            True -> do
+            True  -> do
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
-            False -> case ((fst ccctrend),reachwavelimitpred) of 
-                         (AS.UP,True) -> do
-                                      let aresquan        = toInteger minquan
-                                      let stopclosegrid   = 0.0007
-                                      prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
-                         (_,_)        -> return ()  
+            False -> do 
+                       when (((fst ccctrend)==AS.UP ) && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger minquan
+                           let stopclosegrid   = 0.0007
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
+                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "15m")) $ do 
+                           let aresquan        = toInteger minquan
+                           let stopclosegrid   = 0.0007
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
+                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h")) $ do 
+                           let aresquan        = toInteger (3*minquan)
+                           let stopclosegrid   = 0.0012
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
                        
 
      when (sedtrend==AS.DO) $ do
@@ -252,12 +261,21 @@ anlytoBuy tbq conn msg tdepth ostvar =
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
-            False -> case ((fst ccctrend),reachwavelimitpred) of 
-                         (AS.DO,True) -> do  
-                                      let aresquan        = toInteger minquan
-                                      let stopclosegrid   = 0.0007
-                                      prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
-                         (_,_)     -> return ()  
+            False ->do
+                       when (((fst ccctrend)==AS.DO ) && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger minquan
+                           let stopclosegrid   = 0.0007
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
+                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "15m")) $ do 
+                           let aresquan        = toInteger minquan
+                           let stopclosegrid   = 0.0007
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
+                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h")) $ do 
+                           let aresquan        = toInteger (3*minquan)
+                           let stopclosegrid   = 0.0012
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
    `catch` (\(e :: SomeException) -> do
                 SI.hPutStrLn stderr $ "Goterror1: " ++ show e)
