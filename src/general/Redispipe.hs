@@ -233,6 +233,7 @@ publishThread tbq rc wc tvar ptid = do
               addoeventtotbqueue aevent tbq
 
          when (matchoevt == "ticker") $ do
+              logact logByteStringStdout $ message                              
               let aevent = Cronevent "ticker"  (Just message) Nothing
               addoeventtotbqueue aevent tbq
 
