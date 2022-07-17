@@ -91,7 +91,7 @@ main =
     runRedis conn (liskeytoredis aas nowtime)
     --let aimss = "/stream?streams=adausdt@kline_1m&listenkey=" ++ aas -----------------------------------------------
     --liftIO $ print (aimss)
-    let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth@500ms/adausdt@ticker@500ms/"  ++ aas -----------------------------------------------
+    let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth@1000ms/adausdt@ticker@1000ms/"  ++ aas -----------------------------------------------
     --let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth@500ms/"  ++ aas -----------------------------------------------
     minSticksToCache conn
     getspotbaltoredis conn
