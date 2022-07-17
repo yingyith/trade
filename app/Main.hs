@@ -241,10 +241,10 @@ ws connection = do
     let curtime            =  fromIntegral currtime ::Double
     let bqryord            =  fst qryord
     let sqryord            =  snd qryord
-    liftIO $ logact logByteStringStdout $ B.pack  $ show (bqryord,sqryord)
     initostate             <- initbal conn accugrid quan pr bqryord sqryord curtime
     depthdata              <- initupddepth conn
     depthtvar              <- newTVarIO depthdata
+    tickertvar             <- newTVarIO (Ticker 0 0 0 0 0)
     orderst                <- newTVarIO initostate
     let ordervari          =  Ordervar True 0 0 0
     let orderVar           =  newTVarIO ordervari-- newTVarIO Int
@@ -252,6 +252,7 @@ ws connection = do
     qws                    <- newTBQueueIO 200  :: IO (TBQueue Cronevent)
     qord                   <- newTBQueueIO 30  :: IO (TBQueue Opevent  )
     qanalys                <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
+    qindex                 <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
     threadDelay 1900000
 
     withAsync (publishThread qws conn connection orderVar sendthid) $ \_pubT -> do
@@ -262,11 +263,13 @@ ws connection = do
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys depthtvar    )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler                     )]
            void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys depthtvar  )]
+           void $ addChannels ctrll [] [("tindex:*"    , tindexHandler qindex tickertvar     )]
            threadDelay 900000
            forkIO $ detailpubHandler qws connnnn
            threadDelay 300000
            forkIO $ detailopHandler qord connn
            forkIO $ detailanalysHandler qanalys qord connnn depthtvar orderst
+           forkIO $ detailtindexHandler qindex tickertvar 
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000

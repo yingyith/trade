@@ -162,13 +162,13 @@ needlestra  abcc  = do
     let (ad1,ad2)                 =        (abs (ah-(max ao ac)),abs (al-(min ao ac)))
     let needlelenpred             =        (>=0.002)  $ max ad1 ad2        
 
-    let (hcropred,hrea,hside)     =        case (((<0.0014)  (abs  (bh-(fst hl_1h)))) ,((<0.0014)  (abs  (bh-(fst hl_4h))))) of 
+    let (hcropred,hrea,hside)     =        case (((<0.0015)  (abs  (bh-(fst hl_1h)))) ,((<0.003)  (abs  (bh-(fst hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.DO) 
                                                (False,True ) -> (True ,"4h" ,AS.DO) 
                                                (True ,False) -> (True ,"1h",AS.DO)
                                                (True ,True ) -> (True ,"4h" ,AS.DO)
 
-    let (lcropred,lrea,lside)     =        case (((<0.0014)  (abs  (bl-(fst hl_1h)))) ,((<0.0014)  (abs  (bl-(fst hl_4h))))) of 
+    let (lcropred,lrea,lside)     =        case (((<0.0015)  (abs  (bl-(fst hl_1h)))) ,((<0.003)  (abs  (bl-(fst hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.UP) 
                                                (False,True ) -> (True ,"4h" ,AS.UP) 
                                                (True ,False) -> (True ,"1h",AS.UP)

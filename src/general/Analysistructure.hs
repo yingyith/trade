@@ -4,6 +4,7 @@ module Analysistructure
     ( 
       Hlnode (..),
       Trend  (..),
+      Ticker  (..),
       Depthset (..),
       biddepthsheet,
       askdepthsheet,
@@ -45,6 +46,15 @@ data Depthset = Depthset {
       askset     :: DHM.Map BL.ByteString Double                      --[(Double,BL.ByteString)]
 } deriving (Show,Generic) 
 
+data Ticker = Ticker {
+      prdiff_24h            :: Double,
+      prdiff_ratio_24h      :: Double,
+      prdiff_avg_24h        :: Double,
+      pr_deal_latest        :: Double,
+      volumn_deal_latest    :: Integer
+                      
+} deriving (Show,Generic) 
+
 convbstodoublelist :: (BL.ByteString,Double) ->  (Double,Double)
 convbstodoublelist ml = (read $  BL.toString $ fst ml :: Double,snd ml)
 
@@ -75,7 +85,8 @@ getaskdiffquanpred  checkpr diff  key value  =
     
 
 getBidAskNum :: ((Double,Double),Double) -> Depthset -> [(Double,Double)]  --diff have 0.0005,0.001,0.002,for up trend use all max data,for low trend ,use all min data
-getBidAskNum apr dpdata = [(0,
+getBidAskNum apr dpdata = [
+                           (0,
                             0
                            ),
                            (

@@ -19,7 +19,10 @@ module Redispipe
       detailanalysHandler,
       detailopHandler,
       detailpubHandler,
-      analysisHandler
+      analysisHandler,
+      detailtindexHandler,
+      tindexHandler
+
 
     ) where
 -- A test for PubSub which must be run manually to be able to kill and restart the redis-server.
@@ -119,6 +122,8 @@ matchmsgfun :: ByteString -> IO String
 matchmsgfun msg = do
     let  matchkline = DB.drop 11 $ DB.take 24 msg 
     let  matchkmsg = BLU.fromString "adausdt@kline"
+    let  matchticket = DB.drop 11 $ DB.take 21 msg 
+    let  matchtmsg = BLU.fromString "24hrTicker"
     let  matchdepth = DB.drop 11 $ DB.take 30 msg 
     let  matchdmsg = BLU.fromString "adausdt@depth@500ms"
     let  matchacevent = DB.drop 90 $ DB.take 103 msg 
@@ -130,12 +135,13 @@ matchmsgfun msg = do
     let depthpredi = matchdepth == matchdmsg
     let acpredi = matchacevent == matchacmsg
     let orpredi = matchorevent == matchormsg
-    case (klinepredi,depthpredi,acpredi,orpredi) of 
-        (True  ,_      ,_     ,_     ) -> return "kline"
-        (_     ,True   ,_     ,_     ) -> return "depth"
-        (_     ,_      ,True  ,_     ) -> return "ac"
-        (_     ,_      ,_     ,True  ) -> return "or"
-        (_     ,_      ,_     ,_     ) -> return "no"
+    let tickpredi = matchticket == matchtmsg
+    case (klinepredi,depthpredi,acpredi,orpredi,tickpredi) of 
+        (True  ,_      ,_     ,_    ,_    ) -> return "kline"
+        (_     ,True   ,_     ,_    ,_    ) -> return "depth"
+        (_     ,_      ,True  ,_    ,_    ) -> return "ac"
+        (_     ,_      ,_     ,True ,_    ) -> return "or"
+        (_     ,_      ,_     ,_    ,True ) -> return "ticker"
 
 
 msgordertempdo :: ByteString -> ByteString -> Redis ()
@@ -226,6 +232,10 @@ publishThread tbq rc wc tvar ptid = do
               let aevent = Cronevent "kline"  (Just message) Nothing
               addoeventtotbqueue aevent tbq
 
+         when (matchoevt == "ticker") $ do
+              let aevent = Cronevent "ticker"  (Just message) Nothing
+              addoeventtotbqueue aevent tbq
+
 
          when (matchoevt == "or" || matchoevt == "ac" || matchoevt == "no") $ do
               let aevent = Cronevent "other"  (Just message) Nothing
@@ -251,6 +261,10 @@ detailpubHandler tbq conn = do
 
         when (et == "kline")   $  do 
            runRedis conn (msgklinedoredis currtime etcont )
+
+        when (et == "ticker")   $  do 
+           runRedis conn $ do 
+               void $ publish "tindex:1" ( etcont)
 
         when (et == "depth")   $  do 
            runRedis conn $ do 
@@ -689,15 +703,6 @@ detailanalysHandler tbcq tbq  conn tdepth orderst = do
         when (et == "klinetor")  $  do 
               runRedis conn (sndklinetoredis etcont )
 
-        when (et == "prep")   $  do 
-                    let etquan = quant etevent
-                    let etpr = price etevent
-                    let etimee = etime etevent
-                    let eordid = ordid etevent
-                    let eprofitgrid = eprofit etevent
-                    let eside = oside  etevent
-                    runRedis conn $ do
-                        preorcpreordertorediszset etquan eside etpr  currtime eprofitgrid curtime
 
         when (et == "resethdeoth") $
             do 
@@ -808,7 +813,30 @@ sndtocacheHandler tbq tdepth channel  msg = do
            let aevent = Cronevent "depthtor" (Just msg) Nothing
            addoeventtotbqueue aevent tbq
 
+tindexHandler :: TBQueue Cronevent -> (TVar Anlys.Ticker)  -> RedisChannel -> ByteString -> IO ()
+tindexHandler tbq ticker channel  msg = do 
+      let strturple = BL.fromStrict    msg
+      let restmsg = A.decode strturple :: Maybe WSevent  --Klinedata
+      let detdata = wsdata $ fromJust restmsg
+      let dettype = wstream $ fromJust restmsg
+     -- when (dettype == "adausdt@kline_1m") $ do 
+      let aevent = Cronevent "ticker" (Just msg) Nothing 
+      addoeventtotbqueue aevent tbq
       
+detailtindexHandler :: TBQueue Cronevent -> (TVar Anlys.Ticker) -> IO ()
+detailtindexHandler tbq ticker  = do 
+    iterateM_  ( \(lastetype,forbidtime) -> do 
+        res      <- atomically $ readTBQueue tbq
+        tbqlen   <- atomically $ lengthTBQueue tbq
+        currtimee <- getcurtimestamp 
+        let currtime = toInteger currtimee
+        let curtime = fromIntegral currtime ::Double
+        let et      = ectype res
+        let etcont  = fromJust (eccont res)
+        logact logByteStringStdout $ B.pack $ show ("ticker is-- !",etcont)
+        return (et,0)
+     )  ("",0)
+
 analysisHandler :: TBQueue Cronevent -> (TVar Anlys.Depthset)  ->  RedisChannel -> ByteString -> IO ()
 analysisHandler tbq tdepth  channel msg = do 
       let aevent = Cronevent "forward" (Just msg) Nothing
