@@ -92,7 +92,7 @@ main =
     --let aimss = "/stream?streams=adausdt@kline_1m&listenkey=" ++ aas -----------------------------------------------
     --liftIO $ print (aimss)
     --let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth@500ms/adausdt@ticker"  ++ aas -----------------------------------------------
-    let aimss = "/stream?streams=adausdt@kline_1m/adausdt@ticker"  ++ aas -----------------------------------------------
+    let aimss = "/stream?streams=adausdt@kline_1m/adausdt@ticker@500ms/"  ++ aas -----------------------------------------------
     --let aimss = "/stream?streams=adausdt@kline_1m/adausdt@depth@500ms/"  ++ aas -----------------------------------------------
     minSticksToCache conn
     getspotbaltoredis conn
