@@ -122,8 +122,8 @@ matchmsgfun :: ByteString -> IO String
 matchmsgfun msg = do
     let  matchkline = DB.drop 11 $ DB.take 24 msg 
     let  matchkmsg = BLU.fromString "adausdt@kline"
-    let  matchticket = DB.drop 11 $ DB.take 21 msg 
-    let  matchtmsg = BLU.fromString "24hrTicker"
+    let  matchticket = DB.drop 11 $ DB.take 31 msg 
+    let  matchtmsg = BLU.fromString "adausdt@ticker@500ms"
     let  matchdepth = DB.drop 11 $ DB.take 30 msg 
     let  matchdmsg = BLU.fromString "adausdt@depth@500ms"
     let  matchacevent = DB.drop 90 $ DB.take 103 msg 
