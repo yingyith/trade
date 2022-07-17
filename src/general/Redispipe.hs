@@ -207,7 +207,7 @@ publishThread :: TBQueue Cronevent ->  R.Connection -> NC.Connection -> IO (TVar
 publishThread tbq rc wc tvar ptid = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
          message <- (NC.receiveData wc)
-         logact logByteStringStdout $ message                              
+         --logact logByteStringStdout $ message                              
          curtimestamp <- round . (* 1000) <$> getPOSIXTime
          let timecounta   = (curtimestamp `quot` 60000) 
          let timecountpred = (timecounta - timecountb) >= 1 
