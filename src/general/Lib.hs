@@ -42,7 +42,7 @@ getnewgrid quan =
                   case quan of 
                       x|x==1000           -> 0.0006        -- map to 1000
                       x|x==2000           -> 0.001         -- map to 2000
-                      x|x==2200           -> 0.002         -- map to 2000
+                      x|x==2200           -> 0.0021         -- map to 2000
                       x|x==4000           -> 0.004         -- map to 4000
                       x|x==8000           -> 0.08          -- map to 8000
                       x|x<=110            -> 0.0007
@@ -68,7 +68,7 @@ getnewgriddiff grid =
                       x|x<=0.0005            -> 1000  * grid
                       x|x<=0.0012            -> 20  * grid
                       x|x<=0.002             -> 45  * grid
-                      x|x<=0.0021            -> 60  * grid
+                      x|x<=0.0021            -> 100  * grid
                       x|x<=0.006             -> 40  * grid
                       x|x<=0.01              -> 40  * grid
                       x|x<=0.03              -> 40  * grid
