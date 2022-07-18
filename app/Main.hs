@@ -265,13 +265,13 @@ ws connection = do
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys depthtvar    )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler                     )]
            void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys depthtvar  )]
-           void $ addChannels ctrll [] [("tindex:*"    , tindexHandler qindex tickertvar     )]
+   --        void $ addChannels ctrll [] [("tindex:*"    , tindexHandler qindex tickertvar     )]
            threadDelay 900000
            forkIO $ detailpubHandler qws connnnn
            threadDelay 300000
            forkIO $ detailopHandler qord connn
            forkIO $ detailanalysHandler qanalys qord connnn depthtvar orderst
-           forkIO $ detailtindexHandler qindex tickertvar 
+    --       forkIO $ detailtindexHandler qindex tickertvar 
         --sendbye connection conn 0 ctrll 
     forever  $ do
        threadDelay 50000000

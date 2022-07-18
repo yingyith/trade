@@ -698,7 +698,8 @@ detailanalysHandler tbcq tbq  conn tdepth orderst = do
 
 
         when (et == "klinetor")  $  do 
-              runRedis conn (sndklinetoredis etcont )
+              logact logByteStringStdout $ B.pack $ show ("kline is ----- !",etcont)
+             -- runRedis conn (sndklinetoredis etcont )
 
 
         when (et == "resethdeoth") $
