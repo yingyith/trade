@@ -142,6 +142,7 @@ matchmsgfun msg = do
         (_     ,_      ,True  ,_    ,_    ) -> return "ac"
         (_     ,_      ,_     ,True ,_    ) -> return "or"
         (_     ,_      ,_     ,_    ,True ) -> return "ticker"
+        (_     ,_      ,_     ,_    ,_    ) -> return "no"
 
 
 msgordertempdo :: ByteString -> ByteString -> Redis ()
