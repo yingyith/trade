@@ -42,6 +42,7 @@ getnewgrid quan =
                   case quan of 
                       x|x==1000           -> 0.0006        -- map to 1000
                       x|x==2000           -> 0.001         -- map to 2000
+                      x|x==2200           -> 0.002         -- map to 2000
                       x|x==4000           -> 0.004         -- map to 4000
                       x|x==8000           -> 0.08          -- map to 8000
                       x|x<=110            -> 0.0007
