@@ -232,29 +232,30 @@ initbal conn accugrid quan pr bqryord sqryord curtime= do
     
 ws :: ClientApp ()
 ws connection = do
-    ctrll                  <- newPubSubController [][]
-    conn                   <- connect defaultConnectInfo
-    connn                  <- connect defaultConnectInfo
-    connnn                 <- connect defaultConnectInfo
-    connnnn                <- connect defaultConnectInfo
-    (accugrid,(quan,(pr,poside)))   <- initpos
-    qryord                 <- queryorder
-    currtime               <- getcurtimestamp 
-    let curtime            =  fromIntegral currtime ::Double
-    let bqryord            =  fst qryord
-    let sqryord            =  snd qryord
-    initostate             <- initbal conn accugrid quan pr bqryord sqryord curtime
-    depthdata              <- initupddepth conn
-    depthtvar              <- newTVarIO depthdata
-    tickertvar             <- newTVarIO (Ticker 0 0 0 0 0)
-    orderst                <- newTVarIO initostate
-    let ordervari          =  Ordervar True 0 0 0
-    let orderVar           =  newTVarIO ordervari-- newTVarIO Int
-    sendthid               <- myThreadId 
-    qws                    <- newTBQueueIO 200  :: IO (TBQueue Cronevent)
-    qord                   <- newTBQueueIO 30  :: IO (TBQueue Opevent  )
-    qanalys                <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
-    qindex                 <- newTBQueueIO 30  :: IO (TBQueue Cronevent)
+    ctrll                           <-          newPubSubController [][]
+    conn                            <-          connect defaultConnectInfo
+    connn                           <-          connect defaultConnectInfo
+    connnn                          <-          connect defaultConnectInfo
+    connnnn                         <-          connect defaultConnectInfo
+    (accugrid,(quan,(pr,poside)))   <-          initpos
+    qryord                          <-          queryorder
+    currtime                        <-          getcurtimestamp 
+    let curtime                     =           fromIntegral currtime ::Double
+    let bqryord                     =           fst qryord
+    let sqryord                     =           snd qryord
+    initostate                      <-          initbal conn accugrid quan pr bqryord sqryord curtime
+    depthdata                       <-          initupddepth conn
+    depthtvar                       <-          newTVarIO depthdata
+    tickertvar                      <-          newTVarIO (Ticker 0 0 0 0 0)
+    orderst                         <-          newTVarIO initostate
+    let ordervari                   =           Ordervar True 0 0 0
+    let orderVar                    =           newTVarIO ordervari-- newTVarIO Int
+    kline_1m_arr                    <-          newTVarIO (Klines_1 [] [])-- newTVarIO Int
+    sendthid                        <-          myThreadId 
+    qws                             <-          newTBQueueIO 200  :: IO (TBQueue Cronevent)
+    qord                            <-          newTBQueueIO 30   :: IO (TBQueue Opevent  )
+    qanalys                         <-          newTBQueueIO 30   :: IO (TBQueue Cronevent)
+    qindex                          <-          newTBQueueIO 30   :: IO (TBQueue Cronevent)
     threadDelay 1900000
 
     withAsync (publishThread qws conn connection orderVar sendthid) $ \_pubT -> do
@@ -270,7 +271,7 @@ ws connection = do
            forkIO $ detailpubHandler qws connnnn
            threadDelay 300000
            forkIO $ detailopHandler qord connn
-           forkIO $ detailanalysHandler qanalys qord connnn depthtvar orderst
+           forkIO $ detailanalysHandler qanalys qord connnn depthtvar orderst kline_1m_arr
     --       forkIO $ detailtindexHandler qindex tickertvar 
         --sendbye connection conn 0 ctrll 
     forever  $ do

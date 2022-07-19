@@ -22,7 +22,7 @@ module Httpstructure
       getintervalfrpair,
       getspotbalance,
       getmsfrpair,
-      Klinedata (ktype,kname,kopen,kclose,khigh,klow,ktime),
+      Klinedata (..),
       getcurtimestamp,
       getsectimestamp,
       WSevent (wsdata,wstream)
@@ -493,14 +493,20 @@ instance FromJSON Stick where
 --"{\"stream\":\"ethusdt@kline_1m\",\"data\":{\"e\":\"kline\",\"E\":1639083854455,\"s\":\"ETHUSDT\",\"k\":{\"t\":1639083840000,\"T\":1639083899999,\"s\":\"ETHUSDT\",\"i\":\"1m\",\"f\":702680151,\"L\":702680405,\"o\":\"4111.56000000\",\"c\":\"4111.41000000\",\"h\":\"4112.71000000\",\"l\":\"4110.00000000\",\"v\":\"117.02120000\",\"n\":255,\"x\":false,\"q\":\"481113.77283200\",\"V\":\"22.34560000\",\"Q\":\"91870.06074800\",\"B\":\"0\"}}}"
 
 data Klinedata = Klinedata {
-         ktype :: String,
-         kname :: String, --""
-         kopen :: String,
-         kclose :: String,
-         khigh :: String,
-         klow :: String,
-         ktime :: Integer
+         ktype    :: String,
+         kname    :: String, --""
+         kopen    :: String,
+         kclose   :: String,
+         khigh    :: String,
+         klow     :: String,
+         kvolumn  :: String,
+         kamount  :: String,
+         kendsign :: Bool,
+         kpvolumn :: String,
+         kpamount :: String,
+         ktime    :: Integer
 } deriving Show
+
 
 
 instance FromJSON Klinedata where 
@@ -511,6 +517,11 @@ instance FromJSON Klinedata where
               <*> ((o .: "data") >>= (.: "k") >>= (.: "c"))
               <*> ((o .: "data") >>= (.: "k") >>= (.: "h"))
               <*> ((o .: "data") >>= (.: "k") >>= (.: "l"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "v"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "q"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "x"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "V"))
+              <*> ((o .: "data") >>= (.: "k") >>= (.: "Q"))
               <*> ((o .: "data") >>= (.: "k") >>= (.: "t"))
   parseJSON _ = mzero
 

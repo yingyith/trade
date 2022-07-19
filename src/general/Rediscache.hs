@@ -212,8 +212,8 @@ getdiffintervalflow = do
      return (fisar,sndar)
      
 
-anlytoBuy ::  TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> IO ()
-anlytoBuy tbq conn msg tdepth ostvar = 
+anlytoBuy ::  TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> (TVar AS.Klines_1  ) -> IO ()
+anlytoBuy tbq conn msg tdepth ostvar klinetvar = 
    do
      res                                    <- runRedis conn (getdiffintervalflow) 
      kline                                  <- parsetokline msg
@@ -221,6 +221,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
      bigintervall                           <- analysismindo (fst res ) dcp 
      ((thresholdup,thresholddo),reasons)    <- crossminstra bigintervall dcp
      atdepth                                <- readTVarIO tdepth 
+     atkline                                <- readTVarIO klinetvar 
      apr                                    <- AS.depthmidpr atdepth dcp
      let ares                               =  AS.getBidAskNum apr atdepth
      ((sndquan,sedtrend),ccctrend)          <- secondrule apr ares
@@ -243,7 +244,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h")) $ do 
-                           let aresquan        = toInteger (5*minquan)
+                           let aresquan        = toInteger (3*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
@@ -268,7 +269,7 @@ anlytoBuy tbq conn msg tdepth ostvar =
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h")) $ do 
-                           let aresquan        = toInteger (5*minquan)
+                           let aresquan        = toInteger (3*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 

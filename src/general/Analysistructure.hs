@@ -2,6 +2,8 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Analysistructure
     ( 
+      Klinenode (..),
+      Klines_1 (..),
       Hlnode (..),
       Trend  (..),
       Ticker  (..),
@@ -150,7 +152,25 @@ data Hlnode = Hlnode {
               stype  :: String  , -- high or low` 
               rtype  :: String  ,  -- '5min' or '1h'
               cprice :: Double
-              } deriving (Show,Generic)
+} deriving (Show,Generic)
+
+data Klinenode = Klinenode {
+              knoprice  :: Double  ,
+              kncprice  :: Double  ,
+              knhprice  :: Double  ,
+              knlprice  :: Double  ,
+              knvolumn  :: Integer ,
+              knamount  :: Double  ,
+              knpvolumn :: Integer ,
+              knpamount :: Double  ,
+              knendsign  :: Bool    
+} deriving (Show,Generic)
+
+
+data Klines_1 = Klines_1 {
+             klines_1m :: [Klinenode],
+             klines_1s :: [Klinenode]
+} deriving (Show,Generic) 
 
 
 biddepthsheet :: DM.Map String Int 

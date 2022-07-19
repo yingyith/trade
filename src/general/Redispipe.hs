@@ -666,40 +666,37 @@ opclHandler tbq ostvar  channel  msg = do
                   let aevent      = Opevent "acupd" orderpos  orderpr usdtbal "" 0 oside
                   addeventtotbqueuestm aevent tbq
 
-detailanalysHandler :: TBQueue Cronevent -> TBQueue Opevent -> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) -> IO () 
-detailanalysHandler tbcq tbq  conn tdepth orderst = do 
+detailanalysHandler :: TBQueue Cronevent -> TBQueue Opevent -> R.Connection -> (TVar Anlys.Depthset) -> (TVar Curorder) ->  (TVar Anlys.Klines_1  ) -> IO () 
+detailanalysHandler tbcq tbq  conn tdepth orderst klines_1 = do 
     iterateM_  ( \(timecountb,intervalcb) -> do
-        res      <- atomically $ readTBQueue tbcq
-        tbcqlen  <- atomically $ lengthTBQueue tbcq
-        currtime <- getcurtimestamp 
-
-        let timecounta   = (currtime `quot` 10000) 
-        let timecountpred = (timecounta - timecountb) >= 1 
-        let intervalcbpred = intervalcb == 0
-        let curtime = fromIntegral currtime ::Double
-        let et      = ectype res
-        let etcont  = fromJust (eccont res)
-        let etevent = fromJust (eoevent res) 
-        let etpred = et == "resethdeoth"
-        returnres  <-  case (timecountpred,intervalcbpred,etpred) of 
+        res                   <- atomically $ readTBQueue tbcq
+        tbcqlen               <- atomically $ lengthTBQueue tbcq
+        currtime              <- getcurtimestamp 
+        let timecounta        =  (currtime `quot` 10000) 
+        let timecountpred     =  (timecounta - timecountb) >= 1 
+        let intervalcbpred    =  intervalcb == 0
+        let curtime           =  fromIntegral currtime ::Double
+        let et                =  ectype res
+        let etcont            =  fromJust (eccont res)
+        let etevent           =  fromJust (eoevent res) 
+        let etpred            =  et == "resethdeoth"
+        returnres             <- case (timecountpred,intervalcbpred,etpred) of 
            (True ,True ,True)   -> do
-                                  return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
+                                     return (timecounta,intervalcb+1)                                  -- update timecounta  intervalcount +1
            (True ,False,True)   -> do  
-                                  return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
+                                     return (timecounta,intervalcb+1)                                  --no update timecounta     intervalcount+1
            (False,True ,True)   -> do  
-                                  return (timecountb,0)
+                                     return (timecountb,0)
            (False,False,True)   -> do 
-                                  return (timecountb,0)--reset intercalcount
+                                     return (timecountb,0)--reset intercalcount
            (_    ,_    ,_   )   -> return (timecountb,intervalcb)
 
-
         when (et == "forward")   $  do 
-              anlytoBuy tbq conn etcont tdepth orderst--get all mseries from redis 
+              anlytoBuy tbq conn etcont tdepth orderst klines_1--get all mseries from redis 
 
 
         when (et == "klinetor")  $  do 
-              logact logByteStringStdout $ B.pack $ show ("kline is ----- !",etcont)
-             -- runRedis conn (sndklinetoredis etcont )
+              sndklinetoarray etcont klines_1
 
 
         when (et == "resethdeoth") $
@@ -778,24 +775,72 @@ detailanalysHandler tbcq tbq  conn tdepth orderst = do
 
         return returnres)  (0,0)
 
-sndklinetoredis ::  ByteString -> Redis ()
-sndklinetoredis  msg  = do 
+
+sndklinetoarray ::  ByteString ->  (TVar Anlys.Klines_1  )   -> IO ()
+sndklinetoarray  msg klines = do 
     let mmsg = BL.fromStrict msg
     let test = A.decode mmsg :: Maybe Klinedata --Klinedata
-    let abykeystr = BLU.fromString secondkey 
-    let kline = case test of 
-                    Just l -> l
-    let ktf = ktime kline 
-    let kt = fromInteger ktf :: Double
-    let dst = show ktf
-    let dop = kopen kline 
-    let dcp = kclose kline
-    let dhp = khigh kline 
-    let dlp = klow kline 
-    let abyvaluestr = msg 
-                    
-    void $ zadd abykeystr [(-kt,abyvaluestr)]
-    void $ zremrangebyrank abykeystr 150 1000
+    case test of 
+        Nothing -> return ()
+        Just l  -> do
+                      atomically $ do 
+                           curklines        <- readTVar klines
+                           let curklinel_1s =  Anlys.klines_1s curklines
+                           let curklinel_1m =  Anlys.klines_1m curklines
+                           case curklinel_1s of 
+                              [] ->   do
+                                        let  knop    =     read (kopen l)    :: Double 
+                                        let  kncl    =     read (kclose l)   :: Double 
+                                        let  knhi    =     read (khigh l)    :: Double 
+                                        let  knlo    =     read (klow l)     :: Double 
+                                        let  knvo    =     read (kvolumn l)  :: Integer 
+                                        let  knam    =     read (kamount l)  :: Double 
+                                        let  knpv    =     read (kpvolumn l) :: Integer 
+                                        let  knpa    =     read (kpamount l) :: Double 
+                                        let  knsg    =     kendsign l  
+                                        let  aitem   =     Anlys.Klinenode knop kncl knhi knlo knvo knam knpv knpa knsg
+                                        writeTVar klines (Anlys.Klines_1 [] (aitem:[]) )-- add elem to []
+                              _  ->   do
+                                        let befelem  =     DL.head   curklinel_1s
+                                        newitem      <-    case (Anlys.knendsign befelem) of
+                                                               True  ->   do
+                                                                              let  knop            = read (kopen l)    :: Double 
+                                                                              let  kncl            = read (kclose l)   :: Double 
+                                                                              let  knhi            = read (khigh l)    :: Double 
+                                                                              let  knlo            = read (klow l)     :: Double 
+                                                                              let  knvo            = read (kvolumn l)  :: Integer 
+                                                                              let  knam            = read (kamount l)  :: Double 
+                                                                              let  knpv            = read (kpvolumn l) :: Integer 
+                                                                              let  knpa            = read (kpamount l) :: Double 
+                                                                              let  knsg            = kendsign l  
+                                                                              let  aitem           = Anlys.Klinenode knop kncl knhi knlo knvo knam knpv knpa knsg
+                                                                              let  len_klines      = DL.length curklinel_1m
+                                                                              let  curklinell_1m   = case len_klines of 
+                                                                                                            x|x> 30    -> DL.take 30 curklinel_1m 
+                                                                                                            _           -> curklinel_1m
+                                                                              let  resitem         =  Anlys.Klines_1 (aitem : curklinell_1m) (aitem : curklinel_1s)
+                                                                              return     resitem   --minus 0 
+                                                               False ->   do            -- minus bef 
+                                                                              let knop             = Anlys.kncprice  befelem
+                                                                              let kncl             = read (kclose l)      :: Double 
+                                                                              let knhi             = max (read (khigh l)  :: Double) (Anlys.knhprice  befelem)  
+                                                                              let knlo             = min (read (klow l)   :: Double) (Anlys.knlprice  befelem)   
+                                                                              let knvo             = (read (kvolumn l)    :: Integer)- (Anlys.knvolumn  befelem)  
+                                                                              let knam             = (read (kamount l)    :: Double) - (Anlys.knamount  befelem) 
+                                                                              let knpv             = (read (kvolumn l)    :: Integer)- (Anlys.knpvolumn befelem) 
+                                                                              let knpa             = (read (kpamount l)   :: Double) - (Anlys.knpamount befelem)
+                                                                              let knsg             = kendsign l  
+                                                                              let aitem            = Anlys.Klinenode knop kncl knhi knlo knvo knam knpv knpa knsg 
+                                                                              let len_klines       = DL.length curklinel_1s
+                                                                              let curklinell_1s    = case len_klines of 
+                                                                                                            x|x> 280    -> DL.take 280 curklinel_1s
+                                                                                                            _           -> curklinel_1s
+                                                                              let resitem          = Anlys.Klines_1 (curklinel_1m) (aitem : curklinel_1s)
+                                                                              return    resitem   --minus 0 
+                                                                                 
+                                        writeTVar klines newitem
+                                                             -- 
+
       
 sndtocacheHandler :: TBQueue Cronevent -> (TVar Anlys.Depthset)  -> RedisChannel -> ByteString -> IO ()
 sndtocacheHandler tbq tdepth channel  msg = do 
@@ -831,7 +876,7 @@ detailtindexHandler tbq ticker  = do
         let curtime = fromIntegral currtime ::Double
         let et      = ectype res
         let etcont  = fromJust (eccont res)
-        logact logByteStringStdout $ B.pack $ show ("ticker is-- !",etcont)
+        --logact logByteStringStdout $ B.pack $ show ("ticker is-- !",etcont)
         return (et,0)
      )  ("",0)
 
