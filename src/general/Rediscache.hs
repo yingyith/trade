@@ -229,6 +229,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      curtimestampi                          <- getcurtimestamp
      let reachwavelimitpred                 =  ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
      ((needlepred,ntrend),nreason)          <- needlestra  bigintervall
+     logact logByteStringStdout $ BC.pack $ show ("snd kline is---------",(DL.take 3 $ klines_1s atkline ) )
      when (sedtrend==AS.UP) $ do
          let sumres = (-thresholdup) +sndquan -- aim is up
          logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
