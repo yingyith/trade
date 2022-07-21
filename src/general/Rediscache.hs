@@ -225,6 +225,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      apr                                    <- AS.depthmidpr atdepth dcp
      let ares                               =  AS.getBidAskNum apr atdepth
      ((sndquan,sedtrend),ccctrend)          <- secondrule apr ares
+     ((volumnpred,vtrend),vreason)          <- volumn_stra_1m atkline dcp
      timecurtime                            <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi                          <- getcurtimestamp
      let reachwavelimitpred                 =  ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
@@ -239,6 +240,11 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
             False -> do 
+                       when (vtrend ==AS.UP ) $ do 
+                           let aresquan        = toInteger (minquan+10)
+                           let stopclosegrid   = 0.0007
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
                        when (((fst ccctrend)==AS.UP ) && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger minquan
                            let stopclosegrid   = 0.0007
@@ -264,6 +270,11 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
             False ->do
+                       when (vtrend ==AS.DO ) $ do 
+                           let aresquan        = toInteger (minquan+10)
+                           let stopclosegrid   = 0.0007
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
                        when (((fst ccctrend)==AS.DO ) && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger minquan
                            let stopclosegrid   = 0.0007

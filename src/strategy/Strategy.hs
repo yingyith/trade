@@ -8,6 +8,7 @@ module Strategy
      genehighlowsheet,
      minrisksheet,
      crossminstra,
+     volumn_stra_1m,
      needlestra
     ) where
 import Data.Monoid ((<>))
@@ -350,6 +351,56 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> -(fst $  (adjustboostgrid!!6))
                                        _                                                         -> -(fst $  (adjustboostgrid!!0)) 
                  (_   ,_     )  ->  0
+
+volumn_stra_1m :: AS.Klines_1 -> Double -> IO  ((Bool,AS.Trend),String)
+volumn_stra_1m kline_1 dcp  = do
+                     let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 27 $ AS.klines_1m kline_1
+                     let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 27 $ AS.klines_1m kline_1
+                     let sam_span_vol   =     DL.map  AS.knamount $ DL.take 27 $ AS.klines_1m kline_1
+                     let kline_1m_avg   =     (DL.sum sam_span_vol) / ((fromIntegral $ DL.length sam_span_vol ):: Double)
+                     let kline_1m_max   =     maximum sam_span_prh
+                     let kline_1m_min   =     minimum sam_span_prl 
+                     let kline_1m_fst   =     (!!0) $ AS.klines_1m kline_1
+                     let kline_1m_snd   =     (!!1) $ AS.klines_1m kline_1  
+                     let kline_1s_now   =     (!!0) $ AS.klines_1s kline_1
+                     -------------------------------------------------------
+                     -------------------------------------------------------
+                     --on high point,fst stick is green,snd is red ,ans snd is strong 4times than avg ,then direction is short 
+                     --on low  point,fst stick is red  ,snd is green ,ans snd is strong 4times  than avg,then direction is long 
+                     let volumn_fst_pred   = AS.volumn_pred kline_1m_snd kline_1m_avg
+                     let limithpred_sml    = ((maximum [(AS.knhprice kline_1m_fst),(AS.knhprice kline_1m_snd)]) >=kline_1m_max) 
+                                              && ((AS.green_or_red_pred kline_1m_fst == True) && (AS.green_or_red_pred kline_1m_snd == False ))
+                                              && volumn_fst_pred
+                     let limitlpred_sml    = ((minimum [(AS.knlprice kline_1m_fst),(AS.knlprice kline_1m_snd)]) <=kline_1m_min) 
+                                              && ((AS.green_or_red_pred kline_1m_fst == False) && (AS.green_or_red_pred kline_1m_snd == True ))
+                                              && volumn_fst_pred
+                     -------------------------------------------------------
+                     -------------------------------------------------------
+                     --if one stick is hlpoint ,after it is all same direction ,then the first occur other color stick is the reverse direction,fist
+                     --first stick with 2 more same color  stick followed ,and one other color in the latest stick 
+                     let aspan                    =    DL.take 5  $ AS.klines_1m kline_1 
+                     let (maxvolitem,maxvoindex)  =    get_largest_volumn aspan 
+                     let volumn_snd_pred          =    AS.volumn_pred maxvolitem kline_1m_avg
+                     let sandwichcore_pred        =    same_color_pred  $ DL.take maxvoindex $ DL.tail aspan  
+                     let lastreverse_pred         =    (green_or_red_pred $ last aspan ) /= (green_or_red_pred kline_1m_snd)
+                     let sandwich_pred            =    (maxvoindex>=2) && sandwichcore_pred && lastreverse_pred 
+                     let limithpred_big           =    ((maximum $ DL.map AS.knhprice aspan )==kline_1m_max)
+                                                         && (sandwich_pred) 
+                                                         && volumn_snd_pred 
+
+                     let limitlpred_big           =    ((minimum $ DL.map AS.knlprice aspan )==kline_1m_min) 
+                                                         && (sandwich_pred)  
+                                                         && volumn_snd_pred 
+
+                     case (limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big) of
+                         (True  ,_     ,_      ,_     ) -> return ((True , AS.DO ),"small") 
+                         (_     ,True  ,_      ,_     ) -> return ((True , AS.UP ),"small") 
+                         (_     ,_     ,True   ,_     ) -> return ((True , AS.UP ),"big"  )
+                         (_     ,_     ,_      ,True  ) -> return ((True , AS.UP ),"big"  )
+                         (_     ,_     ,_      ,_     ) -> return ((False, AS.DO ),"no")
+                     -------------------------------------------------------
+                     -------------------------------------------------------
+    
 
 secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO ((Int,Trend),(Trend,Double))
 secondrule diffpr ablist = do      -- bid is buyer , ask is seller 

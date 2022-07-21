@@ -3,6 +3,10 @@
 module Analysistructure
     ( 
       Klinenode (..),
+      green_or_red_pred,
+      same_color_pred,
+      get_largest_volumn,
+      volumn_pred,
       Klines_1 (..),
       Hlnode (..),
       Trend  (..),
@@ -30,6 +34,7 @@ import Data.List as DL
 import Data.Aeson.Types as AT
 import Data.Text (Text)
 import Data.Typeable
+import Data.Ord
 import GHC.Generics
 import Network.HTTP.Req
 import Database.Redis
@@ -172,6 +177,19 @@ data Klines_1 = Klines_1 {
              klines_1s :: [Klinenode]
 } deriving (Show,Generic) 
 
+green_or_red_pred  :: Klinenode -> Bool 
+green_or_red_pred  knode =  ((knoprice knode) <= (knlprice knode))
+              
+volumn_pred  :: Klinenode -> Double -> Bool 
+volumn_pred  knode basevo =  (( fromIntegral $ knvolumn knode :: Double) >= (3*basevo))
+
+
+get_largest_volumn :: [Klinenode] -> (Klinenode,Int)
+get_largest_volumn klines = maximumBy (comparing  (knvolumn.fst))  (zip klines [0..]) 
+
+same_color_pred ::  [Klinenode] -> Bool
+same_color_pred klines  = 
+            foldr (\x y -> if ((((green_or_red_pred x)==(green_or_red_pred $ (!!0) klines)) ||  y)) then True else False     )  True  klines   
 
 biddepthsheet :: DM.Map String Int 
 biddepthsheet  = DM.fromList []
