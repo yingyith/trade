@@ -396,7 +396,7 @@ volumn_stra_1m kline_1 dcp  = do
                                                                           && (sandwich_pred)  
                                                                           && volumn_snd_pred 
 
-                                      liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",aspan)
+                                      liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",aspan,kline_1m_avg)
 
                                       case (limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big) of
                                           (True  ,_     ,_      ,_     ) -> return ((True , AS.DO ),"small") 
