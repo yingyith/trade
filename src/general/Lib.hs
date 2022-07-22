@@ -46,6 +46,7 @@ getnewgrid quan =
                       x|x==4000           -> 0.004         -- map to 4000
                       x|x==8000           -> 0.08          -- map to 8000
                       x|x<=110            -> 0.0007
+                      x|x<=120            -> 0.0002
                       x|x<=200            -> 0.0012
                       x|x<=400            -> 0.0012
                       x|x<=500            -> 0.002
@@ -59,6 +60,7 @@ getnewgrid quan =
 getnewgriddiff :: Double -> Double
 getnewgriddiff grid = 
                   case grid of 
+                      x|x==0.0002            -> 40  * grid  
                       x|x==0.0006            -> 40  * grid  
                       x|x==0.0007            -> 10 * grid  
                       x|x==0.001             -> 200 * grid  
