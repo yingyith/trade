@@ -356,7 +356,7 @@ waveonlongsight  ccc   ddd eee  trend = do
 volumn_stra_1m :: AS.Klines_1 -> Double -> IO  ((Bool,AS.Trend),String)
 volumn_stra_1m kline_1 dcp  = do
                      let klines_1ms = AS.klines_1m kline_1
-                     case (length $ AS.klines_1m kline_1) of 
+                     case (length klines_1ms) of 
                         x|x<30  -> return ((False, AS.DO ),"no")
                         _       -> do 
                                       let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 27 klines_1ms
