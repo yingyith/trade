@@ -181,7 +181,7 @@ green_or_red_pred  :: Klinenode -> Bool
 green_or_red_pred  knode =  ((knoprice knode) <= (knlprice knode))
               
 volumn_pred  :: Klinenode -> Double -> Bool 
-volumn_pred  knode basevo =  (( fromIntegral $ knvolumn knode :: Double) >= (3*basevo))
+volumn_pred  knode basevo =  (( fromIntegral $ knvolumn knode :: Double) >= (4*basevo))
 
 
 get_largest_volumn :: [Klinenode] -> (Klinenode,Int)
