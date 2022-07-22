@@ -440,8 +440,8 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                           (_     , _    ) -> 0
                      -- use the three grid (0,0.0002),(0.0002,0.0004),(0.0004,0.0006) to quant the hard degree of trend,also express as boost (add or minus )
                      let ccctrend       = case ccc of 
-                                            x|x<(-0.4)   -> (AS.DO,0.001) 
-                                            x|x>0.4      -> (AS.UP,0.001) 
+                                            x|x<(-0.3)   -> (AS.DO,0.001) 
+                                            x|x>0.3      -> (AS.UP,0.001) 
                                             _            -> (AS.ND,0) 
 
 
