@@ -161,7 +161,7 @@ needlestra  abcc  = do
     let (ah,al,ac,ao)             =        ((hprice lkline_15m  ),(lprice lkline_15m  ),(cprice lkline_15m  ),(cprice lbokline_15m)) 
     let (bh,bl,bc)                =        ((hprice lbokline_15m),(lprice lbokline_15m),(cprice lbokline_15m)) 
     let (ad1,ad2)                 =        (abs (ah-(max ao ac)),abs (al-(min ao ac)))
-    let needlelenpred             =        (>=0.002)  $ max ad1 ad2        
+    let needlelenpred             =        (>=0.0025)  $ max ad1 ad2        
 
     let (hcropred,hrea,hside)     =        case (((<0.0015)  (abs  (bh-(fst hl_1h)))) ,((<0.003)  (abs  (bh-(fst hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.DO) 
@@ -220,6 +220,7 @@ minrule ahll pr interval  = do
    let alength = case interval of 
                     "3m" -> 7
                     "5m" -> 7
+                    "4h" -> 12
                     _    -> 11
    let ahl = DT.take alength ahll
    let reslist   =  [(xlist!!x,x)|x<-[0..(length xlist-2)]] where xlist = ahl
