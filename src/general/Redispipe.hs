@@ -835,7 +835,7 @@ sndklinetoarray  msg klines = do
                                                                               let curklinell_1s    = case len_klines of 
                                                                                                             x|x> 280    -> DL.take 280 curklinel_1s
                                                                                                             _           -> curklinel_1s
-                                                                              let resitem          = Anlys.Klines_1 (curklinel_1m) (aitem : curklinel_1s)
+                                                                              let resitem          = Anlys.Klines_1 (curklinel_1m) (aitem : curklinell_1s)
                                                                               return    resitem   --minus 0 
                                                                                  
                                         writeTVar klines newitem

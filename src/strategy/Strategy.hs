@@ -355,18 +355,19 @@ waveonlongsight  ccc   ddd eee  trend = do
 
 volumn_stra_1m :: AS.Klines_1 -> Double -> IO  ((Bool,AS.Trend),String)
 volumn_stra_1m kline_1 dcp  = do
+                     let klines_1ms = AS.klines_1m kline_1
                      case (length $ AS.klines_1m kline_1) of 
                         x|x<30  -> return ((False, AS.DO ),"no")
                         _       -> do 
-                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 27 $ AS.klines_1m kline_1
-                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 27 $ AS.klines_1m kline_1
-                                      let sam_span_vol   =     DL.map  AS.knamount $ DL.take 27 $ AS.klines_1m kline_1
+                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 27 klines_1ms
+                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 27 klines_1ms
+                                      let sam_span_vol   =     DL.map  AS.knamount $ DL.take 27 klines_1ms
                                       let kline_1m_avg   =     (DL.sum sam_span_vol) / ((fromIntegral $ DL.length sam_span_vol ):: Double)
                                       let kline_1m_max   =     maximum sam_span_prh
                                       let kline_1m_min   =     minimum sam_span_prl 
 
-                                      let kline_1m_fst   =     (!!0) $ AS.klines_1m kline_1
-                                      let kline_1m_snd   =     (!!1) $ AS.klines_1m kline_1  
+                                      let kline_1m_fst   =     (!!0) klines_1ms 
+                                      let kline_1m_snd   =     (!!1) klines_1ms   
                                       let kline_1s_now   =     (!!0) $ AS.klines_1s kline_1
                                       -------------------------------------------------------
                                       -------------------------------------------------------
@@ -383,7 +384,7 @@ volumn_stra_1m kline_1 dcp  = do
                                       -------------------------------------------------------
                                       --if one stick is hlpoint ,after it is all same direction ,then the first occur other color stick is the reverse direction,fist
                                       --first stick with 2 more same color  stick followed ,and one other color in the latest stick 
-                                      let aspan                    =    DL.take 5  $ AS.klines_1m kline_1 
+                                      let aspan                    =    DL.take 5  klines_1ms 
                                       let (maxvolitem,maxvoindex)  =    get_largest_volumn aspan 
                                       let volumn_snd_pred          =    AS.volumn_pred maxvolitem kline_1m_avg
                                       let sandwichcore_pred        =    same_color_pred  $ DL.take maxvoindex $ DL.tail aspan  
