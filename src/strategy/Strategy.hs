@@ -166,13 +166,13 @@ needlestra  abcc  = do
     let (hcropred,hrea,hside)     =        case (((<0.0015)  (abs  (bh-(fst hl_1h)))) ,((<0.003)  (abs  (bh-(fst hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.DO) 
                                                (False,True ) -> (True ,"4h" ,AS.DO) 
-                                               (True ,False) -> (True ,"1h",AS.DO)
+                                               (True ,False) -> (True ,"1h", AS.DO)
                                                (True ,True ) -> (True ,"4h" ,AS.DO)
 
-    let (lcropred,lrea,lside)     =        case (((<0.0015)  (abs  (bl-(fst hl_1h)))) ,((<0.003)  (abs  (bl-(fst hl_4h))))) of 
+    let (lcropred,lrea,lside)     =        case (((<0.0015)  (abs  (bl-(snd hl_1h)))) ,((<0.003)  (abs  (bl-(snd hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.UP) 
                                                (False,True ) -> (True ,"4h" ,AS.UP) 
-                                               (True ,False) -> (True ,"1h",AS.UP)
+                                               (True ,False) -> (True ,"1h", AS.UP)
                                                (True ,True ) -> (True ,"4h" ,AS.UP)
 
     let (needlepredd,rea,side)    =        case (hcropred,lcropred) of 
