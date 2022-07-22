@@ -240,9 +240,14 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
             False -> do 
-                       when (volumnpred == True && vtrend ==AS.UP ) $ do 
+                       when (volumnpred == True && vtrend ==AS.UP && vreason == "small" ) $ do 
                            let aresquan        = toInteger (minquan+10)
-                           let stopclosegrid   = 0.0002
+                           let stopclosegrid   = 0.0004
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
+                       when (volumnpred == True && vtrend ==AS.UP && vreason == "big" ) $ do 
+                           let aresquan        = toInteger (minquan+20)
+                           let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when (((fst ccctrend)==AS.UP ) && (reachwavelimitpred == True)) $ do 
@@ -270,9 +275,14 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
             False ->do
-                       when (volumnpred == True && vtrend ==AS.DO ) $ do 
+                       when (volumnpred == True && vtrend ==AS.DO && vreason == "small") $ do 
                            let aresquan        = toInteger (minquan+10)
-                           let stopclosegrid   = 0.0002
+                           let stopclosegrid   = 0.0004
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
+                       when (volumnpred == True && vtrend ==AS.DO && vreason == "big") $ do 
+                           let aresquan        = toInteger (minquan+20)
+                           let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when (((fst ccctrend)==AS.DO ) && (reachwavelimitpred == True)) $ do 
