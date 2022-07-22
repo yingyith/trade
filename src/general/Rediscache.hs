@@ -232,20 +232,21 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      ((needlepred,ntrend),nreason)          <- needlestra  bigintervall
      logact logByteStringStdout $ BC.pack $ show ("snd kline is---------",(DL.head $ klines_1s atkline ) )
      when (sedtrend==AS.UP) $ do
-         let sumres = (-thresholdup) +sndquan -- aim is up
-         logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
-         case (sumres>0) of 
+         let sumresb = (-thresholdup) +sndquan -- aim is up
+         let sumresm = (-((fromIntegral thresholdup)/4)) +(fromIntegral sndquan) -- aim is up
+         logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumresb,timecurtime,dcp)
+         case (sumresb>0) of 
             True  -> do
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
             False -> do 
-                       when (volumnpred == True && vtrend ==AS.UP && vreason == "small" ) $ do 
+                       when (volumnpred == True && vtrend ==AS.UP && vreason == "small" && sumresm >0 ) $ do 
                            let aresquan        = toInteger (minquan+10)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when (volumnpred == True && vtrend ==AS.UP && vreason == "big" ) $ do 
+                       when (volumnpred == True && vtrend ==AS.UP && vreason == "big" && sumresm >0) $ do 
                            let aresquan        = toInteger (minquan+20)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
@@ -267,20 +268,21 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                        
 
      when (sedtrend==AS.DO) $ do
-         let sumres = (thresholddo) + sndquan -- aim is down
-         logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumres,timecurtime,dcp)
-         case (sumres<0) of
+         let sumresb = (thresholddo) + sndquan -- aim is down
+         let sumresm = ((fromIntegral thresholddo)/4) + ( fromIntegral sndquan) -- aim is down
+         logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumresb,timecurtime,dcp)
+         case (sumresb<0) of
             True -> do
                        let aresquan        = toInteger basequan 
                        let stopclosegrid   = 0.0005
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
             False ->do
-                       when (volumnpred == True && vtrend ==AS.DO && vreason == "small") $ do 
+                       when (volumnpred == True && vtrend ==AS.DO && vreason == "small" && sumresm<0) $ do 
                            let aresquan        = toInteger (minquan+10)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when (volumnpred == True && vtrend ==AS.DO && vreason == "big") $ do 
+                       when (volumnpred == True && vtrend ==AS.DO && vreason == "big"  && sumresm <0) $ do 
                            let aresquan        = toInteger (minquan+20)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 

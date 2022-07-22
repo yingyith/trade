@@ -154,8 +154,8 @@ needlestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> IO  ((Bool,AS.
 needlestra  abcc  = do
     let abck                      =        [fst i|i<-abcc] 
     let abc                       =        [snd i|i<-abcc] 
-    let lkline_15m                =        (!!0) $ (!!2) abc
-    let lbokline_15m              =        (!!1) $ (!!2) abc
+    let lkline_15m                =        (!!1) $ (!!2) abc
+    let lbokline_15m              =        (!!2) $ (!!2) abc
     let hl_1h                     =        (snd $  fst $ (!!3) abck)
     let hl_4h                     =        (snd $  fst $ (!!4) abck)
     let (ah,al,ac,ao)             =        ((hprice lkline_15m  ),(lprice lkline_15m  ),(cprice lkline_15m  ),(cprice lbokline_15m)) 
@@ -361,7 +361,7 @@ volumn_stra_1m kline_1 dcp  = do
                         _       -> do 
                                       let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 27 klines_1ms
                                       let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 27 klines_1ms
-                                      let sam_span_vol   =     DL.map  AS.knamount $ DL.take 27 klines_1ms
+                                      let sam_span_vol   =     DL.map  AS.knamount $ DL.take 10 klines_1ms
                                       let kline_1m_avg   =     (DL.sum sam_span_vol) / ((fromIntegral $ DL.length sam_span_vol ):: Double)
                                       let kline_1m_max   =     maximum sam_span_prh
                                       let kline_1m_min   =     minimum sam_span_prl 
