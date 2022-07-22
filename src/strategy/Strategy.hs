@@ -220,7 +220,7 @@ minrule ahll pr interval  = do
    let alength = case interval of 
                     "3m" -> 7
                     "5m" -> 7
-                    "4h" -> 16
+                    "4h" -> 14
                     _    -> 11
    let ahl = DT.take alength ahll
    let reslist   =  [(xlist!!x,x)|x<-[0..(length xlist-2)]] where xlist = ahl
