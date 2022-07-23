@@ -233,7 +233,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      logact logByteStringStdout $ BC.pack $ show ("snd kline is---------",(DL.head $ klines_1s atkline ) )
      when (sedtrend==AS.UP) $ do
          let sumresb = (-thresholdup) +sndquan -- aim is up
-         let sumresm = (-((fromIntegral thresholdup)/4)) +(fromIntegral sndquan) -- aim is up
+         let sumresm = (-((fromIntegral thresholdup)/5)) +(fromIntegral sndquan) -- aim is up
          logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumresb,timecurtime,dcp)
          case (sumresb>0) of 
             True  -> do
@@ -269,7 +269,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
 
      when (sedtrend==AS.DO) $ do
          let sumresb = (thresholddo) + sndquan -- aim is down
-         let sumresm = ((fromIntegral thresholddo)/4) + ( fromIntegral sndquan) -- aim is down
+         let sumresm = ((fromIntegral thresholddo)/5) + ( fromIntegral sndquan) -- aim is down
          logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumresb,timecurtime,dcp)
          case (sumresb<0) of
             True -> do

@@ -366,8 +366,8 @@ volumn_stra_1m kline_1 dcp  = do
                                       let kline_1m_max   =     maximum sam_span_prh
                                       let kline_1m_min   =     minimum sam_span_prl 
 
-                                      let kline_1m_fst   =     (!!0) klines_1ms 
-                                      let kline_1m_snd   =     (!!1) klines_1ms   
+                                      let kline_1m_fst   =     (!!1) klines_1ms 
+                                      let kline_1m_snd   =     (!!2) klines_1ms   
                                       let kline_1s_now   =     (!!0) $ AS.klines_1s kline_1
                                       -------------------------------------------------------
                                       -------------------------------------------------------
@@ -375,10 +375,8 @@ volumn_stra_1m kline_1 dcp  = do
                                       --on low  point,fst stick is red  ,snd is green ,ans snd is strong 4times  than avg,then direction is long 
                                       let volumn_fst_pred   = AS.volumn_pred kline_1m_snd kline_1m_avg
                                       let limithpred_sml    = ((maximum [(AS.knhprice kline_1m_fst),(AS.knhprice kline_1m_snd)]) >=kline_1m_max) 
-                                                               && ((AS.green_or_red_pred kline_1m_fst == True) && (AS.green_or_red_pred kline_1m_snd == False ))
                                                                && volumn_fst_pred
                                       let limitlpred_sml    = ((minimum [(AS.knlprice kline_1m_fst),(AS.knlprice kline_1m_snd)]) <=kline_1m_min) 
-                                                               && ((AS.green_or_red_pred kline_1m_fst == False) && (AS.green_or_red_pred kline_1m_snd == True ))
                                                                && volumn_fst_pred
                                       -------------------------------------------------------
                                       -------------------------------------------------------
