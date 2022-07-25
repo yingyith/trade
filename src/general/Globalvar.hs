@@ -58,10 +58,10 @@ shortminrulethreshold   :: [Int] --base  to serious degree
 shortminrulethreshold   = [2000  ,1300  ,850  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
                      
 adjustratiosheet :: [Double]
-adjustratiosheet        = [0.001   , 0.2        , 0.4        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
+adjustratiosheet        = [0.001   , 0.2        , 0.3        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
-adjustboostgrid         =  [(0,300) ,(800,500)   ,(800,1500)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
+adjustboostgrid         =  [(0,300) ,(500,500)   ,(1000,1500)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
