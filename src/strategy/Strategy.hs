@@ -359,8 +359,8 @@ volumn_stra_1m kline_1 dcp  = do
                      case (length klines_1ms) of 
                         x|x<30  -> return ((False, AS.DO ),"no")
                         _       -> do 
-                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 27 klines_1ms
-                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 27 klines_1ms
+                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 10 klines_1ms
+                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 10 klines_1ms
                                       let sam_span_vol   =     DL.map  AS.knamount $ DL.take 10 klines_1ms
                                       let kline_1m_avg   =     (DL.sum sam_span_vol) / ((fromIntegral $ DL.length sam_span_vol ):: Double)
                                       let kline_1m_max   =     maximum sam_span_prh
@@ -375,10 +375,10 @@ volumn_stra_1m kline_1 dcp  = do
                                       --on low  point,fst stick is red  ,snd is green ,ans snd is strong 4times  than avg,then direction is long 
                                       let volumn_fst_pred   = AS.volumn_pred kline_1m_snd kline_1m_avg
                                       let limithpred_sml    = ((maximum [(AS.knhprice kline_1m_fst),(AS.knhprice kline_1m_snd)]) >=kline_1m_max) 
-                                                               && (green_or_red_pred kline_1m_fst ==False)
+                                                              -- && (green_or_red_pred kline_1m_fst ==False)
                                                                && volumn_fst_pred
                                       let limitlpred_sml    = ((minimum [(AS.knlprice kline_1m_fst),(AS.knlprice kline_1m_snd)]) <=kline_1m_min) 
-                                                               && (green_or_red_pred kline_1m_fst ==True)
+                                                              -- && (green_or_red_pred kline_1m_fst ==True)
                                                                && volumn_fst_pred
                                       -------------------------------------------------------
                                       -------------------------------------------------------

@@ -43,10 +43,10 @@ stopprofitlist          :: [Double]
 stopprofitlist          = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 diffspreadsheet         :: [Double]
-diffspreadsheet         = [0.01   ,0.28   ,0.4411  ,0.65  ,0.753  ,0.82  ,0.88  ,0.95  ,1] 
+diffspreadsheet         = [0.01   ,0.2   ,0.4411  ,0.65  ,0.753  ,0.82  ,0.88  ,0.95  ,1] 
 
 depthrisksheet          :: [Int] 
-depthrisksheet          = [-2000  ,450   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
+depthrisksheet          = [-3000  ,450   ,710   ,1510   ,1710  ,1860  ,2050  ,2300 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
 
 minrulethreshold        :: [Int] --base  to serious degree
 minrulethreshold        = [2000  ,1600  ,1200  ,1100  ]   --   4h, 1h,15m -->    d,d,d  ;u,u,u  -> 2000
@@ -61,7 +61,7 @@ adjustratiosheet :: [Double]
 adjustratiosheet        = [0.001   , 0.2        , 0.4        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
-adjustboostgrid         =  [(0,300) ,(200,800)   ,(800,1500)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
+adjustboostgrid         =  [(0,300) ,(400,400)   ,(800,1500)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
 
 biddepth = "Biddepth"
 askdepth = "Askdepth"
