@@ -375,8 +375,10 @@ volumn_stra_1m kline_1 dcp  = do
                                       --on low  point,fst stick is red  ,snd is green ,ans snd is strong 4times  than avg,then direction is long 
                                       let volumn_fst_pred   = AS.volumn_pred kline_1m_snd kline_1m_avg
                                       let limithpred_sml    = ((maximum [(AS.knhprice kline_1m_fst),(AS.knhprice kline_1m_snd)]) >=kline_1m_max) 
+                                                               && (green_or_red_pred kline_1m_fst ==False)
                                                                && volumn_fst_pred
                                       let limitlpred_sml    = ((minimum [(AS.knlprice kline_1m_fst),(AS.knlprice kline_1m_snd)]) <=kline_1m_min) 
+                                                               && (green_or_red_pred kline_1m_fst ==True)
                                                                && volumn_fst_pred
                                       -------------------------------------------------------
                                       -------------------------------------------------------

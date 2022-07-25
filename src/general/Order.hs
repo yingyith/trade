@@ -463,7 +463,7 @@ cendordertorediszset quan  otimestamp = do
    let shquant =  show quan
    let shstate =  show $ fromEnum Done
    let mergequan = read (recorditem !! 7) :: Integer
-   let shmergequan =  show mergequan
+   let shmergequan =  show 0
    liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord++ "-------cend---------" )
    when (recordstate == (show $ fromEnum Cprocess) ) $ do
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
