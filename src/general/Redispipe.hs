@@ -801,7 +801,8 @@ sndklinetoarray  msg klines = do
                                         let  aitem   =     Anlys.Klinenode knop kncl knhi knlo knvo knam knpv knpa knsg
                                         writeTVar klines (Anlys.Klines_1 [] (aitem:[]) )-- add elem to []
                               _  ->   do
-                                        let befelem  =     DL.head   curklinel_1s
+                                        let befelem     =     DL.head   curklinel_1s
+                                        let befelem_1m  =     DL.head   curklinel_1m
                                         newitem      <-    case (Anlys.knendsign befelem) of
                                                                True  ->   do
                                                                               let  knop            = read (kopen l)    :: Double 
@@ -817,27 +818,41 @@ sndklinetoarray  msg klines = do
                                                                               let  len_klines      = DL.length curklinel_1m
                                                                               let  curklinell_1m   = case len_klines of 
                                                                                                             x|x> 30    -> DL.take 30 curklinel_1m 
-                                                                                                            _           -> curklinel_1m
-                                                                              let  resitem         =  Anlys.Klines_1 (aitem : curklinell_1m) (aitem : curklinel_1s)
+                                                                                                            _          -> curklinel_1m
+                                                                              let  resitem         = Anlys.Klines_1 (befelem : curklinell_1m) (aitem : curklinel_1s)
                                                                               return     resitem   --minus 0 
-                                                               False ->   do            -- minus bef 
-                                                                              let knop             = Anlys.kncprice  befelem
-                                                                              let kncl             = read (kclose l)      :: Double 
-                                                                              let knhi             = max (read (khigh l)  :: Double) (Anlys.knhprice  befelem)  
-                                                                              let knlo             = min (read (klow l)   :: Double) (Anlys.knlprice  befelem)   
-                                                                              let knvo             = (read (kvolumn l)    :: Integer)- (Anlys.knvolumn  befelem)  
-                                                                              let knam             = (read (kamount l)    :: Double) - (Anlys.knamount  befelem) 
-                                                                              let knpv             = (read (kvolumn l)    :: Integer)- (Anlys.knpvolumn befelem) 
-                                                                              let knpa             = (read (kpamount l)   :: Double) - (Anlys.knpamount befelem)
-                                                                              let knsg             = kendsign l  
-                                                                              let aitem            = Anlys.Klinenode knop kncl knhi knlo knvo knam knpv knpa knsg 
-                                                                              let len_klines       = DL.length curklinel_1s
-                                                                              let curklinell_1s    = case len_klines of 
-                                                                                                            x|x> 280    -> DL.take 280 curklinel_1s
-                                                                                                            _           -> curklinel_1s
-                                                                              let resitem          = Anlys.Klines_1 (curklinel_1m) (aitem : curklinell_1s)
-                                                                              return    resitem   --minus 0 
-                                                                                 
+                                                               False ->   case (kendsign l) of 
+                                                                              False ->   do            -- minus bef 
+                                                                                             let knop             = Anlys.kncprice  befelem
+                                                                                             let kncl             = read (kclose l)      :: Double 
+                                                                                             let knhi             = max (read (khigh l)  :: Double) (Anlys.knhprice  befelem)  
+                                                                                             let knlo             = min (read (klow l)   :: Double) (Anlys.knlprice  befelem)   
+                                                                                             let knvo             = (read (kvolumn l)    :: Integer)- (Anlys.knvolumn  befelem)  
+                                                                                             let knam             = (read (kamount l)    :: Double) - (Anlys.knamount  befelem) 
+                                                                                             let knpv             = (read (kvolumn l)    :: Integer)- (Anlys.knpvolumn befelem) 
+                                                                                             let knpa             = (read (kpamount l)   :: Double) - (Anlys.knpamount befelem)
+                                                                                             let knsg             = kendsign l  
+                                                                                             let aitem            = Anlys.Klinenode knop kncl knhi knlo knvo knam knpv knpa knsg 
+                                                                                             let len_klines       = DL.length curklinel_1s
+                                                                                             let curklinell_1s    = case len_klines of 
+                                                                                                                           x|x> 280    -> DL.take 280 curklinel_1s
+                                                                                                                           _           -> curklinel_1s
+                                                                                             let resitem          = Anlys.Klines_1 (curklinel_1m) (aitem : curklinell_1s)
+                                                                                             return    resitem   --minus 0 
+                                                                              True  ->   do            -- minus bef 
+                                                                                             let  knop            = read (kopen l)    :: Double 
+                                                                                             let  kncl            = read (kclose l)   :: Double 
+                                                                                             let  knhi            = read (khigh l)    :: Double 
+                                                                                             let  knlo            = read (klow l)     :: Double 
+                                                                                             let  knvo            = read (kvolumn l)  :: Integer 
+                                                                                             let  knam            = read (kamount l)  :: Double 
+                                                                                             let  knpv            = read (kpvolumn l) :: Integer 
+                                                                                             let  knpa            = read (kpamount l) :: Double 
+                                                                                             let  knsg            = kendsign l  
+                                                                                             let  aitem           = Anlys.Klinenode knop kncl knhi knlo knvo knam knpv knpa knsg
+                                                                                             let  resitem         =  Anlys.Klines_1 (curklinel_1m) (aitem : curklinel_1s)
+                                                                                             return     resitem   --minus 0 
+                                                                                                
                                         writeTVar klines newitem
                                                              -- 
 
