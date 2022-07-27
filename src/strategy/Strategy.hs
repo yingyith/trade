@@ -110,9 +110,9 @@ crossminstra abcc pr = do
     -- if 3m,5m,15m,1h,low/high point is the same,then means now is low fast,pr near low point risk high
     -- 3m need a distance 
     let lowpointpredsmall     = ((pr-0.0015)< (snd $ snd $  fst $ (!!2) abc))
-    let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.003) < ((snd $ snd $  fst $ (!!3) abc)))   || ((pr-0.0035)< (snd $ snd $  fst $ (!!3) abc))
+    let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.006) < ((snd $ snd $  fst $ (!!3) abc)))   || ((pr-0.005)< (snd $ snd $  fst $ (!!3) abc))
     let highpointpredsmall    = ((pr+0.0015)> (fst $ snd $  fst $ (!!2) abc))
-    let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.003) > ((fst $ snd $  fst $ (!!3) abc)))   || ((pr+0.0035)> (fst $ snd $  fst $ (!!3) abc))
+    let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.006) > ((fst $ snd $  fst $ (!!3) abc)))   || ((pr+0.005)> (fst $ snd $  fst $ (!!3) abc))
     let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
                             (True,True  )  -> (3000,"no")  --threshhold to short direction
                             (True,False )  -> (1200, "no") --threshhold to short direction
@@ -129,8 +129,8 @@ crossminstra abcc pr = do
                                   (True  ,True ,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!0 ))--both up ,hard for short
                                   (True  ,True ,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!1 ))--both up ,hard for short
                                   (False ,True ,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!0 ))--have one down ,hard for long
-                                  (False ,True ,False )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!2 ))--have one down ,hard for long
-                                  (True  ,False,True  )  -> ((shortminrulethreshold !! 2),(shortminrulethreshold !!1 ))--have one down ,hard for long
+                                  (False ,True ,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!2 ))--have one down ,hard for long
+                                  (True  ,False,True  )  -> ((shortminrulethreshold !! 2),(shortminrulethreshold !!0 ))--have one down ,hard for long
                                   (True  ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!1 ))--have one down ,hard for long
                                   (False ,False,True  )  -> ((shortminrulethreshold !! 1),(shortminrulethreshold !!0 ))--have two down ,hard for long
                                   (False ,False,False )  -> ((shortminrulethreshold !! 0),(shortminrulethreshold !!1 ))--have two down ,hard for long
@@ -139,8 +139,8 @@ crossminstra abcc pr = do
                           (False,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!1))     -- left for hard degree of UP,right for hard degree of DOWN
                           (True ,False,False) ->  ((minrulethreshold!!0),(minrulethreshold!!2))   
                           (False,True ,False) ->  ((minrulethreshold!!2),(minrulethreshold!!1))  
-                          (True ,True ,False) ->  ((minrulethreshold!!3),(minrulethreshold!!1))   
-                          (False,False,True ) ->  ((minrulethreshold!!1),(minrulethreshold!!3))
+                          (True ,True ,False) ->  ((minrulethreshold!!3),(minrulethreshold!!0))   
+                          (False,False,True ) ->  ((minrulethreshold!!0),(minrulethreshold!!3))
                           (True ,False,True ) ->  ((minrulethreshold!!1),(minrulethreshold!!2))  
                           (False,True ,True ) ->  ((minrulethreshold!!2),(minrulethreshold!!0)) 
                           (True ,True ,True ) ->  ((minrulethreshold!!1),(minrulethreshold!!0)) 
@@ -377,9 +377,11 @@ volumn_stra_1m kline_1 dcp  = do
                                       let limithpred_sml    = ((maximum [(AS.knhprice kline_1m_fst),(AS.knhprice kline_1m_snd)]) >=kline_1m_max) 
                                                               -- && (green_or_red_pred kline_1m_fst ==False)
                                                                && volumn_fst_pred
+                                                               -- add  not 15m lpoint 
                                       let limitlpred_sml    = ((minimum [(AS.knlprice kline_1m_fst),(AS.knlprice kline_1m_snd)]) <=kline_1m_min) 
                                                               -- && (green_or_red_pred kline_1m_fst ==True)
                                                                && volumn_fst_pred
+                                                               -- add  not 15m hpoint 
                                       -------------------------------------------------------
                                       -------------------------------------------------------
                                       --if one stick is hlpoint ,after it is all same direction ,then the first occur other color stick is the reverse direction,fist
