@@ -286,7 +286,7 @@ takeorder a b c d = do
 
    let positionside = d
 
-   let quantity = if b > 10 then b else 10 :: Integer
+   let quantity = if (( abs b) > 10) then b else 30 :: Integer
    
    let price = c :: Double
    curtimestampl <- (round . (* 1000) <$> getPOSIXTime )
