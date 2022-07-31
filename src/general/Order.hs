@@ -368,7 +368,7 @@ endordertorediszset quan pr otimestamp insertstamp = do
        let shprice = show pr
        let otype = "Done" 
        let shstate =  show $ fromEnum Done
-       let shmergequan = show mergequan
+       let shmergequan = show 0
        liftIO $ logact logByteStringStdout $ BC.pack $ (lastrecord ++ "-----done--------")
        let abyvaluestr = BL.fromString  $ DL.intercalate "|" [coin,side,otype,orderid,shquant,shprice,shgrid,shmergequan,shstate]
        void $ zadd abykeystr [(-insertstamp,abyvaluestr)]
