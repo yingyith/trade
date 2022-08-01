@@ -106,13 +106,25 @@ crossminstra abcc pr = do
                               x|x==5        -> (stopprofitlist !! 2)
                               x|x==6        -> (stopprofitlist !! 2)
                               _             -> 0.0004
+    let latest_stick_15m      =   [snd i|i<-abcc] 
     --needle sharpe condition
-    -- if 3m,5m,15m,1h,low/high point is the same,then means now is low fast,pr near low point risk high
-    -- 3m need a distance 
+    -- compare 15m kline with 1h kline, if highpoint (15m) == highpoint (1h) ,if latest_nodebef(15m) == lowpoint (15m) or curpr -lowpoint(15m) < 0.004,then not open buy 
+    -- compare 15m kline with 1h kline, if lowpoint (15m) == lowpoint (1h) ,if latest_nodebef(15m) == highpoint (15m) or curpr -highpoint(15m) < 0.004,then not open sell 
+    let lowpointtrendpred     = ((abs ((snd $ snd $  fst $ (!!2) abc) - (snd $ snd $  fst $ (!!3) abc))) <= 0.003)
+                                  && (((abs ((hprice $ (!!0) $ (!!2) latest_stick_15m) -  (fst $ snd $  fst $ (!!2) abc)) <= 0.004))
+                                     || (((fst $ snd $ fst $ (!!2) abc)-pr) <= 0.004 ))
+
     let lowpointpredsmall     = ((pr-0.0015)< (snd $ snd $  fst $ (!!2) abc))
-    let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.006) < ((snd $ snd $  fst $ (!!3) abc)))   || ((pr-0.005)< (snd $ snd $  fst $ (!!3) abc))
+    let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.006) < ((snd $ snd $  fst $ (!!3) abc)))   
+                                  || ((pr-0.005)< (snd $ snd $  fst $ (!!3) abc))
+                                  || lowpointtrendpred
+    let highpointtrendpred    = ((abs ((fst $ snd $  fst $ (!!2) abc) - (fst $ snd $  fst $ (!!3) abc))) <= 0.003)
+                                  && (((abs ((lprice $ (!!0) $ (!!2) latest_stick_15m) -  (snd $ snd $  fst $ (!!2) abc)) <= 0.004))
+                                     || ((pr-(snd $ snd $ fst $ (!!2) abc)) <= 0.004 ))
     let highpointpredsmall    = ((pr+0.0015)> (fst $ snd $  fst $ (!!2) abc))
-    let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.006) > ((fst $ snd $  fst $ (!!3) abc)))   || ((pr+0.005)> (fst $ snd $  fst $ (!!3) abc))
+    let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.006) > ((fst $ snd $  fst $ (!!3) abc)))   
+                                  || ((pr+0.005)> (fst $ snd $  fst $ (!!3) abc))
+                                  || highpointtrendpred
     let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
                             (True,True  )  -> (3000,"no")  --threshhold to short direction
                             (True,False )  -> (1200, "no") --threshhold to short direction
