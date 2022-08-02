@@ -55,7 +55,9 @@ minrisksheet = fromList [
                  ("1h" , [5       ,  90,  -120, -180  ]),
                  ("4h" , [5       ,  90,  -120, -180  ]),
                  ("12h", [5       ,  90,  -120, -180  ]),
-                 ("3d" , [5       ,  90,  -120, -180  ])
+                 ("3d" , [5       ,  90,  -120, -180  ]),
+                 ("1w" , [5       ,  90,  -120, -180  ]),
+                 ("1M" , [5       ,  90,  -120, -180  ])
                ]
 
 crossminstra :: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> Double -> IO ((Int,Int),(String,String))
