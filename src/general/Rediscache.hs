@@ -64,6 +64,7 @@ import Data.Time.Format.ISO8601
 import Data.Time.Clock.POSIX
 import Redisutils
 import Buslib
+import Lib
 import System.IO as SI
 import Control.Concurrent.STM.TVar
 import Events
@@ -231,6 +232,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      let reachwavelimitpred                 =  ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
      ((needlepred,ntrend),nreason)          <- needlestra  bigintervall
      logact logByteStringStdout $ BC.pack $ show ("snd kline is---------",(DL.head $ klines_1s atkline ) )
+     (dd,dd2)                               <- getnextgriddiff bigintervall 0 
      when (sedtrend==AS.UP) $ do
          let sumresb = (-thresholdup) +sndquan -- aim is up
          let sumresm = (-((fromIntegral thresholdup)/5)) +(fromIntegral sndquan) -- aim is up
@@ -262,7 +264,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h")) $ do 
-                           let aresquan        = toInteger (30*minquan)
+                           let aresquan        = toInteger (25*minquan)
                            let stopclosegrid   = 0.0021
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
                        
@@ -298,7 +300,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "4h")) $ do 
-                           let aresquan        = toInteger (30*minquan)
+                           let aresquan        = toInteger (25*minquan)
                            let stopclosegrid   = 0.0021
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 

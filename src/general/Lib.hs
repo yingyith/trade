@@ -4,6 +4,7 @@ module Lib
      getrsi,
      getnewgrid,
      getnewgriddiff,
+     getnextgriddiff,
      getnewgridlevel
     ) where
 import GHC.Generics
@@ -11,6 +12,9 @@ import Data.Aeson
 import Data.Text
 import Data.List as DL
 import Prelude as DT
+import Data.ByteString.Char8 as  BC
+import Logger
+import Colog (LogAction,logByteStringStdout)
 import Httpstructure
 import Control.Monad
 import Control.Monad.IO.Class
@@ -56,6 +60,12 @@ getnewgrid quan =
                       x|x<=8000&&x>4000   -> 0.03
                       x|x<=16000&&x>8000  -> 0.09
                       _                   -> 0.09
+getnextgriddiff :: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> Integer -> IO (Double,Integer)  -- return next appand diff distance and appand quant times
+getnextgriddiff abcc quan = do 
+                             let abc                       =        [( snd $ fst $ fst i)|i<-abcc] 
+                             let hllist                    =        [((fst i)-(snd i))|i<-abc] 
+                             liftIO $ logact logByteStringStdout $ BC.pack $ show (" rsik is ---- !",hllist)
+                             return (0,0)
 
 getnewgriddiff :: Double -> Double
 getnewgriddiff grid = 

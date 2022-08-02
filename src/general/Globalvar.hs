@@ -34,7 +34,7 @@ module Globalvar (
 ) where
 
 defintervallist         :: [String]
-defintervallist         = ["3m","5m","15m","1h","4h","12h","3d"] 
+defintervallist         = ["3m","5m","15m","1h","4h","12h","1d","3d","1w","1M"] 
 
 quanlist                :: [Int]
 quanlist                = [300,500,1000,2000,4000,8300] -- 15m,1h,4h,12h

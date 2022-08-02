@@ -170,18 +170,24 @@ needlestra  abcc  = do
     let lbokline_15m              =        (!!2) $ (!!2) abc
     let hl_1h                     =        (snd $  fst $ (!!3) abck)
     let hl_4h                     =        (snd $  fst $ (!!4) abck)
+    let hl_4h_fnode               =        (!!0) $ (!!4) abc
+    let hl_4h_snode               =        (!!1) $ (!!4) abc
+    let hl_4h_snode_hprice        =        hprice hl_4h_snode
+    let hl_4h_snode_lprice        =        lprice hl_4h_snode
     let (ah,al,ac,ao)             =        ((hprice lkline_15m  ),(lprice lkline_15m  ),(cprice lkline_15m  ),(cprice lbokline_15m)) 
     let (bh,bl,bc)                =        ((hprice lbokline_15m),(lprice lbokline_15m),(cprice lbokline_15m)) 
     let (ad1,ad2)                 =        (abs (ah-(max ao ac)),abs (al-(min ao ac)))
     let needlelenpred             =        (>=0.0025)  $ max ad1 ad2        
+    let hdelay_4h_fulfil_pred     =        hl_4h_snode_hprice == (fst hl_4h)
+    let ldelay_4h_fulfil_pred     =        hl_4h_snode_lprice == (snd hl_4h)
 
-    let (hcropred,hrea,hside)     =        case (((<0.0015)  (abs  (bh-(fst hl_1h)))) ,((<0.003)  (abs  (bh-(fst hl_4h))))) of 
+    let (hcropred,hrea,hside)     =        case (((<0.0015)  (abs  (bh-(fst hl_1h)))) ,hdelay_4h_fulfil_pred && ((<0.003)  (abs  (bh-(fst hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.DO) 
                                                (False,True ) -> (True ,"4h" ,AS.DO) 
                                                (True ,False) -> (True ,"1h", AS.DO)
                                                (True ,True ) -> (True ,"4h" ,AS.DO)
 
-    let (lcropred,lrea,lside)     =        case (((<0.0015)  (abs  (bl-(snd hl_1h)))) ,((<0.003)  (abs  (bl-(snd hl_4h))))) of 
+    let (lcropred,lrea,lside)     =        case (((<0.0015)  (abs  (bl-(snd hl_1h)))) ,ldelay_4h_fulfil_pred &&((<0.003)  (abs  (bl-(snd hl_4h))))) of 
                                                (False,False) -> (False,"0m" ,AS.UP) 
                                                (False,True ) -> (True ,"4h" ,AS.UP) 
                                                (True ,False) -> (True ,"1h", AS.UP)
