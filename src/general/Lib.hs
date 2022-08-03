@@ -60,11 +60,14 @@ getnewgrid quan =
                       x|x<=8000&&x>4000   -> 0.03
                       x|x<=16000&&x>8000  -> 0.09
                       _                   -> 0.09
-getnextgriddiff :: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> Integer -> IO (Double,Integer)  -- return next appand diff distance and appand quant times
-getnextgriddiff abcc quan = do 
+getnextgriddiff :: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> Integer -> Double -> IO (Double,Integer)  -- return next appand diff distance and appand quant times
+getnextgriddiff abcc quan bpr = do 
                              let abc                       =        [( snd $ fst $ fst i)|i<-abcc] 
-                             let hllist                    =        [((fst i)-(snd i))|i<-abc] 
-                             liftIO $ logact logByteStringStdout $ BC.pack $ show (" rsik is ---- !",hllist)
+                             let hldifflist                =        [((fst i)-(snd i))|i<-abc] 
+                             let hllist                    =        DT.concatMap (\(a,b)-> [a,b]) abc 
+                             let uppr                      =        [i>bpr|i<- hllist]
+                             let dopr                      =        [i<bpr|i<- hllist]
+                             liftIO $ logact logByteStringStdout $ BC.pack $ show (" rsik is ---- !",hllist,uppr,dopr)
                              return (0,0)
 
 getnewgriddiff :: Double -> Double

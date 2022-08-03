@@ -232,7 +232,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      let reachwavelimitpred                 =  ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
      ((needlepred,ntrend),nreason)          <- needlestra  bigintervall
      logact logByteStringStdout $ BC.pack $ show ("snd kline is---------",(DL.head $ klines_1s atkline ) )
-     (dd,dd2)                               <- getnextgriddiff bigintervall 0 
+     (dd,dd2)                               <- getnextgriddiff bigintervall 0 dcp
      when (sedtrend==AS.UP) $ do
          let sumresb = (-thresholdup) +sndquan -- aim is up
          let sumresm = (-((fromIntegral thresholdup)/5)) +(fromIntegral sndquan) -- aim is up
@@ -253,8 +253,8 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when (((fst ccctrend)==AS.UP ) && (reachwavelimitpred == True)) $ do 
-                           let aresquan        = toInteger minquan
+                       when (((fst ccctrend)==AS.UP )    ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*5)
                            let stopclosegrid   = 0.0007
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
@@ -289,8 +289,8 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when (((fst ccctrend)==AS.DO ) && (reachwavelimitpred == True)) $ do 
-                           let aresquan        = toInteger minquan
+                       when (((fst ccctrend)==AS.DO ) ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*5)
                            let stopclosegrid   = 0.0007
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
