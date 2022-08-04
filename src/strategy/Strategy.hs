@@ -379,11 +379,11 @@ volumn_stra_1m kline_1 dcp  = do
                      let klines_1ms = AS.klines_1m kline_1
                      let klines_1sset_va = knpamount $  (!!1) $  AS.klines_1s kline_1
                      case (length klines_1ms) of 
-                        x|x<12  -> return ((False, AS.DO ),"no")
+                        x|x<8  -> return ((False, AS.DO ),"no")
                         _       -> do 
-                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 10 klines_1ms
-                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 10 klines_1ms
-                                      let sam_span_vol   =     DL.map  AS.knamount $ DL.take 10 klines_1ms
+                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 7 klines_1ms
+                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 7 klines_1ms
+                                      let sam_span_vol   =     DL.map  AS.knamount $ DL.take 7 klines_1ms
                                       let kline_1m_avg   =     (DL.sum sam_span_vol) / ((fromIntegral $ DL.length sam_span_vol ):: Double)
                                       let kline_1m_max   =     maximum sam_span_prh
                                       let kline_1m_min   =     minimum sam_span_prl 
@@ -395,7 +395,7 @@ volumn_stra_1m kline_1 dcp  = do
                                       -------------------------------------------------------
                                       --on high point,fst stick is green,snd is red ,ans snd is strong 4times than avg ,then direction is short 
                                       --on low  point,fst stick is red  ,snd is green ,ans snd is strong 4times  than avg,then direction is long 
-                                      let volumn_fst_pred   = AS.volumn_pred kline_1m_snd kline_1m_avg
+                                      let volumn_fst_pred   = AS.volumn_pred kline_1m_fst kline_1m_avg
                                       let limithpred_sml    = ((maximum [(AS.knhprice kline_1m_fst),(AS.knhprice kline_1m_snd)]) >=kline_1m_max) 
                                                               -- && (green_or_red_pred kline_1m_fst ==False)
                                                                && volumn_fst_pred
@@ -408,7 +408,7 @@ volumn_stra_1m kline_1 dcp  = do
                                       -------------------------------------------------------
                                       --if one stick is hlpoint ,after it is all same direction ,then the first occur other color stick is the reverse direction,fist
                                       --first stick with 2 more same color  stick followed ,and one other color in the latest stick 
-                                      let aspan                    =    DL.take 5  klines_1ms 
+                                      let aspan                    =    DL.take 6  klines_1ms 
                                       let (maxvolitem,maxvoindex)  =    get_largest_volumn aspan 
                                       let volumn_snd_pred          =    AS.volumn_pred maxvolitem kline_1m_avg
                                       let sandwichcore_pred        =    same_color_pred  $ DL.take maxvoindex $ DL.tail aspan  
