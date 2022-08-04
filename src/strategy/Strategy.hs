@@ -379,7 +379,7 @@ volumn_stra_1m kline_1 dcp  = do
                      let klines_1ms = AS.klines_1m kline_1
                      let klines_1sset_va = knpamount $  (!!1) $  AS.klines_1s kline_1
                      case (length klines_1ms) of 
-                        x|x<30  -> return ((False, AS.DO ),"no")
+                        x|x<12  -> return ((False, AS.DO ),"no")
                         _       -> do 
                                       let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 10 klines_1ms
                                       let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 10 klines_1ms
@@ -422,7 +422,14 @@ volumn_stra_1m kline_1 dcp  = do
                                                                           && (sandwich_pred)  
                                                                           && volumn_snd_pred 
 
-                                      liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",klines_1sset_va)--,aspan,kline_1m_avg,limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big)
+                                      liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",klines_1sset_va
+                                                                                                           ,kline_1m_avg
+                                                                                                           ,limithpred_sml
+                                                                                                           ,limitlpred_sml
+                                                                                                           ,limitlpred_big
+                                                                                                           ,limithpred_big
+                                                                                                           ,volumn_fst_pred
+                                                                                                           ,volumn_snd_pred)
 
                                       case (limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big) of
                                           (True  ,_     ,_      ,_     ) -> return ((True , AS.DO ),"small") 

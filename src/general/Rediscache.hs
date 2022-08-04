@@ -216,23 +216,23 @@ getdiffintervalflow = do
 anlytoBuy ::  TBQueue Opevent ->  R.Connection -> BL.ByteString ->  (TVar AS.Depthset)-> (TVar Curorder) -> (TVar AS.Klines_1  ) -> IO ()
 anlytoBuy tbq conn msg tdepth ostvar klinetvar = 
    do
-     res                                    <- runRedis conn (getdiffintervalflow) 
-     kline                                  <- parsetokline msg
-     let dcp                                =  read $ kclose kline :: Double
-     bigintervall                           <- analysismindo (fst res ) dcp 
-     ((thresholdup,thresholddo),reasons)    <- crossminstra bigintervall dcp
-     atdepth                                <- readTVarIO tdepth 
-     atkline                                <- readTVarIO klinetvar 
-     apr                                    <- AS.depthmidpr atdepth dcp
-     let ares                               =  AS.getBidAskNum apr atdepth
-     ((sndquan,sedtrend),ccctrend)          <- secondrule apr ares
-     ((volumnpred,vtrend),vreason)          <- volumn_stra_1m atkline dcp
-     timecurtime                            <- getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
-     curtimestampi                          <- getcurtimestamp
-     let reachwavelimitpred                 =  ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
-     ((needlepred,ntrend),nreason)          <- needlestra  bigintervall
+     res                                    <-    runRedis conn (getdiffintervalflow) 
+     kline                                  <-    parsetokline msg
+     let dcp                                =     read $ kclose kline :: Double
+     bigintervall                           <-    analysismindo (fst res ) dcp 
+     ((thresholdup,thresholddo),reasons)    <-    crossminstra bigintervall dcp
+     atdepth                                <-    readTVarIO tdepth 
+     atkline                                <-    readTVarIO klinetvar 
+     apr                                    <-    AS.depthmidpr atdepth dcp
+     let ares                               =     AS.getBidAskNum apr atdepth
+     ((sndquan,sedtrend),ccctrend)          <-    secondrule apr ares
+     ((volumnpred,vtrend),vreason)          <-    volumn_stra_1m atkline dcp
+     timecurtime                            <-    getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
+     curtimestampi                          <-    getcurtimestamp
+     let reachwavelimitpred                 =     ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)
+     ((needlepred,ntrend),nreason)          <-    needlestra  bigintervall
      logact logByteStringStdout $ BC.pack $ show ("snd kline is---------",(DL.head $ klines_1s atkline ) )
-     (dd,dd2)                               <- getnextgriddiff bigintervall 0 dcp
+     (dd,dd2)                               <-    getnextgriddiff bigintervall 0 dcp
      when (sedtrend==AS.UP) $ do
          let sumresb = (-thresholdup) +sndquan -- aim is up
          let sumresm = (-((fromIntegral thresholdup)/5)) +(fromIntegral sndquan) -- aim is up
