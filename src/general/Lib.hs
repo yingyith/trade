@@ -74,8 +74,8 @@ getnewgriddiff :: Double -> Double
 getnewgriddiff grid = 
                   case grid of 
                       x|x==0.0002            -> 40  * grid  
-                      x|x==0.0006            -> 40  * grid  
-                      x|x==0.0007            -> 10 * grid  
+                      x|x==0.0007            -> 40  * grid  
+                      x|x==0.0006            -> 12  * grid  
                       x|x==0.001             -> 200 * grid  
                       x|x==0.004             -> 60  * grid  
                       x|x==0.08              -> 10  * grid  
@@ -85,7 +85,7 @@ getnewgriddiff grid =
                       x|x<=0.002             -> 45  * grid
                       x|x<=0.0021            -> 100  * grid
                       x|x<=0.0022            -> 30  * grid
-                      x|x<=0.006             -> 10  * grid
+                      x|x<=0.006             -> 16  * grid
                       x|x<=0.01              -> 40  * grid
                       x|x<=0.03              -> 40  * grid
                       x|x<=0.09              -> 10  * grid

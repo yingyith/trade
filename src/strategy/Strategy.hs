@@ -377,6 +377,7 @@ waveonlongsight  ccc   ddd eee  trend = do
 volumn_stra_1m :: AS.Klines_1 -> Double -> IO  ((Bool,AS.Trend),String)
 volumn_stra_1m kline_1 dcp  = do
                      let klines_1ms = AS.klines_1m kline_1
+                     let klines_1sset_va = knpamount $  (!!1) $  AS.klines_1s kline_1
                      case (length klines_1ms) of 
                         x|x<30  -> return ((False, AS.DO ),"no")
                         _       -> do 
@@ -421,7 +422,7 @@ volumn_stra_1m kline_1 dcp  = do
                                                                           && (sandwich_pred)  
                                                                           && volumn_snd_pred 
 
-                                      liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",aspan,kline_1m_avg,limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big)
+                                      liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",klines_1sset_va)--,aspan,kline_1m_avg,limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big)
 
                                       case (limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big) of
                                           (True  ,_     ,_      ,_     ) -> return ((True , AS.DO ),"small") 
