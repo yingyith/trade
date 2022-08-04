@@ -388,8 +388,8 @@ volumn_stra_1m kline_1 dcp  = do
                                       let kline_1m_max   =     maximum sam_span_prh
                                       let kline_1m_min   =     minimum sam_span_prl 
 
-                                      let kline_1m_fst   =     (!!1) klines_1ms 
-                                      let kline_1m_snd   =     (!!2) klines_1ms   
+                                      let kline_1m_fst   =     (!!0) klines_1ms 
+                                      let kline_1m_snd   =     (!!1) klines_1ms   
                                       let kline_1s_now   =     (!!0) $ AS.klines_1s kline_1
                                       -------------------------------------------------------
                                       -------------------------------------------------------

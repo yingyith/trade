@@ -65,8 +65,8 @@ getnextgriddiff abcc quan bpr = do
                              let abc                       =        [( snd $ fst $ fst i)|i<-abcc] 
                              let hldifflist                =        [((fst i)-(snd i))|i<-abc] 
                              let hllist                    =        DT.concatMap (\(a,b)-> [a,b]) abc 
-                             let uppr                      =        [i>bpr|i<- hllist]
-                             let dopr                      =        [i<bpr|i<- hllist]
+                             let uppr                      =        [i|i<- hllist,i>bpr]
+                             let dopr                      =        [i|i<- hllist,i<bpr]
                              liftIO $ logact logByteStringStdout $ BC.pack $ show (" rsik is ---- !",hllist,uppr,dopr)
                              return (0,0)
 
