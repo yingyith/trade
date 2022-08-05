@@ -418,7 +418,7 @@ volumn_stra_1m kline_1 dcp  = do
                                       let volumn_snd_pred          =    AS.volumn_pred maxvolitem kline_1m_avg
                                       let sandwichcore_pred        =    same_color_pred  $ DL.take maxvoindex $ DL.tail aspan  
                                       let lastreverse_pred         =    (green_or_red_pred $ last aspan ) /= (green_or_red_pred kline_1m_snd)
-                                      let sandwich_pred            =    (maxvoindex>=2) && sandwichcore_pred -- && lastreverse_pred 
+                                      let sandwich_pred            =    (maxvoindex<=4) && sandwichcore_pred -- && lastreverse_pred 
                                       let limithpred_big           =    ((maximum $ DL.map AS.knhprice aspan )==kline_1m_max)
                                                                           && (sandwich_pred) 
                                                                           && volumn_snd_pred 
