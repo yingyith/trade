@@ -115,7 +115,7 @@ crossminstra abcc pr = do
     -- compare 15m kline with 1h kline, if lowpoint (15m) == lowpoint (1h) ,if latest_nodebef(15m) == highpoint (15m) or curpr -highpoint(15m) < 0.004,then not open sell 
     let lowpointtrendpred     = ((abs ((snd $ snd $  fst $ (!!2) abc) - (snd $ snd $  fst $ (!!3) abc))) <= 0.002)
                                   && (((abs ((lprice $ (!!0) $ (!!2) latest_stick_15m) -  (snd $ snd $  fst $ (!!2) abc)) <= 0.002))
-                                     || (((snd $ snd $ fst $ (!!2) abc)-pr) >= -0.002 ))
+                                     || (((snd $ snd $ fst $ (!!3) abc)-pr) >= -0.002 ))
 
     let lowpointpredsmall     = ((pr-0.0015)< (snd $ snd $  fst $ (!!2) abc))
     let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.002) < ((snd $ snd $  fst $ (!!3) abc)))   
@@ -124,7 +124,7 @@ crossminstra abcc pr = do
 
     let highpointtrendpred    = ((abs ((fst $ snd $  fst $ (!!2) abc) - (fst $ snd $  fst $ (!!3) abc))) <= 0.002)
                                   && (((abs ((hprice $ (!!0) $ (!!2) latest_stick_15m) -  (fst $ snd $  fst $ (!!2) abc)) <= 0.002))
-                                     || ((pr-(fst $ snd $ fst $ (!!2) abc)) >= -0.002 ))
+                                     || ((pr-(fst $ snd $ fst $ (!!3) abc)) >= -0.002 ))
 
     let highpointpredsmall    = ((pr+0.0015)> (fst $ snd $  fst $ (!!2) abc))
 
