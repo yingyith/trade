@@ -113,7 +113,7 @@ crossminstra abcc pr = do
     --needle sharpe condition
     -- compare 15m kline with 1h kline, if highpoint (15m) == highpoint (1h) ,if latest_nodebef(15m) == lowpoint (15m) or curpr -lowpoint(15m) < 0.004,then not open buy 
     -- compare 15m kline with 1h kline, if lowpoint (15m) == lowpoint (1h) ,if latest_nodebef(15m) == highpoint (15m) or curpr -highpoint(15m) < 0.004,then not open sell 
-    let lowpointtrendpred     = ((abs ((snd $ snd $  fst $ (!!2) abc) - (snd $ snd $  fst $ (!!3) abc))) <= 0.003)
+    let lowpointtrendpred     = ((abs ((snd $ snd $  fst $ (!!2) abc) - (snd $ snd $  fst $ (!!3) abc))) <= 0.0025)
                                   && (((snd $ snd $  fst $ (!!1) abc) /= (snd $ snd $  fst $ (!!2) abc) ))
                                       
 
@@ -123,7 +123,7 @@ crossminstra abcc pr = do
                                   || ((pr-0.002)< (snd $ snd $  fst $ (!!3) abc))
                                   || lowpointtrendpred
 
-    let highpointtrendpred    = ((abs ((fst $ snd $  fst $ (!!2) abc) - (fst $ snd $  fst $ (!!3) abc))) <= 0.003)
+    let highpointtrendpred    = ((abs ((fst $ snd $  fst $ (!!2) abc) - (fst $ snd $  fst $ (!!3) abc))) <= 0.0025)
                                   && (((fst $ snd $  fst $ (!!1) abc) /=  (fst $ snd $  fst $ (!!2) abc) ))
                                 
 
