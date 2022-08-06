@@ -94,6 +94,9 @@ getnewgriddiff grid =
                       x|x<=0.5               -> grid
                       _                      -> grid
 
+splitappendgrid :: [Double] -> [Double] -> (Double,Integer)   -- return next appand quan and diff
+splitappendgrid gridlu  gridld = (0,0) 
+
 getnewgridlevel :: Integer -> Double
 getnewgridlevel quan = 
                   case quan of 

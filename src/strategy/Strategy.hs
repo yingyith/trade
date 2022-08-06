@@ -381,15 +381,16 @@ waveonlongsight  ccc   ddd eee  trend = do
 
 volumn_stra_1m :: AS.Klines_1 -> Double -> IO  ((Bool,AS.Trend),String)
 volumn_stra_1m kline_1 dcp  = do
-                     let klines_1ms        =  AS.klines_1m kline_1
-                     let klines_1sset_va   =  AS.klines_1s kline_1
-                     let klines_1sset_va_1 =  knpamount $  (!!1) $ klines_1sset_va
-                     let klines_1sset_va_2 =  knpamount $  (!!2) $ klines_1sset_va
-                     let klines_1sset_va_d =  case (klines_1sset_va_1,klines_1sset_va_2) of 
-                                                    (0 ,  0 ) -> 0
-                                                    (0 ,  _ ) -> 0
-                                                    (_ ,  0 ) -> 0
-                                                    (_ ,  _ ) -> (klines_1sset_va_1 - klines_1sset_va_2)
+                     let klines_1ms           =      AS.klines_1m kline_1
+                     let klines_1sset_va      =      AS.klines_1s kline_1
+                     let klines_1sset_va_1    =      knpamount $  (!!1) $ klines_1sset_va
+                     let klines_1sset_va_2    =      knpamount $  (!!2) $ klines_1sset_va
+                     let klines_1sset_va_d    =      case (klines_1sset_va_1,klines_1sset_va_2) of 
+                                                           (0 ,  0 ) -> 0
+                                                           (0 ,  _ ) -> 0
+                                                           (_ ,  0 ) -> 0
+                                                           (_ ,  _ ) -> (klines_1sset_va_1 - klines_1sset_va_2)
+                     let klines_1sset_va_dr   =      klines_1sset_va_d / klines_1sset_va_2 
                      case (length klines_1ms) of 
                         x|x<8  -> return ((False, AS.DO ),"no")
                         _       -> do 
@@ -435,6 +436,7 @@ volumn_stra_1m kline_1 dcp  = do
                                                                           && volumn_snd_pred 
 
                                       liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",klines_1sset_va_d
+                                                                                                           ,klines_1sset_va_dr
                                                                                                            ,kline_1m_avg
                                                                                                            ,limithpred_sml
                                                                                                            ,limitlpred_sml
