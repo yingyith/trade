@@ -244,7 +244,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
             False -> do 
                        when (volumnpred == True && vtrend ==AS.UP && vreason == "small" && sumresm >0 ) $ do 
-                           let aresquan        = toInteger (minquan+700)
+                           let aresquan        = toInteger (minquan+300)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
@@ -295,7 +295,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
             False ->do
                        when (volumnpred == True && vtrend ==AS.DO && vreason == "small" && sumresm<0) $ do 
-                           let aresquan        = toInteger (minquan+700)
+                           let aresquan        = toInteger (minquan+300)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
