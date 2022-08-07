@@ -264,7 +264,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((reason =="pr" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
-                           let aresquan        = toInteger (minquan*5)
+                           let aresquan        = toInteger (minquan*2)
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
@@ -315,7 +315,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((reason =="pr" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
-                           let aresquan        = toInteger (minquan*5)
+                           let aresquan        = toInteger (minquan*2)
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
