@@ -225,7 +225,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      atkline                                <-    readTVarIO klinetvar 
      apr                                    <-    AS.depthmidpr atdepth dcp
      let ares                               =     AS.getBidAskNum apr atdepth
-     ((sndquan,sedtrend),ccctrend)          <-    secondrule apr ares
+     ((sndquan,sedtrend),reason  )          <-    secondrule apr ares
      ((volumnpred,vtrend),vreason)          <-    volumn_stra_1m atkline dcp
      timecurtime                            <-    getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi                          <-    getcurtimestamp
@@ -253,8 +253,23 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when (((fst ccctrend)==AS.UP )    ) $ do -- && (reachwavelimitpred == True)) $ do 
+                       when ((reason =="cc1" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*4)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
+                       when ((reason =="cc2" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
+                       when ((reason =="pr" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger (minquan*5)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
+                       when ((reason =="pr1" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*6)
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
@@ -289,8 +304,23 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when (((fst ccctrend)==AS.DO ) ) $ do -- && (reachwavelimitpred == True)) $ do 
+                       when ((reason =="cc1" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*4)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
+                       when ((reason =="cc2" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
+                       when ((reason =="pr" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger (minquan*5)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
+                       when ((reason =="pr1" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*6)
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 

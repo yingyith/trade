@@ -455,7 +455,7 @@ volumn_stra_1m kline_1 dcp  = do
                      -------------------------------------------------------
     
 
-secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO ((Int,Trend),(Trend,Double))
+secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO ((Int,Trend),String)
 secondrule diffpr ablist = do      -- bid is buyer , ask is seller 
                      let ratiol        = DT.map getdiffgridnum ablist
                      let curprsfstdire = snd (ratiol !! 6)
@@ -464,6 +464,10 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                      let curprmsnddiff = fst (ratiol !! 7)
                      let cccdata       = ratiol !! 8
                      let ccc           = snd cccdata
+                     let badata        = ratiol !! 3
+                     let ba            = snd badata
+                     let abdata        = ratiol !! 2
+                     let ab            = snd badata
                      let ddd           = snd (ratiol !! 9)
                      let eee           = snd (ratiol !! 10)
                      let minpr         = fst $ fst  diffpr
@@ -475,11 +479,37 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                (False,True )   -> AS.ND
                                                (False,False)   -> AS.UP
 
+                     let ccctrend       = case ccc of 
+                                            x|x<(-0.3)   -> (AS.DO,0.001) 
+                                            x|x>0.3      -> (AS.UP,0.001) 
+                                            _            -> (AS.ND,0) 
+
+                     let (prsti,prsaba)   = case trend of 
+                                              AS.DO -> case ba of 
+                                                          x|x<0 -> case (fst ccctrend) of 
+                                                                      AS.ND  -> (1,"pr")
+                                                                      AS.DO  -> (1,"pr1")
+                                                                      AS.UP  -> (1,"cc2")
+                                                          _     -> case (fst ccctrend) of 
+                                                                      AS.ND ->  (1,"no")
+                                                                      AS.DO  -> (1,"cc1")
+                                                                      AS.UP  -> (1,"cc2")
+                                              AS.UP -> case ab of 
+                                                          x|x<0 -> case (fst ccctrend) of 
+                                                                      AS.ND  -> (1,"pr")
+                                                                      AS.UP  -> (1,"pr1")
+                                                                      AS.DO  -> (1,"cc2")
+                                                          _     -> case (fst ccctrend) of
+                                                                      AS.ND ->  (1,"no")
+                                                                      AS.UP  -> (1,"cc1")
+                                                                      AS.DO  -> (1,"cc2")
+                                              _     -> (1,"no")
+
                      let midquan       = case (basepr < minpr || basepr > maxpr) of 
                                                 True  -> 0
                                                 False -> (curprsfstdiff + curprmsnddiff)
 
-                     let middquan      = midquan + (waveonlongsight ccc ddd eee trend) 
+                     let middquan      = midquan*prsti + (waveonlongsight ccc ddd eee trend) 
 
                      let finalquan     = case (middquan > 0 ,trend) of 
                                           (True  , AS.DO) -> 0
@@ -488,10 +518,6 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                           (True  , AS.UP) -> middquan
                                           (_     , _    ) -> 0
                      -- use the three grid (0,0.0002),(0.0002,0.0004),(0.0004,0.0006) to quant the hard degree of trend,also express as boost (add or minus )
-                     let ccctrend       = case ccc of 
-                                            x|x<(-0.3)   -> (AS.DO,0.001) 
-                                            x|x>0.3      -> (AS.UP,0.001) 
-                                            _            -> (AS.ND,0) 
 
 
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------" ,
@@ -511,7 +537,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                                  showdouble basepr
                                                                  )
                      logact logByteStringStdout $ B.pack $ show (midquan,middquan,finalquan)
-                     return ((finalquan,trend),ccctrend)
+                     return ((finalquan,trend),prsaba)
 
 
 
