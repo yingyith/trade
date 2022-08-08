@@ -60,6 +60,7 @@ getnewgrid quan =
                       x|x<=8000&&x>4000   -> 0.03
                       x|x<=16000&&x>8000  -> 0.09
                       _                   -> 0.09
+
 getnextgriddiff :: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> Integer -> Double -> IO (Double,Integer)  -- return next appand diff distance and appand quant times
 getnextgriddiff abcc quan bpr = do 
                              let abc                       =        [( snd $ fst $ fst i)|i<-abcc] 
@@ -68,6 +69,7 @@ getnextgriddiff abcc quan bpr = do
                              let uppr                      =        [i|i<- hllist,i>bpr]
                              let dopr                      =        [i|i<- hllist,i<bpr]
                              liftIO $ logact logByteStringStdout $ BC.pack $ show (" rsik is ---- !",hllist,uppr,dopr)
+                             --group the array to clear groups which have obvious diff large than 0.002
                              return (0,0)
 
 getnewgriddiff :: Double -> Double
