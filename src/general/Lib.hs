@@ -68,7 +68,9 @@ getnextgriddiff abcc quan bpr = do
                              let hllist                    =        DT.concatMap (\(a,b)-> [a,b]) abc 
                              let uppr                      =        [i|i<- hllist,i>bpr]
                              let dopr                      =        [i|i<- hllist,i<bpr]
-                             liftIO $ logact logByteStringStdout $ BC.pack $ show (" rsik is ---- !",hllist,uppr,dopr)
+                             let udiff                     =        DT.map (\x -> (x- bpr)) uppr
+                             let ddiff                     =        DT.map (\x -> (bpr-x)) dopr
+                             liftIO $ logact logByteStringStdout $ BC.pack $ show (" rsik is ---- !",hllist,uppr,dopr,udiff,ddiff)
                              --group the array to clear groups which have obvious diff large than 0.002
                              return (0,0)
 
