@@ -481,8 +481,8 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                (False,False)   -> AS.UP
 
                      let ccctrend       = case ccc of 
-                                            x|x<(-0.3)   -> (AS.DO,0.001) 
-                                            x|x>0.3      -> (AS.UP,0.001) 
+                                            x|x<(-0.2)   -> (AS.DO,0.001) 
+                                            x|x>0.2      -> (AS.UP,0.001) 
                                             _            -> (AS.ND,0) 
 
                      let (prsti,prsaba)   = case trend of 
