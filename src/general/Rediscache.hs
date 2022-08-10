@@ -263,10 +263,10 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                    --        let stopclosegrid   = 0.0006
                    --        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when ((reason =="pr" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
-                           let aresquan        = toInteger (minquan*2)
-                           let stopclosegrid   = 0.0006
-                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+                   --    when ((reason =="pr" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
+                   --        let aresquan        = toInteger (minquan*2)
+                   --        let stopclosegrid   = 0.0006
+                   --        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((reason =="pr1" )    ) $ do -- && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger (minquan*6)
@@ -314,10 +314,10 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                     --       let stopclosegrid   = 0.0006
                     --       prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when ((reason =="pr" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
-                           let aresquan        = toInteger (minquan*2)
-                           let stopclosegrid   = 0.0006
-                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+                   --    when ((reason =="pr" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
+                   --        let aresquan        = toInteger (minquan*2)
+                   --        let stopclosegrid   = 0.0006
+                   --        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((reason =="pr1" ) ) $ do -- && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger (minquan*6)
