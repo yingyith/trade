@@ -280,7 +280,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h") &&  sumresm >0 ) $ do 
                            let aresquan        = toInteger (25*minquan)
-                           let stopclosegrid   = 0.0021
+                           let stopclosegrid   = 0.002
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
                        
 
