@@ -475,7 +475,7 @@ opclHandler tbq ostvar  channel  msg = do
                                     addeventtotbqueuestm aevent tbq
                         False -> do 
                                     let ochpostime = chpostime curorder 
-                                    case (abs (curpr -orderpr) > 0.001) of 
+                                    case (abs (curpr -orderpr) > 0.003) of 
                                         True  -> do
                                                     let aevent = Opevent "reset"  0 0 0 ordid 0 oside
                                                     addeventtotbqueuestm aevent tbq
@@ -490,7 +490,7 @@ opclHandler tbq ostvar  channel  msg = do
                      let oside = orderside curorder
                      unsafeIOToSTM $  logact logByteStringStdout $ B.pack $ show ("orderstate bef buy process---------",orderstate curorder)
                      let pr = (fromInteger $  round $ curpr * (10^4))/(10.0^^4)
-                     case (abs (curpr -orderpr) > 0.001) of 
+                     case (abs (curpr -orderpr) > 0.003) of 
                          True  -> do
                                      let ochpostime = chpostime curorder
                                      let aevent = Opevent "reset"  0 0 0 ordid 0 oside
