@@ -273,12 +273,12 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h")) $ do 
+                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h") &&  sumresm >0 ) $ do 
                            let aresquan        = toInteger (3*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h")) $ do 
+                       when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h") &&  sumresm >0 ) $ do 
                            let aresquan        = toInteger (25*minquan)
                            let stopclosegrid   = 0.0021
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
@@ -324,12 +324,12 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h")) $ do 
+                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h") && sumresm <0  ) $ do 
                            let aresquan        = toInteger (3*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "4h")) $ do 
+                       when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "4h") && sumresm <0 ) $ do 
                            let aresquan        = toInteger (25*minquan)
                            let stopclosegrid   = 0.0021
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
