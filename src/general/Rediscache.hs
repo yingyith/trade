@@ -251,7 +251,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when (volumnpred == True && vtrend ==AS.UP && vreason == "big" && sumresm >0) $ do 
+                       when (volumnpred == True && vtrend ==AS.UP && vreason == "big" && sumresm3 >0) $ do 
                            let aresquan        = toInteger (minquan+20)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
@@ -271,8 +271,13 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                    --        let stopclosegrid   = 0.0006
                    --        prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
-                       when ((reason =="pr1" )  && sumresm >0  ) $ do -- && (reachwavelimitpred == True)) $ do 
+                       when ((reason =="pr1" )  && sumresm3 >0  ) $ do -- && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger (minquan*6)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
+
+                       when ((reason =="pr1" )  && sumresm >0  ) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*3)
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
@@ -305,7 +310,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when (volumnpred == True && vtrend ==AS.DO && vreason == "big"  && sumresm <0) $ do 
+                       when (volumnpred == True && vtrend ==AS.DO && vreason == "big"  && sumresm3 <0) $ do 
                            let aresquan        = toInteger (minquan+20)
                            let stopclosegrid   = 0.0004
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
@@ -325,8 +330,13 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                    --        let stopclosegrid   = 0.0006
                    --        prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
-                       when ((reason =="pr1" ) && sumresm <0) $ do -- && (reachwavelimitpred == True)) $ do 
+                       when ((reason =="pr1" ) && sumresm3 <0) $ do -- && (reachwavelimitpred == True)) $ do 
                            let aresquan        = toInteger (minquan*6)
+                           let stopclosegrid   = 0.0006
+                           prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
+
+                       when ((reason =="pr1" ) && sumresm <0) $ do -- && (reachwavelimitpred == True)) $ do 
+                           let aresquan        = toInteger (minquan*3)
                            let stopclosegrid   = 0.0006
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
