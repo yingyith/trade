@@ -226,7 +226,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      apr                                    <-    AS.depthmidpr atdepth dcp
      let ares                               =     AS.getBidAskNum apr atdepth
      ((sndquan,sedtrend),reason  )          <-    secondrule apr ares
-     ((volumnpred,vtrend),vreason)          <-    volumn_stra_1m atkline dcp
+     ((volumnpred,vtrend),vreason)          <-    volumn_stra_1m atkline dcp 
      timecurtime                            <-    getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi                          <-    getcurtimestamp
      let reachwavelimitpred                 =     ((/= "no")  $ fst reasons) && ((/= "no")  $ snd reasons)

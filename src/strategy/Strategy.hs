@@ -135,14 +135,20 @@ crossminstra abcc pr = do
 
     let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
                             (True,True  )  -> (3000,"no")  --threshhold to short direction
-                            (True,False )  -> (1200, "no") --threshhold to short direction
+                            (True,False )  -> (1200,"no") --threshhold to short direction
                             (False,True )  -> (3000,"no")  --threshhold to short direction
-                            (False,False)  -> (0,"yes") 
+                            (False,False)  -> case (highpointpredsmall,highpointpredbig) of 
+                                                    (True,False )  ->(1200,"no")  --threshhold to short direction
+                                                    (True,True  )  ->(1200,"no")  --threshhold to short direction
+                                                    (_   ,_     )  ->(0,"yes") 
     let (highpointfactor,reasonhigh) = case (highpointpredsmall,highpointpredbig) of 
                             (True,True  )  ->(3000,"no")  --threshhold to short direction
                             (True,False )  ->(1200,"no")  --threshhold to short direction
                             (False,True )  ->(3000,"no")  --threshhold to short direction
-                            (False,False)  ->(0,"yes") 
+                            (False,False)  -> case (lowpointpredsmall,lowpointpredbig) of 
+                                                    (True,False )  ->(1200,"no")  --threshhold to short direction
+                                                    (True,True  )  ->(1200,"no")  --threshhold to short direction
+                                                    (_   ,_     )  ->(0,"yes") 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     let (mthresholdup,mthresholddo) = case (threeminsupporttrendpred ,fiveminsupporttrendpred,fstminsupporttrendpred) of 
@@ -380,7 +386,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        _                                                         -> -(fst $  (adjustboostgrid!!0)) 
                  (_   ,_     )  ->  0
 
-volumn_stra_1m :: AS.Klines_1 -> Double -> IO  ((Bool,AS.Trend),String)
+volumn_stra_1m :: AS.Klines_1 -> Double    -> IO  ((Bool,AS.Trend),String)
 volumn_stra_1m kline_1 dcp  = do
                      let klines_1ms           =      AS.klines_1m kline_1
                      let klines_1sset_va      =      AS.klines_1s kline_1
