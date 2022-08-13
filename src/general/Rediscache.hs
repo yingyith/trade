@@ -235,8 +235,8 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      (dd,dd2)                               <-    getnextgriddiff bigintervall 0 dcp
      when (sedtrend==AS.UP) $ do
          let sumresb = (-thresholdup) +sndquan -- aim is up
-         let sumresm = (-((fromIntegral thresholdup)/5)) +(fromIntegral sndquan) -- aim is up
-         let sumresm2 = (-((fromIntegral thresholdup)/4)) +(fromIntegral sndquan) -- aim is up
+         let sumresm = (-((fromIntegral thresholdup)/4)) +(fromIntegral sndquan) -- aim is up
+         let sumresm2 = (-((fromIntegral thresholdup)/3.5)) +(fromIntegral sndquan) -- aim is up
          let sumresm3 = (-((fromIntegral thresholdup)/3)) +(fromIntegral sndquan) -- aim is up
          let sumresm4 = (-((fromIntegral thresholdup)/2)) +(fromIntegral sndquan) -- aim is up
          logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,sumresb,timecurtime,dcp)
@@ -314,8 +314,8 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
 
      when (sedtrend==AS.DO) $ do
          let sumresb = (thresholddo) + sndquan -- aim is down
-         let sumresm = ((fromIntegral thresholddo)/5) + ( fromIntegral sndquan) -- aim is down
-         let sumresm2 = ((fromIntegral thresholddo)/4) + ( fromIntegral sndquan) -- aim is down
+         let sumresm = ((fromIntegral thresholddo)/4) + ( fromIntegral sndquan) -- aim is down
+         let sumresm2 = ((fromIntegral thresholddo)/3.5) + ( fromIntegral sndquan) -- aim is down
          let sumresm3 = ((fromIntegral thresholddo)/3) + ( fromIntegral sndquan) -- aim is down
          let sumresm4 = ((fromIntegral thresholddo)/2) + ( fromIntegral sndquan) -- aim is down
          logact logByteStringStdout $ BC.pack $ show ("sndruledo is ---- !",thresholdup,thresholddo,sndquan,sumresb,timecurtime,dcp)
