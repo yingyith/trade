@@ -156,7 +156,8 @@ data Hlnode = Hlnode {
               rank   :: Integer ,
               stype  :: String  , -- high or low` 
               rtype  :: String  ,  -- '5min' or '1h'
-              cprice :: Double
+              cprice :: Double  ,
+              hvo :: Double  
 } deriving (Show,Generic)
 
 data Klinenode = Klinenode {

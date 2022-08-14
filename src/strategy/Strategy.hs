@@ -113,44 +113,47 @@ crossminstra abcc pr = do
     --needle sharpe condition
     -- compare 15m kline with 1h kline, if highpoint (15m) == highpoint (1h) ,if latest_nodebef(15m) == lowpoint (15m) or curpr -lowpoint(15m) < 0.004,then not open buy 
     -- compare 15m kline with 1h kline, if lowpoint (15m) == lowpoint (1h) ,if latest_nodebef(15m) == highpoint (15m) or curpr -highpoint(15m) < 0.004,then not open sell 
-    let lowpointtrendpred     = ((abs ((snd $ snd $  fst $ (!!2) abc) - (snd $ snd $  fst $ (!!3) abc))) <= 0.0025)
-                                  && (((snd $ snd $  fst $ (!!1) abc) /= (snd $ snd $  fst $ (!!2) abc) ))
-                                      
+   -- let lowpointtrendpred     = ((abs ((snd $ snd $  fst $ (!!2) abc) - (snd $ snd $  fst $ (!!3) abc))) <= 0.0025)
+   --                               && (((snd $ snd $  fst $ (!!1) abc) /= (snd $ snd $  fst $ (!!2) abc) ))
+   --                                   
 
-    let lowpointpredsmall     = ((( snd $ snd $  fst $ (!!0) abc)  -0.0015)< (snd $ snd $  fst $ (!!2) abc))
+   -- let lowpointpredsmall     = ((( snd $ snd $  fst $ (!!0) abc)  -0.0015)< (snd $ snd $  fst $ (!!2) abc))
 
-    let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.002) < ((snd $ snd $  fst $ (!!3) abc)))   
-                                  || ((pr-0.002)< (snd $ snd $  fst $ (!!3) abc))
-                                  || lowpointtrendpred
+   -- let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.002) < ((snd $ snd $  fst $ (!!3) abc)))   
+   --                               || ((pr-0.002)< (snd $ snd $  fst $ (!!3) abc))
+   --                               || lowpointtrendpred
 
-    let highpointtrendpred    = ((abs ((fst $ snd $  fst $ (!!2) abc) - (fst $ snd $  fst $ (!!3) abc))) <= 0.0025)
-                                  && (((fst $ snd $  fst $ (!!1) abc) /=  (fst $ snd $  fst $ (!!2) abc) ))
-                                
+   -- let highpointtrendpred    = ((abs ((fst $ snd $  fst $ (!!2) abc) - (fst $ snd $  fst $ (!!3) abc))) <= 0.0025)
+   --                               && (((fst $ snd $  fst $ (!!1) abc) /=  (fst $ snd $  fst $ (!!2) abc) ))
+   --                             
 
-    let highpointpredsmall    = ((( fst $ snd $  fst $ (!!0) abc)   +0.0015)> (fst $ snd $  fst $ (!!2) abc))
+   -- let highpointpredsmall    = ((( fst $ snd $  fst $ (!!0) abc)   +0.0015)> (fst $ snd $  fst $ (!!2) abc))
 
-    let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.002) > ((fst $ snd $  fst $ (!!3) abc)))   
-                                  || ((pr+0.002)> (fst $ snd $  fst $ (!!3) abc))
-                                  || highpointtrendpred
+   -- let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.002) > ((fst $ snd $  fst $ (!!3) abc)))   
+   --                               || ((pr+0.002)> (fst $ snd $  fst $ (!!3) abc))
+   --                               || highpointtrendpred
+   --                               
 
-    let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
-                            (True,True  )  -> (3000,"no")  --threshhold to short direction
-                            (True,False )  -> (1200,"no") --threshhold to short direction
-                            (False,True )  -> (3000,"no")  --threshhold to short direction
-                            (False,False)  -> case (highpointpredsmall,highpointpredbig) of 
-                                                    (True,False )  ->(1700,"no")  --threshhold to short direction
-                                                    (True,True  )  ->(2500,"no")  --threshhold to short direction
-                                                    (False,True  )  ->(1700,"no")  --threshhold to short direction
-                                                    (_   ,_     )  ->(0,"yes") 
-    let (highpointfactor,reasonhigh) = case (highpointpredsmall,highpointpredbig) of 
-                            (True,True  )  ->(3000,"no")  --threshhold to short direction
-                            (True,False )  ->(1200,"no")  --threshhold to short direction
-                            (False,True )  ->(3000,"no")  --threshhold to short direction
-                            (False,False)  -> case (lowpointpredsmall,lowpointpredbig) of 
-                                                    (True,False )  ->(1500,"no")  --threshhold to short direction
-                                                    (True,True  )  ->(2200,"no")  --threshhold to short direction
-                                                    (False,True  )  ->(1500,"no")  --threshhold to short direction
-                                                    (_   ,_     )  ->(0,"yes") 
+    let (lowpointfactor,reasonlow) =   suddenwavestra abcc 
+   -- let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
+   --                         (True,True  )  -> (3000,"no")  --threshhold to short direction
+   --                         (True,False )  -> (1200,"no") --threshhold to short direction
+   --                         (False,True )  -> (3000,"no")  --threshhold to short direction
+   --                         (False,False)  -> case (highpointpredsmall,highpointpredbig) of 
+   --                                                 (True,False )  ->(1700,"no")  --threshhold to short direction
+   --                                                 (True,True  )  ->(2500,"no")  --threshhold to short direction
+   --                                                 (False,True  )  ->(1700,"no")  --threshhold to short direction
+   --                                                 (_   ,_     )  ->(0,"yes") 
+    let (highpointfactor,reasonhigh) = (lowpointfactor,reasonlow)
+   -- let (highpointfactor,reasonhigh) = case (highpointpredsmall,highpointpredbig) of 
+   --                         (True,True  )  ->(3000,"no")  --threshhold to short direction
+   --                         (True,False )  ->(1200,"no")  --threshhold to short direction
+   --                         (False,True )  ->(3000,"no")  --threshhold to short direction
+   --                         (False,False)  -> case (lowpointpredsmall,lowpointpredbig) of 
+   --                                                 (True,False )  ->(1500,"no")  --threshhold to short direction
+   --                                                 (True,True  )  ->(2200,"no")  --threshhold to short direction
+   --                                                 (False,True  )  ->(1500,"no")  --threshhold to short direction
+   --                                                 (_   ,_     )  ->(0,"yes") 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
     let (mthresholdup,mthresholddo) = case (threeminsupporttrendpred ,fiveminsupporttrendpred,fstminsupporttrendpred) of 
@@ -175,9 +178,26 @@ crossminstra abcc pr = do
 
     let totalthresholdup = mthresholdup + hthresholdup
     let totalthresholddo = mthresholddo + hthresholddo
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,abc,lowpointtrendpred,highpointtrendpred)
+    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,abc,reasonlow,reasonhigh)
     return ((totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor),(reasonhigh,reasonlow))
                                           
+suddenwavestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] ->   (Int,String)
+suddenwavestra  abcc  =    case (vo_wave_pred_15m,vo_wave_pred_1h) of  --add 15m and 1h factor
+                                                    (True ,False) -> (1200,"no")
+                                                    (False,True ) -> (2000,"no")
+                                                    (True ,True ) -> (3000,"no")
+                                                    (False,False) -> (0,"yes")
+                                where 
+                                    abc                       =        [snd i|i<-abcc] 
+                                    klines_15m                =        DT.take 6 $ (!!2) abc
+                                    klines_1h                 =        DT.take 6 $ (!!3) abc
+                                    min_vo_klines_15m         =        minimum [hvo i | i <- klines_15m ]
+                                    min_vo_klines_1h          =        minimum [hvo i | i <- klines_1h ]
+                                    vo_wave_pred_15m   =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_15m) || (( hvo $ (!!2) klines_15m) == min_vo_klines_15m)
+                                    vo_wave_pred_1h    =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_1h)  || (( hvo $ (!!2) klines_15m) == min_vo_klines_1h)
+                                                           
+       
+
 needlestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> IO  ((Bool,AS.Trend),String) 
 needlestra  abcc  = do
     let abck                      =        [fst i|i<-abcc] 
@@ -231,6 +251,7 @@ genehighlowsheet index hl key = do
     let curitemhp = read $ curitem !! 2  :: Double
     let curitemlp = read $ curitem !! 3  :: Double
     let curitemcp = read $ curitem !! 4  :: Double
+    let curitemvo = read $ curitem !! 5  :: Double
     let nextitemop = read $ nextitem !! 1  :: Double
     let nextitemhp = read $ nextitem !! 2  :: Double
     let nextitemlp = read $ nextitem !! 3  :: Double
@@ -243,10 +264,10 @@ genehighlowsheet index hl key = do
                  -- (False,False) ->  (AS.Hlnode curitemt curitemhp 0             0 "high"   key curitemcp)
                  -- (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "wbig"   key curitemcp)
                  -- (True,False)  ->  (AS.Hlnode curitemt 0         0             0 "wsmall" key curitemcp)
-                  (True,True)   ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "low"    key curitemcp)
-                  (False,False) ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "high"   key curitemcp)
-                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "wbig"   key curitemcp)
-                  (True,False)  ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "wsmall" key curitemcp)
+                  (True,True)   ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "low"    key curitemcp  curitemvo )
+                  (False,False) ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "high"   key curitemcp  curitemvo )
+                  (False,True)  ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "wbig"   key curitemcp  curitemvo )
+                  (True,False)  ->  (AS.Hlnode curitemt curitemhp curitemlp     0 "wsmall" key curitemcp  curitemvo )
     return res
 
 minrule :: [AS.Hlnode]-> Double-> String  -> IO ((Int,(Double,Double)),(String,Int))
@@ -315,12 +336,13 @@ gethlsheetsec index kll =  do
     let nextitem    = kll !! (index + 1) 
     let curitemt    = ktime curitem
     let curitemcp   = read $ kclose curitem  :: Double
+    let curitemvo   = read $ kvolumn curitem  :: Double
     let nextitemcp  = read $ kclose nextitem :: Double 
     let predication = (curitemcp - nextitemcp) 
     let res = case compare predication  0 of 
-                  LT   ->  (AS.Hlnode curitemt 0         curitemcp 0 "low"    "1s" curitemcp)
-                  GT   ->  (AS.Hlnode curitemt curitemcp 0         0 "high"   "1s" curitemcp)
-                  EQ   ->  (AS.Hlnode curitemt curitemcp 0         0 "wsmall" "1s" curitemcp)
+                  LT   ->  (AS.Hlnode curitemt 0         curitemcp 0 "low"    "1s" curitemcp curitemvo)
+                  GT   ->  (AS.Hlnode curitemt curitemcp 0         0 "high"   "1s" curitemcp curitemvo)
+                  EQ   ->  (AS.Hlnode curitemt curitemcp 0         0 "wsmall" "1s" curitemcp curitemvo)
     return res
 
 getdiffgridnum :: (Double,Double)-> (Int,Double) 
