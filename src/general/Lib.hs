@@ -53,12 +53,12 @@ getnewgrid quan =
                       x|x<=120            -> 0.0004
                       x|x<=200            -> 0.0012
                       x|x<=400            -> 0.0012
-                      x|x<=500            -> 0.002
-                      x|x<1000&&x>500     -> 0.001
-                      x|x<=2000&&x>1000   -> 0.004
-                      x|x<=4000&&x>2000   -> 0.0055
-                      x|x<=8000&&x>4000   -> 0.03
-                      x|x<=16000&&x>8000  -> 0.09
+                      x|x<=500            -> 0.0013
+                      x|x<1000&&x>500     -> 0.0014
+                      x|x<=2000&&x>1000   -> 0.0015
+                      x|x<=4000&&x>2000   -> 0.0016
+                      x|x<=8000&&x>4000   -> 0.0017
+                      x|x<=16000&&x>8000  -> 0.0018
                       _                   -> 0.09
 
 getnextgriddiff :: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> Integer -> Double -> IO (Double,Integer)  -- return next appand diff distance and appand quant times
@@ -87,7 +87,12 @@ getnewgriddiff grid =
                       x|x<=0.00041           -> 7   * grid
                       x|x<=0.0005            -> 1000  * grid
                       x|x<=0.0012            -> 20  * grid
-                      x|x<=0.002             -> 45  * grid
+                      x|x<=0.0013            -> 20  * grid
+                      x|x<=0.0014            -> 40  * grid
+                      x|x<=0.0015            -> 60  * grid
+                      x|x<=0.0016            -> 90  * grid
+                      x|x<=0.0017            -> 150  * grid
+                      x|x<=0.0018            -> 45  * grid
                       x|x<=0.0021            -> 100  * grid
                       x|x<=0.0022            -> 30  * grid
                       x|x<=0.004             -> 12  * grid

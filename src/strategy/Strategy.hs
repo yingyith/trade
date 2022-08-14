@@ -138,16 +138,16 @@ crossminstra abcc pr = do
                             (True,False )  -> (1200,"no") --threshhold to short direction
                             (False,True )  -> (3000,"no")  --threshhold to short direction
                             (False,False)  -> case (highpointpredsmall,highpointpredbig) of 
-                                                    (True,False )  ->(1200,"no")  --threshhold to short direction
-                                                    (True,True  )  ->(1200,"no")  --threshhold to short direction
+                                                    (True,False )  ->(1400,"no")  --threshhold to short direction
+                                                    (True,True  )  ->(1800,"no")  --threshhold to short direction
                                                     (_   ,_     )  ->(0,"yes") 
     let (highpointfactor,reasonhigh) = case (highpointpredsmall,highpointpredbig) of 
                             (True,True  )  ->(3000,"no")  --threshhold to short direction
                             (True,False )  ->(1200,"no")  --threshhold to short direction
                             (False,True )  ->(3000,"no")  --threshhold to short direction
                             (False,False)  -> case (lowpointpredsmall,lowpointpredbig) of 
-                                                    (True,False )  ->(1200,"no")  --threshhold to short direction
-                                                    (True,True  )  ->(1200,"no")  --threshhold to short direction
+                                                    (True,False )  ->(1400,"no")  --threshhold to short direction
+                                                    (True,True  )  ->(1800,"no")  --threshhold to short direction
                                                     (_   ,_     )  ->(0,"yes") 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
