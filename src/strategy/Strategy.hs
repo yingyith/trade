@@ -189,8 +189,8 @@ suddenwavestra  abcc  =    case (vo_wave_pred_15m,vo_wave_pred_1h) of  --add 15m
                                                     (False,False) -> (0,"yes")
                                 where 
                                     abc                       =        [snd i|i<-abcc] 
-                                    klines_15m                =        DT.take 6 $ (!!2) abc
-                                    klines_1h                 =        DT.take 6 $ (!!3) abc
+                                    klines_15m                =        DT.tail $ DT.take 6 $ (!!2) abc
+                                    klines_1h                 =        DT.tail $ DT.take 6 $ (!!3) abc
                                     min_vo_klines_15m         =        minimum [hvo i | i <- klines_15m ]
                                     min_vo_klines_1h          =        minimum [hvo i | i <- klines_1h ]
                                     vo_wave_pred_15m   =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_15m) || (( hvo $ (!!2) klines_15m) == min_vo_klines_15m)
