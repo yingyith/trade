@@ -117,7 +117,7 @@ crossminstra abcc pr = do
                                   && (((snd $ snd $  fst $ (!!1) abc) /= (snd $ snd $  fst $ (!!2) abc) ))
                                       
 
-    let lowpointpredsmall     = ((pr-0.0015)< (snd $ snd $  fst $ (!!2) abc))
+    let lowpointpredsmall     = ((( snd $ snd $  fst $ (!!0) abc)  -0.0015)< (snd $ snd $  fst $ (!!2) abc))
 
     let lowpointpredbig       = (((snd $ snd $  fst $ (!!1) abc)-0.002) < ((snd $ snd $  fst $ (!!3) abc)))   
                                   || ((pr-0.002)< (snd $ snd $  fst $ (!!3) abc))
@@ -127,7 +127,7 @@ crossminstra abcc pr = do
                                   && (((fst $ snd $  fst $ (!!1) abc) /=  (fst $ snd $  fst $ (!!2) abc) ))
                                 
 
-    let highpointpredsmall    = ((pr+0.0015)> (fst $ snd $  fst $ (!!2) abc))
+    let highpointpredsmall    = ((( fst $ snd $  fst $ (!!0) abc)   +0.0015)> (fst $ snd $  fst $ (!!2) abc))
 
     let highpointpredbig      = (((fst $ snd $  fst $ (!!1) abc)+0.002) > ((fst $ snd $  fst $ (!!3) abc)))   
                                   || ((pr+0.002)> (fst $ snd $  fst $ (!!3) abc))
@@ -138,16 +138,18 @@ crossminstra abcc pr = do
                             (True,False )  -> (1200,"no") --threshhold to short direction
                             (False,True )  -> (3000,"no")  --threshhold to short direction
                             (False,False)  -> case (highpointpredsmall,highpointpredbig) of 
-                                                    (True,False )  ->(1500,"no")  --threshhold to short direction
-                                                    (True,True  )  ->(2000,"no")  --threshhold to short direction
+                                                    (True,False )  ->(1700,"no")  --threshhold to short direction
+                                                    (True,True  )  ->(2500,"no")  --threshhold to short direction
+                                                    (False,True  )  ->(1700,"no")  --threshhold to short direction
                                                     (_   ,_     )  ->(0,"yes") 
     let (highpointfactor,reasonhigh) = case (highpointpredsmall,highpointpredbig) of 
                             (True,True  )  ->(3000,"no")  --threshhold to short direction
                             (True,False )  ->(1200,"no")  --threshhold to short direction
                             (False,True )  ->(3000,"no")  --threshhold to short direction
                             (False,False)  -> case (lowpointpredsmall,lowpointpredbig) of 
-                                                    (True,False )  ->(1200,"no")  --threshhold to short direction
-                                                    (True,True  )  ->(1800,"no")  --threshhold to short direction
+                                                    (True,False )  ->(1500,"no")  --threshhold to short direction
+                                                    (True,True  )  ->(2200,"no")  --threshhold to short direction
+                                                    (False,True  )  ->(1500,"no")  --threshhold to short direction
                                                     (_   ,_     )  ->(0,"yes") 
                             
     let basegrid = max (grid - (pr-lowp)) stopprofitgrid
