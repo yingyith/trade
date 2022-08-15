@@ -134,7 +134,8 @@ crossminstra abcc pr = do
    --                               || highpointtrendpred
    --                               
 
-    let (lowpointfactor,reasonlow) =   suddenwavestra abcc 
+    --let (lowpointfactor,reasonlow) =   suddenwavestra abcc 
+    (lowpointfactor,reasonlow) <-   suddenwavestra abcc 
    -- let (lowpointfactor,reasonlow)   = case (lowpointpredsmall,lowpointpredbig) of 
    --                         (True,True  )  -> (3000,"no")  --threshhold to short direction
    --                         (True,False )  -> (1200,"no") --threshhold to short direction
@@ -181,26 +182,31 @@ crossminstra abcc pr = do
     liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,abc,reasonlow,reasonhigh)
     return ((totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor),(reasonhigh,reasonlow))
                                           
-suddenwavestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] ->   (Int,String)
-suddenwavestra  abcc  =    case (vo_wave_pred_15m,vo_wave_pred_1h,vo_wave_pred_4h) of  --add 15m and 1h factor
-                                                    (True ,False,False) -> (1200,"no")
-                                                    (True ,False,True ) -> (2000,"no")
-                                                    (False,True ,False) -> (2000,"no")
-                                                    (False,True ,True ) -> (2500,"no")
-                                                    (True ,True ,_    ) -> (3000,"no")
-                                                    (False,False,True ) -> (2500,"no")
-                                                    (False,False,False) -> (0  ,"yes")
-                                where 
-                                    abc                       =        [snd i|i<-abcc] 
-                                    klines_15m                =        DT.tail $ DT.take 6 $ (!!2) abc
-                                    klines_1h                 =        DT.tail $ DT.take 6 $ (!!3) abc
-                                    klines_4h                 =        DT.tail $ DT.take 6 $ (!!4) abc
-                                    min_vo_klines_15m         =        minimum [hvo i | i <- klines_15m ]
-                                    min_vo_klines_1h          =        minimum [hvo i | i <- klines_1h ]
-                                    min_vo_klines_4h          =        minimum [hvo i | i <- klines_4h ]
-                                    vo_wave_pred_15m   =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_15m) || (( hvo $ (!!2) klines_15m) == min_vo_klines_15m)
-                                    vo_wave_pred_1h    =  ( (hvo $ (!!1) klines_1h) == min_vo_klines_1h)  || (( hvo $ (!!2) klines_1h) == min_vo_klines_1h)
-                                    vo_wave_pred_4h    =  ( (hvo $ (!!1) klines_4h) == min_vo_klines_4h)  || (( hvo $ (!!2) klines_4h) == min_vo_klines_4h)
+suddenwavestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> IO  (Int,String)
+suddenwavestra  abcc  = do
+                         --   case (vo_wave_pred_15m,vo_wave_pred_1h,vo_wave_pred_4h) of  --add 15m and 1h factor
+                         --                           (True ,False,False) -> (1200,"no")
+                         --                           (True ,False,True ) -> (2000,"no")
+                         --                           (False,True ,False) -> (2000,"no")
+                         --                           (False,True ,True ) -> (2500,"no")
+                         --                           (True ,True ,_    ) -> (3000,"no")
+                         --                           (False,False,True ) -> (2500,"no")
+                         --                           (False,False,False) -> (0  ,"yes")
+                         --       where 
+                         let           abc                       =        [snd i|i<-abcc] 
+                         let           klines_15m                =        DT.tail $ DT.take 6 $ (!!2) abc
+                         let           klines_1h                 =        DT.tail $ DT.take 6 $ (!!3) abc
+                         let           klines_4h                 =        DT.tail $ DT.take 6 $ (!!4) abc
+                         let           min_vo_klines_15m         =        minimum [hvo i | i <- klines_15m ]
+                         let           min_vo_klines_1h          =        minimum [hvo i | i <- klines_1h ]
+                         let           min_vo_klines_4h          =        minimum [hvo i | i <- klines_4h ]
+                         liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",klines_4h,min_vo_klines_4h)
+                         let           vo_wave_pred_15m   =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_15m) || (( hvo $ (!!2) klines_15m) == min_vo_klines_15m)
+                         let           vo_wave_pred_1h    =  ( (hvo $ (!!1) klines_1h) == min_vo_klines_1h)  || (( hvo $ (!!2) klines_1h) == min_vo_klines_1h)
+                         let           vo_wave_pred_4h    =  ( (hvo $ (!!1) klines_4h) == min_vo_klines_4h)  || (( hvo $ (!!2) klines_4h) == min_vo_klines_4h)
+                         liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",vo_wave_pred_4h)
+                         return (1000,"no")
+                         
                                                            
        
 
