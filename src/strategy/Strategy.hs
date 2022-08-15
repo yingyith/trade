@@ -201,10 +201,10 @@ suddenwavestra  abcc  = do
                          let           min_vo_klines_1h          =        minimum [hvo i | i <- klines_1h ]
                          let           min_vo_klines_4h          =        minimum [hvo i | i <- klines_4h ]
                          liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",klines_4h,min_vo_klines_4h)
-                         let           vo_wave_pred_15m   =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_15m) || (( hvo $ (!!2) klines_15m) == min_vo_klines_15m)
-                         let           vo_wave_pred_1h    =  ( (hvo $ (!!1) klines_1h) == min_vo_klines_1h)  || (( hvo $ (!!2) klines_1h) == min_vo_klines_1h)
-                         let           vo_wave_pred_4h    =  ( (hvo $ (!!1) klines_4h) == min_vo_klines_4h)  || (( hvo $ (!!2) klines_4h) == min_vo_klines_4h)
-                         liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",vo_wave_pred_4h)
+                        -- let           vo_wave_pred_15m   =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_15m) || (( hvo $ (!!2) klines_15m) == min_vo_klines_15m)
+                        -- let           vo_wave_pred_1h    =  ( (hvo $ (!!1) klines_1h) == min_vo_klines_1h)  || (( hvo $ (!!2) klines_1h) == min_vo_klines_1h)
+                        -- let           vo_wave_pred_4h    =  ( (hvo $ (!!1) klines_4h) == min_vo_klines_4h)  || (( hvo $ (!!2) klines_4h) == min_vo_klines_4h)
+                        -- liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",vo_wave_pred_4h)
                          return (1000,"no")
                          
                                                            
