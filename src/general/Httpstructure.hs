@@ -8,7 +8,7 @@ module Httpstructure
       Stick,
       takeorder,
       cancelorder,
-      HStick (op,cp,lp,hp,st),
+      HStick (op,cp,lp,hp,st,hhvo),
       Wdepseries (depu,depU,deppu,asksh,bidsh),
       DpairMserie,
       sticks,
@@ -457,7 +457,8 @@ data HStick = HStick {
       op :: String,
       cp :: String,
       hp :: String,
-      lp :: String
+      lp :: String,
+      hhvo :: String
 } deriving (Show,Generic)
 
 instance FromJSON HStick where
@@ -467,7 +468,8 @@ instance FromJSON HStick where
           hp <- parseJSON $ v V.! 2
           lp <- parseJSON $ v V.! 3
           cp <- parseJSON $ v V.! 4
-          return $ HStick st op hp lp cp
+          hhvo <- parseJSON $ v V.! 5
+          return $ HStick st op hp lp cp hhvo
    parseJSON _ = mzero
 
 

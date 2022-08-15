@@ -410,13 +410,15 @@ hsticklistToredis hst  akey   = do
     let dcp = cp s 
     let dhp = hp s 
     let dlp = lp s 
+    let dhhvo = hhvo s 
     let ddst = fromInteger dst :: Double
     let sst = BL.fromString $ show dst
     let sop = BL.fromString dop
     let scp = BL.fromString dcp
     let shp = BL.fromString dhp
     let slp = BL.fromString dlp
-    let abyvaluestr = BL.fromString  $ DL.intercalate "|" [show dst,dop,dcp,dhp,dlp]
+    let shhvo = BL.fromString dhhvo
+    let abyvaluestr = BL.fromString  $ DL.intercalate "|" [show dst,dop,dcp,dhp,dlp,dhhvo]
     void $ zadd abykeystr [(-ddst,abyvaluestr)]
     
 
