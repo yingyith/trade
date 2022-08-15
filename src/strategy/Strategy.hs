@@ -194,13 +194,14 @@ suddenwavestra  abcc  = do
                          --                           (False,False,False) -> (0  ,"yes")
                          --       where 
                          let           abc                       =        [snd i|i<-abcc] 
-                         let           klines_15m                =        DT.tail $ DT.take 6 $ (!!2) abc
-                         let           klines_1h                 =        DT.tail $ DT.take 6 $ (!!3) abc
-                         let           klines_4h                 =        DT.tail $ DT.take 6 $ (!!4) abc
-                         let           min_vo_klines_15m         =        minimum [hvo i | i <- klines_15m ]
-                         let           min_vo_klines_1h          =        minimum [hvo i | i <- klines_1h ]
-                         let           min_vo_klines_4h          =        minimum [hvo i | i <- klines_4h ]
-                         liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",klines_4h,min_vo_klines_4h)
+                        -- let           klines_15m                =        DT.tail $ DT.take 6 $ (!!2) abc
+                        -- let           klines_1h                 =        DT.tail $ DT.take 6 $ (!!3) abc
+                        -- let           klines_4h                 =        DT.tail $ DT.take 6 $ (!!4) abc
+                        -- let           min_vo_klines_15m         =        minimum [hvo i | i <- klines_15m ]
+                        -- let           min_vo_klines_1h          =        minimum [hvo i | i <- klines_1h ]
+                        -- let           min_vo_klines_4h          =        minimum [hvo i | i <- klines_4h ]
+                         liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",abc)
+                         --liftIO $ logact logByteStringStdout $ B.pack $ show ("test---",klines_4h,min_vo_klines_4h)
                         -- let           vo_wave_pred_15m   =  ( (hvo $ (!!1) klines_15m) == min_vo_klines_15m) || (( hvo $ (!!2) klines_15m) == min_vo_klines_15m)
                         -- let           vo_wave_pred_1h    =  ( (hvo $ (!!1) klines_1h) == min_vo_klines_1h)  || (( hvo $ (!!2) klines_1h) == min_vo_klines_1h)
                         -- let           vo_wave_pred_4h    =  ( (hvo $ (!!1) klines_4h) == min_vo_klines_4h)  || (( hvo $ (!!2) klines_4h) == min_vo_klines_4h)
