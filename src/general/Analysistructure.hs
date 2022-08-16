@@ -6,7 +6,9 @@ module Analysistructure
       green_or_red_pred,
       same_color_pred,
       get_largest_volumn,
+      get_smlgest_volumn,
       volumn_pred,
+      volumn_pred_vice,
       Klines_1 (..),
       Hlnode (..),
       Trend  (..),
@@ -181,12 +183,18 @@ data Klines_1 = Klines_1 {
 green_or_red_pred  :: Klinenode -> Bool 
 green_or_red_pred  knode =  ((knoprice knode) <= (knlprice knode))
               
-volumn_pred  :: Klinenode -> Double -> Bool 
-volumn_pred  knode basevo =  (( fromIntegral $ knvolumn knode :: Double) >= (2.5*basevo))
+volumn_pred  :: Klinenode -> Double -> Double -> Bool 
+volumn_pred  knode vomax vomin =  (( fromIntegral $ knvolumn knode :: Double) >= vomax )
+                                || (( fromIntegral $ knvolumn knode :: Double) <= vomin )
 
+volumn_pred_vice  :: Klinenode  -> Double -> Bool 
+volumn_pred_vice  knode voavg  =  (( fromIntegral $ knvolumn knode :: Double) >= (2.5*voavg) )
 
 get_largest_volumn :: [Klinenode] -> (Klinenode,Int)
 get_largest_volumn klines = maximumBy (comparing  (knvolumn.fst))  (zip klines [0..]) 
+
+get_smlgest_volumn :: [Klinenode] -> (Klinenode,Int)
+get_smlgest_volumn klines = minimumBy (comparing  (knvolumn.fst))  (zip klines [0..]) 
 
 same_color_pred ::  [Klinenode] -> Bool
 same_color_pred klines  = 

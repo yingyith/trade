@@ -452,7 +452,7 @@ volumn_stra_1m kline_1 dcp  = do
                                       -------------------------------------------------------
                                       --on high point,fst stick is green,snd is red ,ans snd is strong 4times than avg ,then direction is short 
                                       --on low  point,fst stick is red  ,snd is green ,ans snd is strong 4times  than avg,then direction is long 
-                                      let volumn_fst_pred   = AS.volumn_pred kline_1m_fst kline_1m_avg
+                                      let volumn_fst_pred   = AS.volumn_pred kline_1m_fst kline_1m_max kline_1m_min
                                       let limithpred_sml    = ((maximum [(AS.knhprice kline_1m_fst),(AS.knhprice kline_1m_snd)]) >=kline_1m_max) 
                                                               -- && (green_or_red_pred kline_1m_fst ==False)
                                                                && volumn_fst_pred
@@ -467,10 +467,13 @@ volumn_stra_1m kline_1 dcp  = do
                                       --first stick with 2 more same color  stick followed ,and one other color in the latest stick 
                                       let aspan                    =    DL.take 6  klines_1ms 
                                       let (maxvolitem,maxvoindex)  =    get_largest_volumn aspan 
-                                      let volumn_snd_pred          =    AS.volumn_pred maxvolitem kline_1m_avg
-                                      let sandwichcore_pred        =    same_color_pred  $ DL.take maxvoindex $ DL.tail aspan  
+                                      let (minvolitem,minvoindex)  =    get_smlgest_volumn aspan 
+                                      let volumn_snd_pred          =    AS.volumn_pred_vice maxvolitem kline_1m_avg 
+                                                                          || AS.volumn_pred_vice minvolitem kline_1m_avg 
+                                      let sandwichcore_pred        =    (same_color_pred  $ DL.take maxvoindex $ DL.tail aspan)  
+                                                                          || (same_color_pred  $ DL.take minvoindex $ DL.tail aspan)
                                       let lastreverse_pred         =    (green_or_red_pred $ last aspan ) /= (green_or_red_pred kline_1m_snd)
-                                      let sandwich_pred            =    (maxvoindex<=4) && sandwichcore_pred -- && lastreverse_pred 
+                                      let sandwich_pred            =    ((maxvoindex<=4)|| (minvoindex<=4)) && sandwichcore_pred -- && lastreverse_pred 
                                       let limithpred_big           =    ((maximum $ DL.map AS.knhprice aspan )==kline_1m_max)
                                                                           && (sandwich_pred) 
                                                                           && volumn_snd_pred 
