@@ -302,13 +302,13 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "1h") &&  sumresm >0 ) $ do 
-                           let aresquan        = toInteger (3*minquan)
+                           let aresquan        = toInteger (9*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h") &&  sumresm >0 ) $ do 
-                           let aresquan        = toInteger (25*minquan)
-                           let stopclosegrid   = 0.002
+                           let aresquan        = toInteger (20*minquan)
+                           let stopclosegrid   = 0.0021
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
                        
 
@@ -381,12 +381,12 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "1h") && sumresm <0  ) $ do 
-                           let aresquan        = toInteger (3*minquan)
+                           let aresquan        = toInteger (9*minquan)
                            let stopclosegrid   = 0.0012
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
                        when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "4h") && sumresm <0 ) $ do 
-                           let aresquan        = toInteger (25*minquan)
+                           let aresquan        = toInteger (20*minquan)
                            let stopclosegrid   = 0.0021
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
