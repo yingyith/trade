@@ -184,7 +184,7 @@ crossminstra abcc pr = do
                                           
 suddenwavestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> (Int,String)
 suddenwavestra  abcc  =  case (vo_wave_pred_15m,vo_wave_pred_1h,vo_wave_pred_4h) of  --add 15m and 1h factor
-                                                    (True ,False,False) -> (2500,"no")
+                                                    (True ,False,False) -> (2000,"no")
                                                     (True ,False,True ) -> (3000,"no")
                                                     (False,True ,False) -> (3000,"no")
                                                     (False,True ,True ) -> (3000,"no")
