@@ -438,8 +438,8 @@ volumn_stra_1m kline_1 dcp  = do
                      case (length klines_1ms) of 
                         x|x<8  -> return ((False, AS.DO ),"no")
                         _       -> do 
-                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 7 klines_1ms
-                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 7 klines_1ms
+                                      let sam_span_prh   =     DL.map  AS.knhprice $ DL.take 5 klines_1ms
+                                      let sam_span_prl   =     DL.map  AS.knlprice $ DL.take 5 klines_1ms
                                       let sam_span_vol   =     DL.map  AS.knamount $ DL.take 7 klines_1ms
                                       let kline_1m_avg   =     (DL.sum sam_span_vol) / ((fromIntegral $ DL.length sam_span_vol ):: Double)
                                       let kline_1m_max   =     maximum sam_span_prh
