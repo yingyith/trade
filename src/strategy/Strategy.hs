@@ -189,7 +189,7 @@ suddenwavestra  abcc  =  case (vo_wave_pred_15m,vo_wave_pred_1h,vo_wave_pred_4h)
                                                     (False,True ,False) -> (3000,"no")
                                                     (False,True ,True ) -> (3000,"no")
                                                     (True ,True ,False) -> (3000,"no")
-                                                    (True ,True ,True ) -> (3000,"no")
+                                                    (True ,True ,True ) -> (4000,"no")
                                                     (False,False,True ) -> (3000,"no")
                                                     (False,False,False) -> (0  ,"yes")
                          where 
