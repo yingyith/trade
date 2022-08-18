@@ -7,6 +7,7 @@ module Analysistructure
       same_color_pred,
       get_largest_volumn,
       get_smlgest_volumn,
+      choose_proper_wave,
       volumn_pred,
       volumn_pred_vice,
       Klines_1 (..),
@@ -92,6 +93,17 @@ getaskdiffquanpred  checkpr diff  key value  =
         x|(x <= (checkpr + diff)) && (x >= checkpr) ->  True
         _                                           ->  False
     
+choose_proper_wave :: Double -> Double -> Double -> Double
+choose_proper_wave  ccc  ddd  eee = 
+    case ((abs eee  )>0.2,(abs ddd)>0.1,(abs ccc)>0.2) of 
+       (True , True  ,True  )  -> eee 
+       (True , True  ,False )  -> eee 
+       (True , False ,False )  -> eee 
+       (True , False ,True  )  -> eee 
+       (False, False ,True  )  -> ccc 
+       (False, False ,False )  -> ddd 
+       (False, True  ,True  )  -> ddd 
+       (False, True  ,False )  -> ddd 
 
 getBidAskNum :: ((Double,Double),Double) -> Depthset -> [(Double,Double)]  --diff have 0.0005,0.001,0.002,for up trend use all max data,for low trend ,use all min data
 getBidAskNum apr dpdata = [

@@ -501,6 +501,7 @@ volumn_stra_1m kline_1 dcp  = do
                                           (_     ,_     ,_      ,_     ) -> return ((False, AS.DO ),"no")
                      -------------------------------------------------------
                      -------------------------------------------------------
+                     --
     
 
 secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO ((Int,Trend),String)
@@ -510,10 +511,10 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                      let curprmsnddire = snd (ratiol !! 7)
                      let curprsfstdiff = fst (ratiol !! 6)
                      let curprmsnddiff = fst (ratiol !! 7)
-                     let cccdata       = ratiol !! 8
-                     let ddddata       = ratiol !! 9
-                     let eeedata       = ratiol !! 10
-                     let ccc           = maximum [snd cccdata,snd ddddata,snd eeedata]
+                     let cccdata       = snd $ ratiol !! 8
+                     let ddddata       = snd $ ratiol !! 9
+                     let eeedata       = snd $ ratiol !! 10
+                     let choosed_wave  = choose_proper_wave cccdata ddddata eeedata 
                      let badata        = ratiol !! 3
                      let ba            = snd badata
                      let abdata        = ratiol !! 2
@@ -529,7 +530,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                (False,True )   -> AS.ND
                                                (False,False)   -> AS.UP
 
-                     let ccctrend       = case ccc of 
+                     let ccctrend       = case choosed_wave of 
                                             x|x<(-0.2)   -> (AS.DO,0.001) 
                                             x|x>0.2      -> (AS.UP,0.001) 
                                             _            -> (AS.ND,0) 
@@ -561,7 +562,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                 True  -> 0
                                                 False -> (curprsfstdiff + curprmsnddiff)
 
-                     let middquan      = midquan*prsti + (waveonlongsight ccc ddd eee trend) 
+                     let middquan      = midquan*prsti + (waveonlongsight choosed_wave ddd eee trend) 
 
                      let finalquan     = case (middquan > 0 ,trend) of 
                                           (True  , AS.DO) -> 0
