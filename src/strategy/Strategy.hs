@@ -188,7 +188,8 @@ suddenwavestra  abcc  =  case (vo_wave_pred_15m,vo_wave_pred_1h,vo_wave_pred_4h)
                                                     (True ,False,True ) -> (3000,"no")
                                                     (False,True ,False) -> (3000,"no")
                                                     (False,True ,True ) -> (3000,"no")
-                                                    (True ,True ,_    ) -> (4000,"no")
+                                                    (True ,True ,False) -> (4000,"no")
+                                                    (True ,True ,True ) -> (9000,"no")
                                                     (False,False,True ) -> (3000,"no")
                                                     (False,False,False) -> (0  ,"yes")
                          where 
@@ -533,20 +534,22 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
 
                      let (prsti,prsaba)   = case trend of 
                                               AS.DO -> case ba of 
-                                                          x|x<0 -> case (fst ccctrend) of 
+                                                          x|x<0   -> case (fst ccctrend) of 
                                                                       AS.ND  -> (1,"pr")
                                                                       AS.DO  -> (1,"pr1")
                                                                       AS.UP  -> (1,"cc2")
-                                                          _     -> case (fst ccctrend) of 
+                                                          x|x>0.5 -> (1,"no") 
+                                                          _       -> case (fst ccctrend) of 
                                                                       AS.ND ->  (1,"no")
                                                                       AS.DO  -> (1,"cc1")
                                                                       AS.UP  -> (1,"no")
                                               AS.UP -> case ab of 
-                                                          x|x<0 -> case (fst ccctrend) of 
+                                                          x|x<0   -> case (fst ccctrend) of 
                                                                       AS.ND  -> (1,"pr")
                                                                       AS.UP  -> (1,"pr1")
                                                                       AS.DO  -> (1,"cc2")
-                                                          _     -> case (fst ccctrend) of
+                                                          x|x>0.5 -> (1,"no") 
+                                                          _       -> case (fst ccctrend) of
                                                                       AS.ND ->  (1,"no")
                                                                       AS.UP  -> (1,"cc1")
                                                                       AS.DO  -> (1,"no")
