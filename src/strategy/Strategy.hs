@@ -540,7 +540,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                           _     -> case (fst ccctrend) of 
                                                                       AS.ND ->  (1,"no")
                                                                       AS.DO  -> (1,"cc1")
-                                                                      AS.UP  -> (1,"cc2")
+                                                                      AS.UP  -> (1,"no")
                                               AS.UP -> case ab of 
                                                           x|x<0 -> case (fst ccctrend) of 
                                                                       AS.ND  -> (1,"pr")
@@ -549,7 +549,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                           _     -> case (fst ccctrend) of
                                                                       AS.ND ->  (1,"no")
                                                                       AS.UP  -> (1,"cc1")
-                                                                      AS.DO  -> (1,"cc2")
+                                                                      AS.DO  -> (1,"no")
                                               _     -> (1,"no")
 
                      let midquan       = case (basepr < minpr || basepr > maxpr) of 
