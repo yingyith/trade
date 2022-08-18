@@ -43,7 +43,7 @@ stopprofitlist          :: [Double]
 stopprofitlist          = [0.0006,0.001,0.0014,0.0018,0.0022,0.0026] -- 15m,1h,4h,12h
 
 diffspreadsheet         :: [Double]
-diffspreadsheet         = [0.01   ,0.25   ,0.34  ,0.5  ,0.603  ,0.74  ,0.87  ,0.95  ,1] 
+diffspreadsheet         = [0.01   ,0.2   ,0.34  ,0.5  ,0.603  ,0.74  ,0.87  ,0.95  ,1] 
 
 depthrisksheet          :: [Int] 
 depthrisksheet          = [-3000  ,150   ,410   ,630   ,1110  ,2060  ,2550  ,2800 ]   --deothrisksheet x 2  = minrulethreshold + shortminrulethreshold 
@@ -58,7 +58,7 @@ shortminrulethreshold   :: [Int] --base  to serious degree
 shortminrulethreshold   = [2000  ,1300  ,850  ]   -- turple 5, (a,b,c,d,e)  (a,b) is for quant number  degree ,(c,d,e) for  profit distance
                      
 adjustratiosheet :: [Double]
-adjustratiosheet        = [0.001   , 0.2        , 0.3        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
+adjustratiosheet        = [0.001   , 0.23        , 0.3        ,  0.57      , 0.62          , 0.76        , 0.9                , 1     ]
 
 adjustboostgrid :: [(Int,Int)]
 adjustboostgrid         = [(0,0) ,(640,0)   ,(1200,0)   , (1600,2500), (2510,3000)  ,(3000,4000) , (4000,5000)               ]
