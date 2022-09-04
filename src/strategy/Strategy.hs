@@ -541,7 +541,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                                       AS.ND  -> (1,"pr")
                                                                       AS.DO  -> (1,"pr1")
                                                                       AS.UP  -> (1,"cc2")
-                                                          x|x>0.7 -> (1,"no") 
+                                                          x|x>(-0.2) -> (1,"no") 
                                                           _       -> case (fst ccctrend) of 
                                                                       AS.ND ->  (1,"no")
                                                                       AS.DO  -> (1,"cc1")
@@ -551,7 +551,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                                       AS.ND  -> (1,"pr")
                                                                       AS.UP  -> (1,"pr1")
                                                                       AS.DO  -> (1,"cc2")
-                                                          x|x>0.7 -> (1,"no") 
+                                                          x|x>(-0.2) -> (1,"no") 
                                                           _       -> case (fst ccctrend) of
                                                                       AS.ND ->  (1,"no")
                                                                       AS.UP  -> (1,"cc1")
@@ -577,7 +577,8 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                                  ( (ablist !!0 )),
                                                                  ( (ablist !!1 )),
                                                                  ( (ablist !!2 )),
-                                                                 "aa"++(showdouble  $ snd (ratiol !!1 )),
+                                                                 "fab"++(showdouble  $ snd (ratiol !!0 )),
+                                                                 "fba"++(showdouble  $ snd (ratiol !!1 )),
                                                                  "ab"++(showdouble  $ snd (ratiol !!2 )),
                                                                  "ba"++(showdouble  $ snd (ratiol !!3 )),
                                                                  "aaa"++(showdouble $ snd (ratiol !!6 )),
