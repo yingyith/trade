@@ -95,7 +95,7 @@ getaskdiffquanpred  checkpr diff  key value  =
     
 choose_proper_wave :: Double -> Double -> Double -> Double
 choose_proper_wave  ccc  ddd  eee = 
-    case ((abs eee  )>0.2,(abs ddd)>0.09,(abs ccc)>0.2) of 
+    case ((abs eee  )>0.08,(abs ddd)>0.09,(abs ccc)>0.1) of 
        (True , True  ,True  )  -> eee 
        (True , True  ,False )  -> eee 
        (True , False ,False )  -> eee 
@@ -133,14 +133,14 @@ getBidAskNum apr dpdata = [
                            (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0008 ) $ bidset  dpdata ,
                            sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0008 ) $ askset  dpdata 
                            ),
-                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0016 ) $ bidset  dpdata ,
-                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0016 ) $ askset  dpdata 
-                           ),
-                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0035 ) $ bidset  dpdata ,
-                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0035 ) $ askset  dpdata 
+                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.004 ) $ bidset  dpdata ,
+                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.004 ) $ askset  dpdata 
                            ),
                            (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.008 ) $ bidset  dpdata ,
                            sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.008 ) $ askset  dpdata 
+                           ),
+                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.012 ) $ bidset  dpdata ,
+                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.012 ) $ askset  dpdata 
                            ),
                            (0 ,
                             0 
