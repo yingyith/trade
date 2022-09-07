@@ -541,7 +541,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
 
                      let (prsti,prsaba)   = case trend of 
                                               AS.DO -> case fab of 
-                                                          x|x<(-0.5) -> (1,"no")
+                                                          x|(abs x)>(0.5) -> (1,"no")
                                                           _          -> case ba of 
                                                                            x|x<0   -> case (fst ccctrend) of 
                                                                                        AS.ND  -> (1,"pr")
@@ -553,7 +553,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                                                        AS.DO  -> (1,"cc1")
                                                                                        AS.UP  -> (1,"no")
                                               AS.UP -> case fba of
-                                                          x|x<(-0.5) -> (1,"no")
+                                                          x|(abs x)>(0.5) -> (1,"no")
                                                           _          -> case ab of 
                                                                            x|x<0   -> case (fst ccctrend) of 
                                                                                        AS.ND  -> (1,"pr")
