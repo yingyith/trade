@@ -540,36 +540,32 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                             _            -> (AS.ND,0) 
 
                      let (prsti,prsaba)   = case trend of 
-                                              AS.DO -> case fab of 
-                                                          x|x<(-0.5)  ->  (1,"no")
-                                                          _           ->  case fba of 
-                                                                            x|x<(-0.2) -> case ab of 
-                                                                                            x|x<(-0.6) -> (1,"no")
-                                                                                            _          -> case ba of
-                                                                                                               x|x<(-0.2) -> case (fst ccctrend) of 
-                                                                                                                               AS.ND  -> (1,"pr")
-                                                                                                                               AS.DO  -> (1,"pr1")
-                                                                                                                               AS.UP  -> (1,"cc2")
-                                                                                                               _          -> case (fst ccctrend) of 
-                                                                                                                               AS.ND ->  (1,"no")
-                                                                                                                               AS.DO  -> (1,"cc1")
-                                                                                                                               AS.UP  -> (1,"no")
-                                                                            _          -> (1,"no")
-                                              AS.UP -> case fba of
-                                                          x|x<(-0.5)  ->  (1,"no")
-                                                          _           ->  case fab of
-                                                                            x|x<(-0.2) -> case ba of 
-                                                                                            x|x<(-0.6) -> (1,"no")
-                                                                                            _          -> case ab of
-                                                                                                               x|x<(-0.2) -> case (fst ccctrend) of 
-                                                                                                                               AS.ND  -> (1,"pr")
-                                                                                                                               AS.UP  -> (1,"pr1")
-                                                                                                                               AS.DO  -> (1,"cc2")
-                                                                                                               _          -> case (fst ccctrend) of
-                                                                                                                               AS.ND ->  (1,"no")
-                                                                                                                               AS.UP  -> (1,"cc1")
-                                                                                                                               AS.DO  -> (1,"no")
-                                                                            _          -> (1,"no")
+                                              AS.DO -> case (fba < fab) of 
+                                                          False   ->  (1,"no")
+                                                          True    ->  case ab of 
+                                                                        x|x<(-0.6) -> (1,"no")
+                                                                        _          -> case ba of
+                                                                                           x|x<(-0.2) -> case (fst ccctrend) of 
+                                                                                                           AS.ND  -> (1,"pr")
+                                                                                                           AS.DO  -> (1,"pr1")
+                                                                                                           AS.UP  -> (1,"cc2")
+                                                                                           _          -> case (fst ccctrend) of 
+                                                                                                           AS.ND ->  (1,"no")
+                                                                                                           AS.DO  -> (1,"cc1")
+                                                                                                           AS.UP  -> (1,"no")
+                                              AS.UP -> case (fab < fba) of
+                                                          False   ->  (1,"no")
+                                                          True    ->  case ba of 
+                                                                        x|x<(-0.6) -> (1,"no")
+                                                                        _          -> case ab of
+                                                                                            x|x<(-0.2) -> case (fst ccctrend) of 
+                                                                                                            AS.ND  -> (1,"pr")
+                                                                                                            AS.UP  -> (1,"pr1")
+                                                                                                            AS.DO  -> (1,"cc2")
+                                                                                            _          -> case (fst ccctrend) of
+                                                                                                            AS.ND ->  (1,"no")
+                                                                                                            AS.UP  -> (1,"cc1")
+                                                                                                            AS.DO  -> (1,"no")
                                               AS.ND -> (1,"no")
 
                      let midquan       = case (basepr < minpr || basepr > maxpr) of 
