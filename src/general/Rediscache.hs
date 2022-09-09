@@ -308,7 +308,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
 
                        when ((ntrend == AS.UP ) && (needlepred == True) && (nreason == "4h") &&  sumresm >0 ) $ do 
                            let aresquan        = toInteger (20*minquan)
-                           let stopclosegrid   = 0.0021
+                           let stopclosegrid   = 0.0018
                            prepopenfun stopclosegrid aresquan ostvar BUY dcp curtimestampi tbq 
                        
 
@@ -387,7 +387,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
 
                        when ((ntrend == AS.DO ) && (needlepred == True) && (nreason == "4h") && sumresm <0 ) $ do 
                            let aresquan        = toInteger (20*minquan)
-                           let stopclosegrid   = 0.0021
+                           let stopclosegrid   = 0.0018
                            prepopenfun stopclosegrid aresquan ostvar SELL dcp curtimestampi tbq 
 
    `catch` (\(e :: SomeException) -> do
