@@ -519,10 +519,10 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                      let ba            = snd badata
                      let abdata        = ratiol !! 2
                      let ab            = snd abdata
-                     let fabdata        = ratiol !! 0
-                     let fab            = snd fabdata
-                     let fbadata        = ratiol !! 1
-                     let fba            = snd fbadata
+                     let fabdata       = ratiol !! 0
+                     let fab           = snd fabdata
+                     let fbadata       = ratiol !! 1
+                     let fba           = snd fbadata
                      let ddd           = snd (ratiol !! 9)
                      let eee           = snd (ratiol !! 10)
                      let minpr         = fst $ fst  diffpr
@@ -558,14 +558,14 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                           True    ->  case (ab < ba) of 
                                                                         False -> (1,"no")
                                                                         True  -> case ab of
-                                                                                            x|x<(-0.2) -> case (fst ccctrend) of 
-                                                                                                            AS.ND  -> (1,"pr")
-                                                                                                            AS.UP  -> (1,"pr1")
-                                                                                                            AS.DO  -> (1,"cc2")
-                                                                                            _          -> case (fst ccctrend) of
-                                                                                                            AS.ND ->  (1,"no")
-                                                                                                            AS.UP  -> (1,"cc1")
-                                                                                                            AS.DO  -> (1,"no")
+                                                                                           x|x<(-0.2) -> case (fst ccctrend) of 
+                                                                                                           AS.ND  -> (1,"pr")
+                                                                                                           AS.UP  -> (1,"pr1")
+                                                                                                           AS.DO  -> (1,"cc2")
+                                                                                           _          -> case (fst ccctrend) of
+                                                                                                           AS.ND ->  (1,"no")
+                                                                                                           AS.UP  -> (1,"cc1")
+                                                                                                           AS.DO  -> (1,"no")
                                               AS.ND -> (1,"no")
 
                      let midquan       = case (basepr < minpr || basepr > maxpr) of 
