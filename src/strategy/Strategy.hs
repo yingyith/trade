@@ -587,7 +587,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                                  ( (ablist !!0 )),
                                                                  ( (ablist !!1 )),
                                                                  ( (ablist !!2 )),
-                                                                 "fba"++ (showdouble  $ snd (ratiol !!0 ))++(showdouble  $ snd (ratiol !!1 )),
+                                                                 "fba"++ (showdouble  fab )++(showdouble fba),
                                                                  "ab"++(showdouble  $ snd (ratiol !!2 )),
                                                                  "ba"++(showdouble  $ snd (ratiol !!3 )),
                                                                  "aaa"++(showdouble $ snd (ratiol !!6 )),
