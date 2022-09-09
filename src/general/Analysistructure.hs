@@ -95,7 +95,7 @@ getaskdiffquanpred  checkpr diff  key value  =
     
 choose_proper_wave :: Double -> Double -> Double -> Double
 choose_proper_wave  ccc  ddd  eee = 
-    case ((abs eee  )>0.08,(abs ddd)>0.09,(abs ccc)>0.1) of 
+    case ((abs eee  )>0.09,(abs ddd)>0.13,(abs ccc)>0.19) of 
        (True , True  ,True  )  -> eee 
        (True , True  ,False )  -> eee 
        (True , False ,False )  -> eee 
