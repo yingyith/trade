@@ -424,6 +424,61 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        _                                                         -> -(snd $  (adjustboostgrid!!0)) 
                  (_   ,_     )  ->  0
 
+--trendwave : the incoming buy/sell ratio change on the vision of boundary ,coming but still have time to change  
+trendwave_1 :: AS.Trend -> Double -> Double  -> Double -> Double -> Double -> AS.Trend -> (Bool,String,Double,Double)-- fab  ,fba    ,ab , ba  , first +0.0002 trend,
+trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return +0.0001 ratio as  base
+                                                  AS.DO -> case (fba < fab) of 
+                                                              False   ->  (False,"no",0,0)
+                                                              True    ->  case (ba < ab) && (aaa <(-0.1)) of 
+                                                                            False -> (False,"no",0,0)
+                                                                            True  -> case ba of
+                                                                                               x|x<(-0.2) -> case (basetrd) of 
+                                                                                                               AS.ND  -> (True,"pr" ,aaa,aaa)
+                                                                                                               AS.DO  -> (True,"pr1",aaa,aaa)
+                                                                                                               AS.UP  -> (True,"cc2",aaa,aaa)
+                                                                                               _          -> case (basetrd) of 
+                                                                                                               AS.ND ->  (False,"no",0,0)
+                                                                                                               AS.DO  -> (True,"cc1",aaa,aaa)
+                                                                                                               AS.UP  -> (False,"no",0,0)
+                                                  AS.UP -> case (fab < fba) of
+                                                              False   ->  (False,"no",0,0)
+                                                              True    ->  case (ab < ba) && (aaa > 0.1) of 
+                                                                            False -> (False,"no",0,0)
+                                                                            True  -> case ab of
+                                                                                               x|x<(-0.2) -> case (basetrd) of 
+                                                                                                               AS.ND  -> (True,"pr" ,aaa,aaa)
+                                                                                                               AS.UP  -> (True,"pr1",aaa,aaa)
+                                                                                                               AS.DO  -> (True,"cc2",aaa,aaa)
+                                                                                               _          -> case (basetrd) of
+                                                                                                               AS.ND ->  (False,"no",0,0 )
+                                                                                                               AS.UP  -> (True,"cc1",aaa,aaa)
+                                                                                                               AS.DO  -> (False,"no",0,0)
+                                                  AS.ND -> (False,"no",0,0)
+
+
+trendwave_2 :: AS.Trend -> Double -> Double -> Double -> Double   -> AS.Trend -> (Bool,String,Double,Double) -- aaa ,bbb            first and snd +-0.0004 +-0.0008 
+trendwave_2  trd  ab  ba aaa  bbb  basetrd  =   case trd of --return +0.0004 and + 0.0008 ratio as base 
+                                                                 AS.DO -> case ba of 
+                                                                               x|x<(-0.2) -> case (basetrd) of 
+                                                                                               AS.ND  -> (True,"pr",aaa,bbb)
+                                                                                               AS.DO  -> (True,"pr1",aaa,bbb)
+                                                                                               AS.UP  -> (True,"cc2",aaa,bbb)
+                                                                               _          -> case (basetrd) of 
+                                                                                               AS.ND ->  (False,"no",0,0)
+                                                                                               AS.DO  -> (True,"cc1",aaa,bbb)
+                                                                                               AS.UP  -> (False,"no",0,0)
+                                                                 AS.UP -> case ab of
+                                                                               x|x<(-0.2) -> case (basetrd) of 
+                                                                                               AS.ND  -> (True,"pr",aaa,bbb)
+                                                                                               AS.UP  -> (True,"pr1",aaa,bbb)
+                                                                                               AS.DO  -> (True,"cc2",aaa,bbb)
+                                                                               _          -> case (basetrd) of
+                                                                                               AS.ND ->  (False,"no",0,0)
+                                                                                               AS.UP  -> (True,"cc1",aaa,bbb)
+                                                                                               AS.DO  -> (False,"no",0,0)
+                                                                 AS.ND -> (False,"no",0,0)
+
+
 volumn_stra_1m :: AS.Klines_1 -> Double    -> IO  ((Bool,AS.Trend),String)
 volumn_stra_1m kline_1 dcp  = do
                      let klines_1ms           =      AS.klines_1m kline_1
@@ -506,71 +561,63 @@ volumn_stra_1m kline_1 dcp  = do
 
 secondrule :: ((Double,Double),Double) ->  [(Double,Double)]  -> IO ((Int,Trend),String)
 secondrule diffpr ablist = do      -- bid is buyer , ask is seller 
-                     let ratiol        = DT.map getdiffgridnum ablist
-                     let curprsfstdire = snd (ratiol !! 6)
-                     let curprmsnddire = snd (ratiol !! 7)
-                     let curprsfstdiff = fst (ratiol !! 6)
-                     let curprmsnddiff = fst (ratiol !! 7)
-                     let cccdata       = snd $ ratiol !! 8
-                     let ddddata       = snd $ ratiol !! 9
-                     let eeedata       = snd $ ratiol !! 10
-                     let choosed_wave  = choose_proper_wave cccdata ddddata eeedata 
-                     let badata        = ratiol !! 3
-                     let ba            = snd badata
-                     let abdata        = ratiol !! 2
-                     let ab            = snd abdata
-                     let fabdata       = ratiol !! 0
-                     let fab           = snd fabdata
-                     let fbadata       = ratiol !! 1
-                     let fba           = snd fbadata
-                     let ddd           = snd (ratiol !! 9)
-                     let eee           = snd (ratiol !! 10)
-                     let minpr         = fst $ fst  diffpr
-                     let maxpr         = snd $ fst  diffpr
-                     let basepr        = snd  diffpr
-                     let trend         = case (curprsfstdire < 0) of
-                                               True    -> AS.DO
-                                               False   -> AS.UP
+                     let ratiol          =   DT.map getdiffgridnum ablist
+                     let curprfbase      =   snd (ratiol !! 5)
+                     let curprfdiff      =   fst (ratiol !! 5)
+                     let curprsfstdire   =   snd (ratiol !! 6)
+                     let curprmsnddire   =   snd (ratiol !! 7)
+                     let curprsfstdiff   =   fst (ratiol !! 6)
+                     let curprmsnddiff   =   fst (ratiol !! 7)
+                     let cccdata         =   snd $ ratiol !! 8
+                     let ddddata         =   snd $ ratiol !! 9
+                     let eeedata         =   snd $ ratiol !! 10
+                     let choosed_wave    =   choose_proper_wave cccdata ddddata eeedata 
+                     let badata          =   ratiol !! 3
+                     let ba              =   snd badata
+                     let abdata          =   ratiol !! 2
+                     let ab              =   snd abdata
+                     let fabdata         =   ratiol !! 0
+                     let fab             =   snd fabdata
+                     let fbadata         =   ratiol !! 1
+                     let fba             =   snd fbadata
+                     let ddd             =   snd (ratiol !! 9)
+                     let eee             =   snd (ratiol !! 10)
+                     let minpr           =   fst $ fst  diffpr
+                     let maxpr           =   snd $ fst  diffpr
+                     let basepr          =   snd  diffpr
+                     let trend_1         =   case (curprfbase < 0) of
+                                                   True    -> AS.DO
+                                                   False   -> AS.UP
 
-                     let ccctrend       = case choosed_wave of 
-                                            x|x<(-0.2)   -> (AS.DO,0.001) 
-                                            x|x>0.2      -> (AS.UP,0.001) 
-                                            _            -> (AS.ND,0) 
+                     let trend_2         =   case (curprsfstdire < 0,curprmsnddire < 0) of
+                                                   (True  , True )    -> AS.DO
+                                                   (True  , False)    -> AS.ND
+                                                   (False , True )    -> AS.ND
+                                                   (False , False)    -> AS.UP
 
-                     let (prsti,prsaba)   = case trend of 
-                                              AS.DO -> case (fba < fab) of 
-                                                          False   ->  (1,"no")
-                                                          True    ->  case (ba < ab) of 
-                                                                        False -> (1,"no")
-                                                                        True  -> case ba of
-                                                                                           x|x<(-0.2) -> case (fst ccctrend) of 
-                                                                                                           AS.ND  -> (1,"pr")
-                                                                                                           AS.DO  -> (1,"pr1")
-                                                                                                           AS.UP  -> (1,"cc2")
-                                                                                           _          -> case (fst ccctrend) of 
-                                                                                                           AS.ND ->  (1,"no")
-                                                                                                           AS.DO  -> (1,"cc1")
-                                                                                                           AS.UP  -> (1,"no")
-                                              AS.UP -> case (fab < fba) of
-                                                          False   ->  (1,"no")
-                                                          True    ->  case (ab < ba) of 
-                                                                        False -> (1,"no")
-                                                                        True  -> case ab of
-                                                                                           x|x<(-0.2) -> case (fst ccctrend) of 
-                                                                                                           AS.ND  -> (1,"pr")
-                                                                                                           AS.UP  -> (1,"pr1")
-                                                                                                           AS.DO  -> (1,"cc2")
-                                                                                           _          -> case (fst ccctrend) of
-                                                                                                           AS.ND ->  (1,"no")
-                                                                                                           AS.UP  -> (1,"cc1")
-                                                                                                           AS.DO  -> (1,"no")
-                                              AS.ND -> (1,"no")
+                     let ccctrend        =   case choosed_wave of 
+                                                x|x<(-0.2)   -> AS.DO 
+                                                x|x>0.2      -> AS.UP 
+                                                _            -> AS.ND
+
+                     let (isnot_trdw_1,reason_trdw_1,aaa_trdw_1,bbb_trdw_1) = trendwave_1 trend_1 fab fba ab ba curprfbase ccctrend
+                     let (isnot_trdw_2,reason_trdw_2,aaa_trdw_2,bbb_trdw_2) = trendwave_2 trend_2 ab  ba  curprsfstdire curprmsnddire ccctrend
+
+                     let (basefst,basesnd,prsaba,trend)    =  case (isnot_trdw_1,isnot_trdw_2) of 
+                                   (True ,True  ) -> (aaa_trdw_1,bbb_trdw_1,reason_trdw_1,trend_1)
+                                   (True ,False ) -> (aaa_trdw_1,bbb_trdw_1,reason_trdw_1,trend_1)
+                                   (False,True  ) -> (aaa_trdw_2,bbb_trdw_2,reason_trdw_2,trend_2)
+                                   (False,False ) -> (0,0,"no",AS.ND)
 
                      let midquan       = case (basepr < minpr || basepr > maxpr) of 
                                                 True  -> 0
-                                                False -> (curprsfstdiff + curprmsnddiff)
+                                                False -> case (isnot_trdw_1,isnot_trdw_2) of 
+                                                           (True,True  ) -> curprfdiff
+                                                           (False,True ) -> curprsfstdiff + curprmsnddiff
+                                                           (True,False ) -> curprfdiff
+                                                           (False,False) -> 0
 
-                     let middquan      = midquan*prsti + (waveonlongsight choosed_wave ddd eee trend) 
+                     let middquan      = midquan + (waveonlongsight choosed_wave ddd eee trend) 
 
                      let finalquan     = case (middquan > 0 ,trend) of 
                                           (True  , AS.DO) -> 0
@@ -578,8 +625,6 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                           (False , AS.DO) -> middquan
                                           (True  , AS.UP) -> middquan
                                           (_     , _    ) -> 0
-                     -- use the three grid (0,0.0002),(0.0002,0.0004),(0.0004,0.0006) to quant the hard degree of trend,also express as boost (add or minus )
-
 
                      logact logByteStringStdout $ B.pack $ show ("baratiois--------" ,
                                                                  ( (ablist !!0 )),
