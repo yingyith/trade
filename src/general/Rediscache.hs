@@ -225,7 +225,7 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      atkline                                <-    readTVarIO klinetvar 
      apr                                    <-    AS.depthmidpr atdepth dcp
      let ares                               =     AS.getBidAskNum apr atdepth
-     ((sndquan,sedtrend),reason  )          <-    secondrule apr ares
+     ((sndquan,sedtrend),(reason,rtype)  )          <-    secondrule apr ares
      ((volumnpred,vtrend),vreason)          <-    volumn_stra_1m atkline dcp 
      timecurtime                            <-    getZonedTime >>= return.formatTime defaultTimeLocale "%Y-%m-%d,%H:%M %Z"
      curtimestampi                          <-    getcurtimestamp
@@ -233,6 +233,11 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
      ((needlepred,ntrend),nreason)          <-    needlestra  bigintervall
      logact logByteStringStdout $ BC.pack $ show ("snd kline is---------",(DL.head $ klines_1s atkline ) )
      (dd,dd2)                               <-    getnextgriddiff bigintervall 0 dcp
+     let aimquan = case rtype of 
+                      "1" -> 0
+                      "2" -> 1
+                      _   -> 2
+     let minquan = minbasequan + aimquan 
      when (sedtrend==AS.UP) $ do
          let sumresb = (-thresholdup) +sndquan -- aim is up
          let sumresm = (-((fromIntegral thresholdup)/4)) +(fromIntegral sndquan) -- aim is up
