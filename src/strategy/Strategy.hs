@@ -427,9 +427,9 @@ waveonlongsight  ccc   ddd eee  trend = do
 --trendwave : the incoming buy/sell ratio change on the vision of boundary ,coming but still have time to change  
 trendwave_1 :: AS.Trend -> Double -> Double  -> Double -> Double -> Double -> AS.Trend -> (Bool,String,String,Double,Double)-- fab  ,fba    ,ab , ba  , first +0.0002 trend,
 trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return +0.0001 ratio as  base
-                                                  AS.DO -> case (fba < fab) of 
+                                                  AS.DO -> case (fba < fab-0.1) of 
                                                               False   ->  (False,"1","no",0,0)
-                                                              True    ->  case (ba < ab) && (aaa <(-0.1)) of 
+                                                              True    ->  case (ba < ab-0.1) && (aaa <(-0.1)) of 
                                                                             False -> (False,"1","no",0,0)
                                                                             True  -> case ba of
                                                                                                x|x<(-0.2) -> case (basetrd) of 
@@ -440,9 +440,9 @@ trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return 
                                                                                                                AS.ND ->  (False,"1","no",0,0)
                                                                                                                AS.DO  -> (True,"1","cc1",aaa,aaa)
                                                                                                                AS.UP  -> (False,"1","no",0,0)
-                                                  AS.UP -> case (fab < fba) of
+                                                  AS.UP -> case (fab < fba-0.1) of
                                                               False   ->  (False,"1","no",0,0)
-                                                              True    ->  case (ab < ba) && (aaa > 0.1) of 
+                                                              True    ->  case (ab < ba-0.1) && (aaa > 0.1) of 
                                                                             False -> (False,"1","no",0,0)
                                                                             True  -> case ab of
                                                                                                x|x<(-0.2) -> case (basetrd) of 
