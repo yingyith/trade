@@ -423,6 +423,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> -(snd $  (adjustboostgrid!!6))
                                        _                                                         -> -(snd $  (adjustboostgrid!!0)) 
                  (_   ,_     )  ->  0
+--morpho trait collect : 1.get last pr change trend .2. analysis the ratio  3.match the previous snapshot with now snapshot ,if the same ,continues.
 
 --trendwave : the incoming buy/sell ratio change on the vision of boundary ,coming but still have time to change  
 trendwave_1 :: AS.Trend -> Double -> Double  -> Double -> Double -> Double -> AS.Trend -> (Bool,String,String,Double,Double)-- fab  ,fba    ,ab , ba  , first +0.0002 trend,
