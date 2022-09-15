@@ -456,26 +456,30 @@ trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return 
                                                   AS.ND -> (False,"1","no",0,0)
 
 
-trendwave_2 :: AS.Trend -> Double -> Double -> Double -> Double   -> AS.Trend -> (Bool,String,String,Double,Double) -- aaa ,bbb            first and snd +-0.0004 +-0.0008 
-trendwave_2  trd  ab  ba aaa  bbb  basetrd  =   case trd of --return +0.0004 and + 0.0008 ratio as base 
-                                                                 AS.DO -> case ba of 
-                                                                               x|x<(ab-0.2) -> case (basetrd) of 
-                                                                                               AS.ND  -> (True,"2","pr",aaa,bbb)
-                                                                                               AS.DO  -> (True,"2","pr1",aaa,bbb)
-                                                                                               AS.UP  -> (True,"2","cc2",aaa,bbb)
-                                                                               _          -> case (basetrd) of 
-                                                                                               AS.ND ->  (False,"2","no",0,0)
-                                                                                               AS.DO  -> (True,"2","cc1",aaa,bbb)
-                                                                                               AS.UP  -> (False,"2","no",0,0)
-                                                                 AS.UP -> case ab of
-                                                                               x|x<(ba-0.2) -> case (basetrd) of 
-                                                                                               AS.ND  -> (True,"2","pr",aaa,bbb)
-                                                                                               AS.UP  -> (True,"2","pr1",aaa,bbb)
-                                                                                               AS.DO  -> (True,"2","cc2",aaa,bbb)
-                                                                               _          -> case (basetrd) of
-                                                                                               AS.ND ->  (False,"2","no",0,0)
-                                                                                               AS.UP  -> (True,"2","cc1",aaa,bbb)
-                                                                                               AS.DO  -> (False,"2","no",0,0)
+trendwave_2 :: AS.Trend -> Double -> Double ->  Double -> Double -> Double -> Double   -> AS.Trend -> (Bool,String,String,Double,Double) -- aaa ,bbb            first and snd +-0.0004 +-0.0008 
+trendwave_2  trd fab  fba  ab  ba aaa  bbb  basetrd  =   case trd of --return +0.0004 and + 0.0008 ratio as base 
+                                                                 AS.DO -> case fab of 
+                                                                            x|x<-0.8 -> (False,"2","no",0,0)
+                                                                            _        -> case ba of 
+                                                                                              x|x<(ab-0.2) -> case (basetrd) of 
+                                                                                                              AS.ND  -> (True,"2","pr",aaa,bbb)
+                                                                                                              AS.DO  -> (True,"2","pr1",aaa,bbb)
+                                                                                                              AS.UP  -> (True,"2","cc2",aaa,bbb)
+                                                                                              _          -> case (basetrd) of 
+                                                                                                              AS.ND ->  (False,"2","no",0,0)
+                                                                                                              AS.DO  -> (True,"2","cc1",aaa,bbb)
+                                                                                                              AS.UP  -> (False,"2","no",0,0)
+                                                                 AS.UP -> case fba of 
+                                                                            x|x<-0.8 -> (False,"2","no",0,0)
+                                                                            _        -> case ab of
+                                                                                             x|x<(ba-0.2) -> case (basetrd) of 
+                                                                                                             AS.ND  -> (True,"2","pr",aaa,bbb)
+                                                                                                             AS.UP  -> (True,"2","pr1",aaa,bbb)
+                                                                                                             AS.DO  -> (True,"2","cc2",aaa,bbb)
+                                                                                             _          -> case (basetrd) of
+                                                                                                             AS.ND ->  (False,"2","no",0,0)
+                                                                                                             AS.UP  -> (True,"2","cc1",aaa,bbb)
+                                                                                                             AS.DO  -> (False,"2","no",0,0)
                                                                  AS.ND -> (False,"2","no",0,0)
 
 
@@ -601,7 +605,7 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                                                 _            -> AS.ND
 
                      let (isnot_trdw_1,type_trdw_1,reason_trdw_1,aaa_trdw_1,bbb_trdw_1) = trendwave_1 trend_1 fab fba ab ba curprfbase ccctrend
-                     let (isnot_trdw_2,type_trdw_2,reason_trdw_2,aaa_trdw_2,bbb_trdw_2) = trendwave_2 trend_2 ab  ba  curprsfstdire curprmsnddire ccctrend
+                     let (isnot_trdw_2,type_trdw_2,reason_trdw_2,aaa_trdw_2,bbb_trdw_2) = trendwave_2 trend_2 fab fba ab  ba  curprsfstdire curprmsnddire ccctrend
 
                      let (basefst,basesnd,prsaba,trend,trend_type)    =  case (isnot_trdw_1,isnot_trdw_2) of 
                                    (True ,True  ) -> (aaa_trdw_1,bbb_trdw_1,reason_trdw_1,trend_1,type_trdw_1)
