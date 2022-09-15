@@ -459,7 +459,7 @@ trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return 
 trendwave_2 :: AS.Trend -> Double -> Double -> Double -> Double   -> AS.Trend -> (Bool,String,String,Double,Double) -- aaa ,bbb            first and snd +-0.0004 +-0.0008 
 trendwave_2  trd  ab  ba aaa  bbb  basetrd  =   case trd of --return +0.0004 and + 0.0008 ratio as base 
                                                                  AS.DO -> case ba of 
-                                                                               x|x<(-0.2) -> case (basetrd) of 
+                                                                               x|x<(ab-0.2) -> case (basetrd) of 
                                                                                                AS.ND  -> (True,"2","pr",aaa,bbb)
                                                                                                AS.DO  -> (True,"2","pr1",aaa,bbb)
                                                                                                AS.UP  -> (True,"2","cc2",aaa,bbb)
@@ -468,7 +468,7 @@ trendwave_2  trd  ab  ba aaa  bbb  basetrd  =   case trd of --return +0.0004 and
                                                                                                AS.DO  -> (True,"2","cc1",aaa,bbb)
                                                                                                AS.UP  -> (False,"2","no",0,0)
                                                                  AS.UP -> case ab of
-                                                                               x|x<(-0.2) -> case (basetrd) of 
+                                                                               x|x<(ba-0.2) -> case (basetrd) of 
                                                                                                AS.ND  -> (True,"2","pr",aaa,bbb)
                                                                                                AS.UP  -> (True,"2","pr1",aaa,bbb)
                                                                                                AS.DO  -> (True,"2","cc2",aaa,bbb)

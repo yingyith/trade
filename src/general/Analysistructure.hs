@@ -131,11 +131,11 @@ getBidAskNum apr dpdata = [
                            sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0001 ) $ askset  dpdata 
                            ),
                            (
-                           sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0004 ) $ bidset  dpdata ,
-                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0004 ) $ askset  dpdata 
+                           sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0003 ) $ bidset  dpdata ,
+                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0003 ) $ askset  dpdata 
                            ),
-                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0008 ) $ bidset  dpdata ,
-                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0008 ) $ askset  dpdata 
+                           (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.0006 ) $ bidset  dpdata ,
+                           sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.0006 ) $ askset  dpdata 
                            ),
                            (sum $ DHM.elems $  DHM.filterWithKey  (getbiddiffquanpred (snd apr) 0.004 ) $ bidset  dpdata ,
                            sum $ DHM.elems $  DHM.filterWithKey  (getaskdiffquanpred  (snd apr) 0.004 ) $ askset  dpdata 
