@@ -179,7 +179,7 @@ crossminstra abcc pr = do
 
     let totalthresholdup = mthresholdup + hthresholdup
     let totalthresholddo = mthresholddo + hthresholddo
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,abc,reasonlow,reasonhigh)
+    --liftIO $ logact logByteStringStdout $ B.pack $ show ("minrule is---",totalthresholdup,totalthresholddo,abc,reasonlow,reasonhigh)
     return ((totalthresholdup+highpointfactor,totalthresholddo+lowpointfactor),(reasonhigh,reasonlow))
                                           
 suddenwavestra:: [(((Int,(Double,Double)),(String,Int)),[Hlnode])] -> (Int,String)
@@ -249,7 +249,7 @@ needlestra  abcc  = do
                                                (True ,True ) -> (True ,"0m" , AS.UP)
 
     let needlerpred               =        needlelenpred && needlepredd 
-    liftIO $ logact logByteStringStdout $ B.pack $ show ("needle is---",lkline_15m,needlerpred,rea)
+    --liftIO $ logact logByteStringStdout $ B.pack $ show ("needle is---",lkline_15m,needlerpred,rea)
     return ((needlerpred,side),rea)
      
 
@@ -543,16 +543,16 @@ volumn_stra_1m kline_1 dcp  = do
                                                                           && (sandwich_pred)  
                                                                           && volumn_snd_pred 
 
-                                      liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",klines_1sset_va_d
-                                                                                                           ,klines_1sset_va_dr
-                                                                                                           ,kline_1m_avg
-                                                                                                           ,limithpred_sml
-                                                                                                           ,limitlpred_sml
-                                                                                                           ,limitlpred_big
-                                                                                                           ,limithpred_big
-                                                                                                           ,volumn_fst_pred
-                                                                                                           ,volumn_snd_pred)
-
+                                      --liftIO $ logact logByteStringStdout $ B.pack $ show ("volumn wave---",klines_1sset_va_d
+--                                                                                                           ,klines_1sset_va_dr
+--                                                                                                           ,kline_1m_avg
+--                                                                                                           ,limithpred_sml
+--                                                                                                           ,limitlpred_sml
+--                                                                                                           ,limitlpred_big
+--                                                                                                           ,limithpred_big
+--                                                                                                           ,volumn_fst_pred
+--                                                                                                           ,volumn_snd_pred)
+--
                                       case (limithpred_sml,limitlpred_sml,limitlpred_big,limithpred_big) of
                                           (True  ,_     ,_      ,_     ) -> return ((True , AS.DO ),"small") 
                                           (_     ,True  ,_      ,_     ) -> return ((True , AS.UP ),"small") 
