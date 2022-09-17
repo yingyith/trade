@@ -591,18 +591,18 @@ secondrule diffpr ablist = do      -- bid is buyer , ask is seller
                      let maxpr           =   snd $ fst  diffpr
                      let basepr          =   snd  diffpr
                      let trend_1         =   case (curprmsnddire < 0) of
-                                                   True    -> AS.DO
-                                                   False   -> AS.UP
+                                                   True    -> AS.UP
+                                                   False   -> AS.DO
 
                      let trend_2         =   case (curprsfstdire < 0,curprmsnddire < 0) of
-                                                   (True  , True )    -> AS.DO
+                                                   (True  , True )    -> AS.UP
                                                    (True  , False)    -> AS.ND
                                                    (False , True )    -> AS.ND
-                                                   (False , False)    -> AS.UP
+                                                   (False , False)    -> AS.DO
 
                      let ccctrend        =   case choosed_wave of 
-                                                x|x<(-0.2)   -> AS.DO 
-                                                x|x>0.2      -> AS.UP 
+                                                x|x<(-0.2)   -> AS.UP
+                                                x|x>0.2      -> AS.DO 
                                                 _            -> AS.ND
 
                      let (isnot_trdw_1,type_trdw_1,reason_trdw_1,aaa_trdw_1,bbb_trdw_1) = trendwave_1 trend_1 fab fba ab  ba  curprsfstdire ccctrend
