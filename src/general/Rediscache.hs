@@ -238,6 +238,9 @@ anlytoBuy tbq conn msg tdepth ostvar klinetvar =
                       "2" -> 1
                       _   -> 2
      let minquan = minbasequan + aimquan 
+
+     when (sedtrend==AS.ND) $ do
+         logact logByteStringStdout $ BC.pack $ show ("sndruleup is ---- !",thresholdup,thresholddo,sndquan,timecurtime,dcp)
      when (sedtrend==AS.UP) $ do
          let sumresb = (-thresholdup) +sndquan -- aim is up
          let sumresm = (-((fromIntegral thresholdup)/4)) +(fromIntegral sndquan) -- aim is up
