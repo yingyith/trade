@@ -294,7 +294,6 @@ minrule ahll pr interval  = do
                     _    -> 11
    let ahl = DT.take alength ahll
    let reslist   =  [(xlist!!x,x)|x<-[0..(length xlist-2)]] where xlist = ahl
-   --logact logByteStringStdout $ B.pack  ("enter min do ---------------------")
    let highsheet =  [((hprice $ fst x),snd x)| x<-xlist ,((hprice $ fst x) > 0.1)  && ((stype $ fst x) == "high")||((stype $ fst x) == "wbig")] where xlist = reslist
    let lowsheet  =  [((lprice $ fst x),snd x)| x<-xlist ,((lprice $ fst x) > 0.1)  && ((stype $ fst x) == "low") ||((stype $ fst x) == "wbig")] where xlist = reslist
    let hlbak     =  [((cprice $ fst x),snd x)| x<-xlist ,((cprice $ fst x) > 0.1)  ] where xlist = reslist
@@ -430,7 +429,7 @@ trendwave_1 :: AS.Trend -> Double -> Double  -> Double -> Double -> Double -> AS
 trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return +0.0001 ratio as  base
                                                            AS.DO -> case (fba < fab-0.2) of 
                                                                        False   ->  (False,"1","no",0,0)
-                                                                       True    ->  case (ba < ab-0.2) && (aaa <(-0.1)) of 
+                                                                       True    ->  case (ba < ab-0.2) && (aaa >0.1) of 
                                                                                      False -> (False,"1","no",0,0)
                                                                                      True  -> case ba of
                                                                                                         x|x<(-0.2) -> case (basetrd) of 
@@ -443,7 +442,7 @@ trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return 
                                                                                                                         AS.UP  -> (False,"1","no",0,0)
                                                            AS.UP -> case (fab < fba-0.2) of
                                                                        False   ->  (False,"1","no",0,0)
-                                                                       True    ->  case (ab < ba-0.2) && (aaa > 0.1) of 
+                                                                       True    ->  case (ab < ba-0.2) && (aaa < -0.1) of 
                                                                                      False -> (False,"1","no",0,0)
                                                                                      True  -> case ab of
                                                                                                         x|x<(-0.2) -> case (basetrd) of 
