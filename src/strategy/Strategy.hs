@@ -360,7 +360,7 @@ gethlsheetsec index kll =  do
     return res
 
 getdiffgridnum :: (Double,Double)-> (Int,Double) 
-getdiffgridnum  (a,b) = case (a>b) of 
+getdiffgridnum  (a,b) = case (a<b) of 
                                   True  -> case (abs res) of  --bid > ask  up
                                       x|x<(diffspreadsheet!!1) && x>= (diffspreadsheet!!0)  ->(( depthrisksheet !! 0),res) 
                                       x|x<(diffspreadsheet!!2) && x>= (diffspreadsheet!!1)  ->(( depthrisksheet !! 1),res) 
@@ -386,7 +386,7 @@ getdiffgridnum  (a,b) = case (a>b) of
 waveonlongsight :: Double -> Double -> Double -> AS.Trend -> Int
 waveonlongsight  ccc   ddd eee  trend = do
            case (ccc>0,trend) of 
-                 (True, AS.UP)  ->  case ccc of 
+                 (True, AS.DO)  ->  case ccc of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> fst $  (adjustboostgrid!!0)
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> fst $  (adjustboostgrid!!1)
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> fst $  (adjustboostgrid!!2)
@@ -395,7 +395,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> fst $  (adjustboostgrid!!5)
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> fst $  (adjustboostgrid!!6)
                                        _                                                         -> fst $  (adjustboostgrid!!0) 
-                 (True, AS.DO)  ->  case ccc of 
+                 (True, AS.UP)  ->  case ccc of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> (snd $  (adjustboostgrid!!0)) 
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> (snd $  (adjustboostgrid!!1))
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> (snd $  (adjustboostgrid!!2))
@@ -404,7 +404,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> (snd $  (adjustboostgrid!!5))
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> (snd $  (adjustboostgrid!!6))
                                        _                                                         -> (snd $  (adjustboostgrid!!0)) 
-                 (False,AS.UP)  ->  case (abs ccc) of 
+                 (False,AS.DO)  ->  case (abs ccc) of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> -(fst $  (adjustboostgrid!!0))
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> -(fst $  (adjustboostgrid!!1))
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> -(fst $  (adjustboostgrid!!2))
@@ -413,7 +413,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> -(fst $  (adjustboostgrid!!5))
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> -(fst $  (adjustboostgrid!!6))
                                        _                                                         -> -(fst $  (adjustboostgrid!!0)) 
-                 (False,AS.DO)  ->  case (abs ccc) of 
+                 (False,AS.UP)  ->  case (abs ccc) of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> -(snd $  (adjustboostgrid!!0))
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> -(snd $  (adjustboostgrid!!1))
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> -(snd $  (adjustboostgrid!!2))
