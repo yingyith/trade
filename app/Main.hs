@@ -262,7 +262,7 @@ ws connection = do
         withAsync (handlerThread connn ctrll orderVar) $ \_handlerT -> do
            void $ addChannels ctrll [] [("sndc:*"     , sndtocacheHandler qanalys depthtvar  )]
            void $ addChannels ctrll [] [("minc:*"     , mintocacheHandler                    )]
-           void $ addChannels ctrll [] [("order:*"    , opclHandler  qord orderst            )]
+           --void $ addChannels ctrll [] [("order:*"    , opclHandler  qord orderst            )]
            void $ addChannels ctrll [] [("analysis:*" , analysisHandler qanalys depthtvar    )]
            void $ addChannels ctrll [] [("listenkey:*", listenkeyHandler                     )]
            void $ addChannels ctrll [] [("depth:*"    , sndtocacheHandler qanalys depthtvar  )]

@@ -385,7 +385,7 @@ getdiffgridnum  (a,b) = case (a<b) of
 waveonlongsight :: Double -> Double -> Double -> AS.Trend -> Int
 waveonlongsight  ccc   ddd eee  trend = do
            case (ccc>0,trend) of 
-                 (True, AS.DO)  ->  case ccc of 
+                 (True, AS.UP)  ->  case ccc of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> fst $  (adjustboostgrid!!0)
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> fst $  (adjustboostgrid!!1)
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> fst $  (adjustboostgrid!!2)
@@ -394,7 +394,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> fst $  (adjustboostgrid!!5)
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> fst $  (adjustboostgrid!!6)
                                        _                                                         -> fst $  (adjustboostgrid!!0) 
-                 (True, AS.UP)  ->  case ccc of 
+                 (True, AS.DO)  ->  case ccc of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> (snd $  (adjustboostgrid!!0)) 
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> (snd $  (adjustboostgrid!!1))
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> (snd $  (adjustboostgrid!!2))
@@ -403,7 +403,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> (snd $  (adjustboostgrid!!5))
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> (snd $  (adjustboostgrid!!6))
                                        _                                                         -> (snd $  (adjustboostgrid!!0)) 
-                 (False,AS.DO)  ->  case (abs ccc) of 
+                 (False,AS.UP)  ->  case (abs ccc) of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> -(fst $  (adjustboostgrid!!0))
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> -(fst $  (adjustboostgrid!!1))
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> -(fst $  (adjustboostgrid!!2))
@@ -412,7 +412,7 @@ waveonlongsight  ccc   ddd eee  trend = do
                                        x|x< (adjustratiosheet!!6) &&  x>=(adjustratiosheet!!5)   -> -(fst $  (adjustboostgrid!!5))
                                        x|x< (adjustratiosheet!!7) &&  x>=(adjustratiosheet!!6)   -> -(fst $  (adjustboostgrid!!6))
                                        _                                                         -> -(fst $  (adjustboostgrid!!0)) 
-                 (False,AS.UP)  ->  case (abs ccc) of 
+                 (False,AS.DO)  ->  case (abs ccc) of 
                                        x|x< (adjustratiosheet!!1) &&  x>=(adjustratiosheet!!0)   -> -(snd $  (adjustboostgrid!!0))
                                        x|x< (adjustratiosheet!!2) &&  x>=(adjustratiosheet!!1)   -> -(snd $  (adjustboostgrid!!1))
                                        x|x< (adjustratiosheet!!3) &&  x>=(adjustratiosheet!!2)   -> -(snd $  (adjustboostgrid!!2))
@@ -427,7 +427,7 @@ waveonlongsight  ccc   ddd eee  trend = do
 --trendwave : the incoming buy/sell ratio change on the vision of boundary ,coming but still have time to change  
 trendwave_1 :: AS.Trend -> Double -> Double  -> Double -> Double -> Double -> AS.Trend -> (Bool,String,String,Double,Double)-- fab  ,fba    ,ab , ba  , first +0.0002 trend,
 trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return +0.0001 ratio as  base
-                                                           AS.DO -> case (fba < fab-0.2) of 
+                                                           AS.UP -> case (fba < fab-0.2) of 
                                                                        False   ->  (False,"1","no",0,0)
                                                                        True    ->  case (ba < ab-0.2) && (aaa >0.1) of 
                                                                                      False -> (False,"1","no",0,0)
@@ -440,7 +440,7 @@ trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return 
                                                                                                                         AS.ND ->  (False,"1","no",0,0)
                                                                                                                         AS.DO  -> (True,"1","cc1",aaa,aaa)
                                                                                                                         AS.UP  -> (False,"1","no",0,0)
-                                                           AS.UP -> case (fab < fba-0.2) of
+                                                           AS.DO -> case (fab < fba-0.2) of
                                                                        False   ->  (False,"1","no",0,0)
                                                                        True    ->  case (ab < ba-0.2) && (aaa < -0.1) of 
                                                                                      False -> (False,"1","no",0,0)
@@ -456,6 +456,9 @@ trendwave_1  trd  fab  fba  ab  ba  aaa  basetrd   =   case trd of    -- return 
                                                            AS.ND -> (False,"1","no",0,0)
 
 
+                                                           --if wave prieods sig is all the same ,then choose the clear way
+                                                           --if wave prieods sig is not the same ,then choose the first appear period ,then forbid move ,then go against
+                                                           --if wave periods sig not the same ,then first 
 trendwave_2 :: AS.Trend -> Double -> Double ->  Double -> Double -> Double -> Double   -> AS.Trend -> (Bool,String,String,Double,Double) -- aaa ,bbb            first and snd +-0.0004 +-0.0008 
 trendwave_2  trd fab  fba  ab  ba aaa  bbb  basetrd  =   case trd of --return +0.0004 and + 0.0008 ratio as base 
                                                                  AS.DO -> case fab of 
